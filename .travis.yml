@@ -5,7 +5,7 @@ compiler:
 
 before_script:
   - sudo apt-get update
-  - sudo apt-get install libapr1-dev libaprutil1-dev curl mxml
+  - sudo apt-get install libapr1-dev libaprutil1-dev curl 
 
 script: 
   - cmake . && make
