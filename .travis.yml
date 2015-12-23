@@ -23,7 +23,7 @@ before_script:
   - wget --quiet http://mirrors.hust.edu.cn/apache//apr/apr-util-1.5.4.tar.gz
   - tar zxf apr-util-1.5.4.tar.gz
   - cd apr-util-1.5.4
-  - ./configure
+  - ./configure --with-apr=/usr/local/apr/
   - make
   - sudo make install
   - cd -
