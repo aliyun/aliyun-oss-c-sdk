@@ -79,7 +79,6 @@ typedef enum {
 
 typedef struct {
     aos_string_t host;  /*< oss hostname */
-    int port;           /*< oss port, default 80 */
     aos_string_t id;    /*< oss access_key_id */
     aos_string_t key;   /*< oss access_key_secret */
     int is_oss_domain;  /*< oss hostname is oss domain or not, check by function is_oss_domain */
