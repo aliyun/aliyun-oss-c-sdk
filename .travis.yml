@@ -6,6 +6,27 @@ compiler:
 before_script:
   - sudo apt-get update
   - sudo apt-get install libapr1-dev libaprutil1-dev curl 
+  - wget --quiet http://curl.haxx.se/download/curl-7.46.0.tar.gz
+  - tar zxf curl-7.46.0.tar.gz
+  - cd curl-7.46.0
+  - ./configure
+  - make
+  - sudo make install
+  - cd - 
+  - wget --quiet http://mirrors.hust.edu.cn/apache/apr/apr-1.5.2.tar.gz
+  - tar zxf apr-1.5.2.tar.gz
+  - cd apr-1.5.2
+  - ./configure
+  - make
+  - sudo make install
+  - cd -
+  - wget --quiet http://mirrors.hust.edu.cn/apache//apr/apr-util-1.5.4.tar.gz
+  - tar zxf apr-util-1.5.4.tar.gz
+  - cd apr-util-1.5.4
+  - ./configure
+  - make
+  - sudo make install
+  - cd -
   - wget --quiet http://www.msweet.org/files/project3/mxml-2.9.tar.gz
   - tar zxf mxml-2.9.tar.gz
   - cd mxml-2.9
@@ -13,7 +34,6 @@ before_script:
   - make
   - sudo make install
   - cd -
-  - cmake .
 
 script: 
-  - make
+  - cmake . && make
