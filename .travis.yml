@@ -6,6 +6,14 @@ compiler:
 before_script:
   - sudo apt-get update
   - sudo apt-get install libapr1-dev libaprutil1-dev curl 
+  - wget --quiet http://www.msweet.org/files/project3/mxml-2.9.tar.gz
+  - tar zxf mxml-2.9.tar.gz
+  - cd mxml-2.9
+  - ./configure
+  - make
+  - sudo make install
+  - cd -
+  - cmake .
 
 script: 
-  - cmake . && make
+  - make
