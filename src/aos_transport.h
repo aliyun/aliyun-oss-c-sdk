@@ -64,7 +64,6 @@ typedef enum {
 
 struct aos_http_request_s {
     char *host;
-    uint8_t port;
     char *signed_url;
     
     http_method_e method;

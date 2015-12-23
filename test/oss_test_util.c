@@ -50,7 +50,6 @@ void make_random_body(aos_pool_t *p, int count, aos_list_t *bc)
 void init_test_config(oss_config_t *config, int is_oss_domain)
 {
     aos_str_set(&config->host, TEST_OSS_HOST);
-    config->port = 80; 
     aos_str_set(&config->id, TEST_ACCESS_KEY_ID);
     aos_str_set(&config->key, TEST_ACCESS_KEY_SECRET);
     config->is_oss_domain = is_oss_domain;

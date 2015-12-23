@@ -63,14 +63,12 @@ static int aos_init_curl_url(aos_curl_http_transport_t *t)
     }
 
     if (querystr.len == 0) {
-        t->url = apr_psprintf(t->pool, "http://%s:%d/%s",
+        t->url = apr_psprintf(t->pool, "http://%s/%s",
                               t->req->host,
-                              t->req->port,
                               uristr);
     } else {
-        t->url = apr_psprintf(t->pool, "http://%s:%d/%s%.*s",
+        t->url = apr_psprintf(t->pool, "http://%s/%s%.*s",
                               t->req->host,
-                              t->req->port,
                               uristr,
                               querystr.len,
                               querystr.data);

@@ -131,7 +131,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
                 |-- liboss_c_sdk.so.1.0.0
                 `-- liboss_c_sdk_static.a  
 
-##联系我们
+## 联系我们
 - 阿里云OSS官方网站 [http://oss.aliyun.com](http://oss.aliyun.com)
 - 阿里云OSS官方论坛 [http://bbs.aliyun.com](http://bbs.aliyun.com)
 - 阿里云OSS官方文档中心 [http://www.aliyun.com/product/oss#Docs](http://www.aliyun.com/product/oss#Docs)

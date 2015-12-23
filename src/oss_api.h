@@ -29,28 +29,32 @@
 OSS_CPP_START
 
 /**
-  * @brief  gen signed url for oss object api
-  * @param[in]  options  the request options including config item and http controllter
-  * @param[in]  expires  the expire time in Unix timestamp format
-  * @return the signed url 
-**/
-char *oss_gen_signed_url(const oss_request_options_t *options, const aos_string_t *bucket,
-        const aos_string_t *object, int64_t expires, aos_http_request_t *req);
-
-/**
   * @brief  oss create bucket
   * @param[in]  oss_acl  the oss bucket acl
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_create_bucket(const oss_request_options_t *options, 
-        const aos_string_t *bucket, oss_acl_e oss_acl, aos_table_t **resp_headers);
+                                const aos_string_t *bucket, 
+                                oss_acl_e oss_acl, 
+                                aos_table_t **resp_headers);
 
 /**
   * @brief  oss delete bucket
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_delete_bucket(const oss_request_options_t *options, 
-        const aos_string_t *bucket, aos_table_t **resp_headers);
+                                const aos_string_t *bucket, 
+                                aos_table_t **resp_headers);
+
+/**
+  * @brief  oss put bucket acl
+  * @param[out]  oss_acl  the oss bucket acl to put
+  * @return AOSE_OK success, other failure
+**/
+aos_status_t *oss_put_bucket_acl(const oss_request_options_t *options, 
+                                 const aos_string_t *bucket, 
+                                 oss_acl_e oss_acl,
+                                 aos_table_t **resp_headers);
 
 /**
   * @brief  oss get bucket acl
@@ -58,8 +62,37 @@ aos_status_t *oss_delete_bucket(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options, 
-        const aos_string_t *bucket, aos_string_t *oss_canned_acl, 
-        aos_table_t **resp_headers);
+                                 const aos_string_t *bucket, 
+                                 aos_string_t *oss_canned_acl, 
+                                 aos_table_t **resp_headers);
+
+/**
+  * @brief  oss put bucket lifycycle
+  * @param[in]  lifecycle_rule_list  the lifecycle to put
+  * @return AOSE_OK success, other failure
+**/
+aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
+                                       const aos_string_t *bucket, 
+                                       aos_list_t *lifecycle_rule_list, 
+                                       aos_table_t **resp_headers);
+
+/**
+  * @brief  oss get bucket lifecycle
+  * @param[out] lifecycle rule list
+  * @return AOSE_OK success, other failure
+**/
+aos_status_t *oss_get_bucket_lifecycle(const oss_request_options_t *options,
+                                       const aos_string_t *bucket, 
+                                       aos_list_t *lifecycle_rule_list, 
+                                       aos_table_t **resp_headers);
+
+/**
+  * @brief  oss delete bucket lifecycle
+  * @return AOSE_OK success, other failure
+  **/
+aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
+                                          const aos_string_t *bucket, 
+                                          aos_table_t **resp_headers);
 
 /**
   * @brief  list object for specific bucket 
@@ -68,30 +101,9 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_list_object(const oss_request_options_t *options, 
-        const aos_string_t *bucket, oss_list_object_params_t *params, aos_table_t **resp_headers);
-
-/**
-  * @brief  oss put bucket lifycycle
-  * @param[in]  lifecycle_rule_list  the lifecycle to put
-  * @return AOSE_OK success, other failure
-**/
-aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
-        const aos_string_t *bucket, aos_list_t *lifecycle_rule_list, aos_table_t **resp_headers);
-
-/**
-  * @brief  oss get bucket lifecycle
-  * @param[out] lifecycle rule list
-  * @return AOSE_OK success, other failure
-**/
-aos_status_t *oss_get_bucket_lifecycle(const oss_request_options_t *options,
-        const aos_string_t *bucket, aos_list_t *lifecycle_rule_list, aos_table_t **resp_headers);
-
-/**
-  * @brief  oss delete bucket lifecycle
-  * @return AOSE_OK success, other failure
-**/
-aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
-        const aos_string_t *bucket, aos_table_t **resp_headers);
+                              const aos_string_t *bucket, 
+                              oss_list_object_params_t *params, 
+                              aos_table_t **resp_headers);
 
 /**
   * @brief  oss put object from buffer
@@ -99,8 +111,11 @@ aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_put_object_from_buffer(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, aos_list_t *buffer, 
-        aos_table_t *headers, aos_table_t **resp_headers);
+                                         const aos_string_t *bucket, 
+                                         const aos_string_t *object, 
+                                         aos_list_t *buffer, 
+                                         aos_table_t *headers, 
+                                         aos_table_t **resp_headers);
 
 /**
   * @brief  oss put object from file
@@ -108,8 +123,11 @@ aos_status_t *oss_put_object_from_buffer(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_put_object_from_file(const oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *object, const aos_string_t *filename,
-        aos_table_t *headers, aos_table_t **resp_headers);
+                                       const aos_string_t *bucket, 
+                                       const aos_string_t *object, 
+                                       const aos_string_t *filename,
+                                       aos_table_t *headers, 
+                                       aos_table_t **resp_headers);
 
 /**
   * @brief  oss get object content to buffer
@@ -117,8 +135,11 @@ aos_status_t *oss_put_object_from_file(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object,
-        aos_table_t *headers, aos_list_t *buffer, aos_table_t **resp_headers);
+                                       const aos_string_t *bucket, 
+                                       const aos_string_t *object,
+                                       aos_table_t *headers, 
+                                       aos_list_t *buffer, 
+                                       aos_table_t **resp_headers);
 
 /**
   * @brief  oss get object content to file
@@ -126,8 +147,11 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *object,
-        aos_table_t *headers, aos_string_t *filename, aos_table_t **resp_headers);
+                                     const aos_string_t *bucket, 
+                                     const aos_string_t *object,
+                                     aos_table_t *headers, 
+                                     aos_string_t *filename, 
+                                     aos_table_t **resp_headers);
 
 /**
   * @brief  oss head object
@@ -135,33 +159,50 @@ aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_head_object(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object,
-        aos_table_t *headers, aos_table_t **resp_headers);
+                              const aos_string_t *bucket, 
+                              const aos_string_t *object,
+                              aos_table_t *headers, 
+                              aos_table_t **resp_headers);
 
 /**
   * @brief  oss delete object
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_delete_object(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, 
-        aos_table_t **resp_headers);
+                                const aos_string_t *bucket, 
+                                const aos_string_t *object, 
+                                aos_table_t **resp_headers);
 
 /**
   * @brief  oss delete objects
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_delete_objects(const oss_request_options_t *options,
-        const aos_string_t *bucket, aos_list_t *object_list, int is_quiet,
-        aos_table_t **resp_headers, aos_list_t *deleted_object_list);
+                                 const aos_string_t *bucket, 
+                                 aos_list_t *object_list, int is_quiet,
+                                 aos_table_t **resp_headers, 
+                                 aos_list_t *deleted_object_list);
+
+/**
+  * @brief  oss delete objects by prefix
+  * @param[in]  prefix  prefix of delete objects
+  * @return AOSE_OK success, other failure
+**/
+aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
+                                           const aos_string_t *bucket, 
+                                           const aos_string_t *prefix);
 
 /**
   * @brief  oss copy object from source object
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_copy_object(const oss_request_options_t *options, 
-        const aos_string_t *source_bucket, const aos_string_t *source_object, 
-        const aos_string_t *dest_bucket, const aos_string_t *dest_object, 
-        aos_table_t *headers, aos_table_t **resp_headers);
+                              const aos_string_t *source_bucket, 
+                              const aos_string_t *source_object, 
+                              const aos_string_t *dest_bucket, 
+                              const aos_string_t *dest_object, 
+                              aos_table_t *headers, 
+                              aos_table_t **resp_headers);
 
 /**
   * @brief  oss append object from buffer
@@ -170,8 +211,12 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *object, int64_t position,
-        aos_list_t *buffer, aos_table_t *headers, aos_table_t **resp_headers);
+                                            const aos_string_t *bucket, 
+                                            const aos_string_t *object, 
+                                            int64_t position,
+                                            aos_list_t *buffer, 
+                                            aos_table_t *headers, 
+                                            aos_table_t **resp_headers);
 
 /**
   * @brief  oss append object from file
@@ -180,8 +225,24 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *object, int64_t position,
-        const aos_string_t *append_file, aos_table_t *headers, aos_table_t **resp_headers);
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object, 
+                                          int64_t position,
+                                          const aos_string_t *append_file, 
+                                          aos_table_t *headers, 
+                                          aos_table_t **resp_headers);
+
+/**
+  * @brief  gen signed url for oss object api
+  * @param[in]  options  the request options including config item and http controllter
+  * @param[in]  expires  the expire time in Unix timestamp format
+  * @return the signed url 
+**/
+char *oss_gen_signed_url(const oss_request_options_t *options, 
+                         const aos_string_t *bucket,
+                         const aos_string_t *object, 
+                         int64_t expires, 
+                         aos_http_request_t *req);
 
 /**
   * @brief  oss put object from buffer using signed url
@@ -190,8 +251,10 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *options,
-        const aos_string_t *signed_url, aos_list_t *buffer, aos_table_t *headers,
-        aos_table_t **resp_headers);
+                                                const aos_string_t *signed_url, 
+                                                aos_list_t *buffer, 
+                                                aos_table_t *headers,
+                                                aos_table_t **resp_headers);
 
 /**
   * @brief  oss put object from file using signed_url
@@ -200,8 +263,10 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *options,
-        const aos_string_t *signed_url, aos_string_t *filename, aos_table_t *headers,
-        aos_table_t **resp_headers);
+                                              const aos_string_t *signed_url, 
+                                              aos_string_t *filename, 
+                                              aos_table_t *headers,
+                                              aos_table_t **resp_headers);
 
 /**
   * @brief  oss get object to buffer using signed url
@@ -210,8 +275,10 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *options,
-        const aos_string_t *signed_url, aos_table_t *headers, aos_list_t *buffer, 
-        aos_table_t **resp_headers);
+                                              const aos_string_t *signed_url, 
+                                              aos_table_t *headers, 
+                                              aos_list_t *buffer, 
+                                              aos_table_t **resp_headers);
 
 /**
   * @brief  oss get object to file using signed url
@@ -220,8 +287,10 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options,
-        const aos_string_t *signed_url, aos_table_t *headers, aos_string_t *filename,
-        aos_table_t **resp_headers);
+                                            const aos_string_t *signed_url, 
+                                            aos_table_t *headers, 
+                                            aos_string_t *filename,
+                                            aos_table_t **resp_headers);
 
 /**
   * @brief  oss head object using signed url
@@ -230,7 +299,9 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
-        const aos_string_t *signed_url, aos_table_t *headers, aos_table_t **resp_headers);
+                                     const aos_string_t *signed_url, 
+                                     aos_table_t *headers, 
+                                     aos_table_t **resp_headers);
 
 /**
   * @brief  oss init multipart upload
@@ -238,8 +309,11 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, 
-        aos_table_t *headers, aos_string_t *upload_id, aos_table_t **resp_headers);
+                                        const aos_string_t *bucket, 
+                                        const aos_string_t *object, 
+                                        aos_table_t *headers, 
+                                        aos_string_t *upload_id, 
+                                        aos_table_t **resp_headers);
 
 /**
   * @brief  oss upload part from buffer
@@ -249,9 +323,12 @@ aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_upload_part_from_buffer(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, 
-        const aos_string_t *upload_id, int part_num, aos_list_t *buffer, 
-        aos_table_t **resp_headers);
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object, 
+                                          const aos_string_t *upload_id, 
+                                          int part_num, 
+                                          aos_list_t *buffer, 
+                                          aos_table_t **resp_headers);
 
 /**
   * @brief  oss upload part from file
@@ -261,9 +338,12 @@ aos_status_t *oss_upload_part_from_buffer(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *object,
-        const aos_string_t *upload_id, int part_num, oss_upload_file_t *upload_file,
-        aos_table_t **resp_headers);
+                                        const aos_string_t *bucket, 
+                                        const aos_string_t *object,
+                                        const aos_string_t *upload_id, 
+                                        int part_num, 
+                                        oss_upload_file_t *upload_file,
+                                        aos_table_t **resp_headers);
 
 /**
   * @brief  oss abort multipart upload
@@ -271,8 +351,10 @@ aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_abort_multipart_upload(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, 
-        aos_string_t *upload_id, aos_table_t **resp_headers);
+                                         const aos_string_t *bucket, 
+                                         const aos_string_t *object, 
+                                         aos_string_t *upload_id, 
+                                         aos_table_t **resp_headers);
 
 /**
   * @brief  oss complete multipart upload
@@ -281,8 +363,11 @@ aos_status_t *oss_abort_multipart_upload(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, 
-        const aos_string_t *upload_id, aos_list_t *part_list, aos_table_t **resp_headers);
+                                            const aos_string_t *bucket, 
+                                            const aos_string_t *object, 
+                                            const aos_string_t *upload_id, 
+                                            aos_list_t *part_list, 
+                                            aos_table_t **resp_headers);
 
 /**
   * @brief  oss list upload part with specific upload_id for object
@@ -292,9 +377,11 @@ aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_list_upload_part(const oss_request_options_t *options, 
-        const aos_string_t *bucket, const aos_string_t *object, 
-        const aos_string_t *upload_id, oss_list_upload_part_params_t *params, 
-        aos_table_t **resp_headers);
+                                   const aos_string_t *bucket, 
+                                   const aos_string_t *object, 
+                                   const aos_string_t *upload_id, 
+                                   oss_list_upload_part_params_t *params, 
+                                   aos_table_t **resp_headers);
 
 /**
   * @brief  oss list multipart upload for bucket
@@ -303,8 +390,9 @@ aos_status_t *oss_list_upload_part(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_list_multipart_upload(const oss_request_options_t *options, 
-        const aos_string_t *bucket, oss_list_multipart_upload_params_t *params, 
-        aos_table_t **resp_headers);
+                                        const aos_string_t *bucket, 
+                                        oss_list_multipart_upload_params_t *params, 
+                                        aos_table_t **resp_headers);
 
 /**
   * @brief  oss copy large object using upload part copy
@@ -312,7 +400,9 @@ aos_status_t *oss_list_multipart_upload(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_upload_part_copy(const oss_request_options_t *options,
-        oss_upload_part_copy_params_t *params, aos_table_t *headers, aos_table_t **resp_headers);
+                                   oss_upload_part_copy_params_t *params, 
+                                   aos_table_t *headers, 
+                                   aos_table_t **resp_headers);
 
 /**
   * @brief  oss upload file using multipart upload
@@ -320,16 +410,11 @@ aos_status_t *oss_upload_part_copy(const oss_request_options_t *options,
   * @return AOSE_OK success, other failure
 **/
 aos_status_t *oss_upload_file(oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *object, aos_string_t *upload_id,
-        aos_string_t *filename, int64_t part_size);
-
-/**
-  * @brief  oss delete objects by prefix
-  * @param[in]  prefix  prefix of delete objects
-  * @return AOSE_OK success, other failure
-**/
-aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
-        const aos_string_t *bucket, const aos_string_t *prefix);
+                              const aos_string_t *bucket, 
+                              const aos_string_t *object, 
+                              aos_string_t *upload_id,
+                              aos_string_t *filename, 
+                              int64_t part_size);
 
 OSS_CPP_END
 

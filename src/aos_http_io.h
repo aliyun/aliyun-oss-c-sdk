@@ -1,5 +1,5 @@
-#ifndef LIBAOS_GLOBAL_H
-#define LIBAOS_GLOBAL_H
+#ifndef LIBAOS_HTTP_IO_H
+#define LIBAOS_HTTP_IO_H
 
 #include "aos_transport.h"
 

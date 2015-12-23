@@ -202,27 +202,29 @@ int oss_get_string_to_sign(aos_pool_t *p, http_method_e method, const aos_string
     return AOSE_OK;
 }
 
-void oss_sign_headers(aos_pool_t *p, const aos_string_t *signstr, const aos_string_t *access_id,
-                      const aos_string_t *access_key, aos_table_t *headers)
+void oss_sign_headers(aos_pool_t *p, const aos_string_t *signstr, 
+                      const aos_string_t *access_key_id,
+                      const aos_string_t *access_key_secret, aos_table_t *headers)
 {
     int b64Len;
     char *value;
     unsigned char hmac[20];
     char b64[((20 + 1) * 4) / 3];
 
-    HMAC_SHA1(hmac, (unsigned char *)access_key->data, access_key->len,
+    HMAC_SHA1(hmac, (unsigned char *)access_key_secret->data, access_key_secret->len,
               (unsigned char *)signstr->data, signstr->len);
 
     // Now base-64 encode the results
     b64Len = aos_base64_encode(hmac, 20, b64);
-    value = apr_psprintf(p, "OSS %.*s:%.*s", access_id->len, access_id->data, b64Len, b64);
+    value = apr_psprintf(p, "OSS %.*s:%.*s", access_key_id->len, access_key_id->data, b64Len, b64);
     apr_table_addn(headers, OSS_AUTHORIZATION, value);
 
     return;
 }
 
-int oss_get_signed_headers(aos_pool_t *p, const aos_string_t *access_id, const aos_string_t *access_key,
-            const aos_string_t* canon_res, aos_http_request_t *req)
+int oss_get_signed_headers(aos_pool_t *p, const aos_string_t *access_key_id, 
+                           const aos_string_t *access_key_secret,
+                           const aos_string_t* canon_res, aos_http_request_t *req)
 {
     int res;
     aos_string_t signstr;
@@ -234,7 +236,7 @@ int oss_get_signed_headers(aos_pool_t *p, const aos_string_t *access_id, const a
     
     aos_debug_log("signstr:%.*s.", signstr.len, signstr.data);
 
-    oss_sign_headers(p, &signstr, access_id, access_key, req->headers);
+    oss_sign_headers(p, &signstr, access_key_id, access_key_secret, req->headers);
 
     return AOSE_OK;
 }
@@ -328,8 +330,8 @@ int oss_get_signed_url(const oss_request_options_t *options, aos_http_request_t 
         return res;
     }
 
-    signed_url_str = apr_psprintf(options->pool, "http://%s:%d/%s%.*s",
-        req->host, req->port, uristr, querystr.len, querystr.data);
+    signed_url_str = apr_psprintf(options->pool, "http://%s/%s%.*s",
+        req->host, uristr, querystr.len, querystr.data);
     aos_str_set(signed_url, signed_url_str);
 
     return res;

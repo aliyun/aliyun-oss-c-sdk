@@ -32,7 +32,7 @@ int is_valid_ip(const aos_string_t *str);
 const char *get_oss_acl_str(oss_acl_e oss_acl);
 
 /**
-  * @brief  create oss config including host, port, access_id, access_key, is_oss_domain
+  * @brief  create oss config including host, port, access_key_id, access_key_secret, is_oss_domain
 **/
 oss_config_t *oss_config_create(aos_pool_t *p);
 

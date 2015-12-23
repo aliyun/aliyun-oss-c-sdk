@@ -6,7 +6,6 @@
 OSS_CPP_START
 
 extern const char OSS_HOST[];
-extern const int OSS_PORT;
 extern const char ACCESS_KEY_ID[];
 extern const char ACCESS_KEY_SECRET[];
 extern const char BUCKET_NAME[];

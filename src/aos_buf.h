@@ -44,7 +44,8 @@ int aos_open_file_for_read(aos_pool_t *p, const char *path, aos_file_buf_t *fb);
 int aos_open_file_for_all_read(aos_pool_t *p, const char *path, aos_file_buf_t *fb);
 
 int aos_open_file_for_range_read(aos_pool_t *p, const char *path, 
-        int64_t file_pos, int64_t file_last, aos_file_buf_t *fb);
+                                 int64_t file_pos, int64_t file_last, 
+                                 aos_file_buf_t *fb);
 
 /**
  * create the file if not there, truncate if file exists. 

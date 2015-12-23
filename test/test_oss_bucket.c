@@ -12,10 +12,10 @@
 
 void test_bucket_setup(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     int is_oss_domain = 1;
-    aos_status_t *s;
-    oss_request_options_t *options;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
     char *object_name1 = "oss_test_object1";
     char *object_name2 = "oss_test_object2";
@@ -24,12 +24,12 @@ void test_bucket_setup(CuTest *tc)
     char *object_name5 = "oss_tmp3/";
     char *object_name6 = "oss_tmp3/1";
     char *str = "test c oss sdk";
-    aos_table_t *headers1;
-    aos_table_t *headers2;
-    aos_table_t *headers3;
-    aos_table_t *headers4;
-    aos_table_t *headers5;
-    aos_table_t *headers6;
+    aos_table_t *headers1 = NULL;
+    aos_table_t *headers2 = NULL;
+    aos_table_t *headers3 = NULL;
+    aos_table_t *headers4 = NULL;
+    aos_table_t *headers5 = NULL;
+    aos_table_t *headers6 = NULL;
 
     //set log level, default AOS_LOG_WARN
     aos_log_set_level(AOS_LOG_WARN);
@@ -44,6 +44,7 @@ void test_bucket_setup(CuTest *tc)
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
 
     CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
 
     //create test object
     headers1 = aos_table_make(p, 0);
@@ -68,10 +69,10 @@ void test_bucket_cleanup(CuTest *tc)
 
 void test_create_bucket(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     int is_oss_domain = 1;
-    aos_status_t *s;
-    oss_request_options_t *options;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
     oss_acl_e oss_acl;
 
     aos_pool_create(&p, NULL);
@@ -88,20 +89,21 @@ void test_create_bucket(CuTest *tc)
     oss_acl = OSS_ACL_PUBLIC_READ;
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
     CuAssertIntEquals(tc, 200, s->code);
-    printf("test_create_bucket ok\n");
-
+    CuAssertStrEquals(tc, NULL, s->error_code);
     aos_pool_destroy(p);
+
+    printf("test_create_bucket ok\n");
 }
 
 void test_delete_bucket(CuTest *tc)
 {
-    aos_pool_t *p;
-    aos_status_t *s;
+    aos_pool_t *p = NULL;
+    aos_status_t *s = NULL;
     aos_string_t bucket;
     oss_acl_e oss_acl;
     int is_oss_domain = 1;
     oss_request_options_t *options;
-    aos_table_t *resp_headers;
+    aos_table_t *resp_headers = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -115,19 +117,44 @@ void test_delete_bucket(CuTest *tc)
     CuAssertIntEquals(tc, 409, s->code);
     CuAssertStrEquals(tc, "BucketNotEmpty", s->error_code);
     CuAssertTrue(tc, s->req_id != NULL);
-    printf("test_delete_bucket ok\n");
+    CuAssertPtrNotNull(tc, resp_headers);
 
     aos_pool_destroy(p);
+
+    printf("test_delete_bucket ok\n");
+}
+
+void test_put_bucket_acl(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_oss_domain = 1;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_acl_e oss_acl;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_oss_domain);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    oss_acl = OSS_ACL_PUBLIC_READ_WRITE;
+    s = oss_put_bucket_acl(options, &bucket, oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+
+    printf("test_put_bucket_acl ok\n");
 }
 
 void test_get_bucket_acl(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     int is_oss_domain = 1;
-    oss_request_options_t *options;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
     aos_string_t oss_acl;
 
     aos_pool_create(&p, NULL);
@@ -136,22 +163,23 @@ void test_get_bucket_acl(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_get_bucket_acl(options, &bucket, &oss_acl, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
-    CuAssertStrEquals(tc, "public-read", oss_acl.data);
-    printf("test_get_bucket_acl ok\n");
-
+    CuAssertStrEquals(tc, "public-read-write", oss_acl.data);
+    CuAssertPtrNotNull(tc, resp_headers);
     aos_pool_destroy(p);
+
+    printf("test_get_bucket_acl ok\n");
 }
 
 void test_list_object(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
-    oss_request_options_t *options;
+    oss_request_options_t *options = NULL;
     int is_oss_domain = 1;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
-    oss_list_object_params_t *params;
-    oss_list_object_content_t *content;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_object_params_t *params = NULL;
+    oss_list_object_content_t *content = NULL;
     int size = 0;
     char *key = NULL;
 
@@ -167,6 +195,7 @@ void test_list_object(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertIntEquals(tc, 1, params->truncated);
     CuAssertStrEquals(tc, "oss_test_object1", params->next_marker.data);
+    CuAssertPtrNotNull(tc, resp_headers);
 
     aos_list_for_each_entry(content, &params->object_list, node) {
         ++size;
@@ -176,6 +205,7 @@ void test_list_object(CuTest *tc)
     CuAssertStrEquals(tc, "oss_test_object1", key);
     
     size = 0;
+    resp_headers = NULL;
     aos_list_init(&params->object_list);
     aos_str_set(&params->marker, params->next_marker.data);
     s = oss_list_object(options, &bucket, params, &resp_headers);
@@ -187,21 +217,22 @@ void test_list_object(CuTest *tc)
     }
     CuAssertIntEquals(tc, 1 ,size);
     CuAssertStrEquals(tc, "oss_test_object2", key);
-    printf("test_list_object ok\n");
-
+    CuAssertPtrNotNull(tc, resp_headers);
     aos_pool_destroy(p);
+
+    printf("test_list_object ok\n");
 }
 
 void test_list_object_with_delimiter(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
-    oss_request_options_t *options;
+    oss_request_options_t *options = NULL;
     int is_oss_domain = 1;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
-    oss_list_object_params_t *params;
-    oss_list_object_common_prefix_t *common_prefix;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_object_params_t *params = NULL;
+    oss_list_object_common_prefix_t *common_prefix = NULL;
     int size = 0;
     char *prefix = NULL;
 
@@ -216,6 +247,7 @@ void test_list_object_with_delimiter(CuTest *tc)
     s = oss_list_object(options, &bucket, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertPtrNotNull(tc, resp_headers);
 
     aos_list_for_each_entry(common_prefix, &params->common_prefix_list, node) {
         ++size;
@@ -227,30 +259,30 @@ void test_list_object_with_delimiter(CuTest *tc)
         }
     }
     CuAssertIntEquals(tc, 2, size);
-    printf("test_list_object_with_delimiter ok\n");
-
     aos_pool_destroy(p);
+
+    printf("test_list_object_with_delimiter ok\n");
 }
 
 void test_lifecycle(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     int is_oss_domain = 1;
-    oss_request_options_t *options;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
     aos_list_t lifecycle_rule_list;
-    oss_lifecycle_rule_content_t *invalid_rule_content;    
-    oss_lifecycle_rule_content_t *rule_content;
-    oss_lifecycle_rule_content_t *rule_content1;
-    oss_lifecycle_rule_content_t *rule_content2;
+    oss_lifecycle_rule_content_t *invalid_rule_content = NULL;
+    oss_lifecycle_rule_content_t *rule_content = NULL;
+    oss_lifecycle_rule_content_t *rule_content1 = NULL;
+    oss_lifecycle_rule_content_t *rule_content2 = NULL;
     int size = 0;
-    char *rule_id;
-    char *prefix;
-    char *status;
+    char *rule_id = NULL;
+    char *prefix = NULL;
+    char *status = NULL;
     int days = INT_MAX;
-    char* date = "";
+    char* date = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -265,8 +297,10 @@ void test_lifecycle(CuTest *tc)
     aos_list_add_tail(&invalid_rule_content->node, &lifecycle_rule_list);
     s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, &resp_headers);
     CuAssertIntEquals(tc, 400, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
 
     //put lifecycle
+    resp_headers = NULL;
     aos_list_init(&lifecycle_rule_list);
     rule_content1 = oss_create_lifecycle_rule_content(p);
     aos_str_set(&rule_content1->id, "1");
@@ -283,11 +317,14 @@ void test_lifecycle(CuTest *tc)
 
     s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
 
     //get lifecycle
+    resp_headers = NULL;
     aos_list_init(&lifecycle_rule_list);
     s = oss_get_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
 
     aos_list_for_each_entry(rule_content, &lifecycle_rule_list, node) {
         if (size == 0) {
@@ -319,24 +356,27 @@ void test_lifecycle(CuTest *tc)
     CuAssertIntEquals(tc, 2 ,size);
 
     //delete lifecycle
+    resp_headers = NULL;
     s = oss_delete_bucket_lifecycle(options, &bucket, &resp_headers);
-    printf("test_lifecycle ok\n");
-
+    CuAssertIntEquals(tc, 204, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
     aos_pool_destroy(p);
+
+    printf("test_lifecycle ok\n");
 }
 
 void test_delete_objects_quiet(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     int is_oss_domain = 1;
     aos_string_t bucket;
-    aos_status_t *s;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_status_t *s = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     char *object_name1 = "oss_test_object1";
     char *object_name2 = "oss_test_object2";
-    oss_object_key_t *content1;
-    oss_object_key_t *content2;
+    oss_object_key_t *content1 = NULL;
+    oss_object_key_t *content2 = NULL;
     aos_list_t object_list;
     aos_list_t deleted_object_list;
     int is_quiet = 1;
@@ -359,25 +399,25 @@ void test_delete_objects_quiet(CuTest *tc)
         &resp_headers, &deleted_object_list);
 
     CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
 
     printf("test_delete_objects_quiet ok\n");
-
-    aos_pool_destroy(p);
 }
 
 void test_delete_objects_not_quiet(CuTest *tc)
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     int is_oss_domain = 1;
     aos_string_t bucket;
-    aos_status_t *s;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_status_t *s = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     char *object_name1 = "oss_tmp1/";
     char *object_name2 = "oss_tmp2/";
-    oss_object_key_t *content;
-    oss_object_key_t *content1;
-    oss_object_key_t *content2;
+    oss_object_key_t *content = NULL;
+    oss_object_key_t *content1 = NULL;
+    oss_object_key_t *content2 = NULL;
     aos_list_t object_list;
     aos_list_t deleted_object_list;
     int is_quiet = 0;
@@ -400,23 +440,23 @@ void test_delete_objects_not_quiet(CuTest *tc)
         &resp_headers, &deleted_object_list);
 
     CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
 
     aos_list_for_each_entry(content, &deleted_object_list, node) {
         printf("Deleted key:%.*s\n", content->key.len, content->key.data);
     }
-    
-    printf("test_delete_objects_not_quiet ok\n");
-
     aos_pool_destroy(p);
+
+    printf("test_delete_objects_not_quiet ok\n");
 }
 
 void test_delete_objects_by_prefix(CuTest *tc)
 {
-    aos_pool_t *p;
-    oss_request_options_t *options;
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
     int is_oss_domain = 1;
     aos_string_t bucket;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     aos_string_t prefix;
     char *prefix_str = "oss_tmp3";
     
@@ -428,9 +468,9 @@ void test_delete_objects_by_prefix(CuTest *tc)
 
     s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
     CuAssertIntEquals(tc, 200, s->code);
-    printf("test_delete_object_by_prefix ok\n");
-    
     aos_pool_destroy(p);
+
+    printf("test_delete_object_by_prefix ok\n");
 }
 
 CuSuite *test_oss_bucket()
@@ -439,6 +479,7 @@ CuSuite *test_oss_bucket()
 
     SUITE_ADD_TEST(suite, test_bucket_setup);
     SUITE_ADD_TEST(suite, test_create_bucket);
+    SUITE_ADD_TEST(suite, test_put_bucket_acl);
     SUITE_ADD_TEST(suite, test_get_bucket_acl);
     SUITE_ADD_TEST(suite, test_delete_objects_by_prefix);
     SUITE_ADD_TEST(suite, test_list_object);

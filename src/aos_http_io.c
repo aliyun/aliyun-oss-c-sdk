@@ -19,7 +19,6 @@ static int requestStackCountG;
 static char aos_user_agent[256];
 
 
-
 static aos_http_transport_options_t *aos_http_transport_options_create(aos_pool_t *p);
 
 CURL *aos_request_get()
@@ -115,7 +114,6 @@ aos_http_request_t *aos_http_request_create(aos_pool_t *p)
     aos_http_request_t *req;
 
     req = (aos_http_request_t *)aos_pcalloc(p, sizeof(aos_http_request_t));
-    req->port = 80;
     req->method = HTTP_GET;
     req->headers = aos_table_make(p, 5);
     req->query_params = aos_table_make(p, 3);
