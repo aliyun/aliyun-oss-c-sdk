@@ -2,13 +2,36 @@ project (oss_c_sdk_sample)
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-set(PUT_GET_HEAD_DELETE_SOURCE_FILES oss_sample_util.c oss_config.c oss_put_get_head_delete_object.c)
-set(APPEND_GET_HEAD_DELETE_SOURCE_FILES oss_sample_util.c oss_config.c oss_append_get_head_delete_object.c)
-set(PUT_GET_DELETE_FROM_FILE_SOURCE_FILES oss_sample_util.c oss_config.c oss_put_get_delete_object_from_file.c)
-set(APPEND_GET_DELETE_FROM_FILE_SOURCE_FILES oss_sample_util.c oss_config.c oss_append_get_delete_object_from_file.c)
-set(INIT_ABORT_SOURCE_FILES oss_sample_util.c oss_config.c oss_init_abort_multipart.c)
-set(INIT_COMPLETE_SOURCE_FILES oss_sample_util.c oss_config.c oss_init_complete_multipart.c)
-set(INIT_COMPLETE_FROM_FILE_SOURCE_FILES oss_sample_util.c oss_config.c oss_init_complete_multipart_from_file.c)
+set(PUT_GET_HEAD_DELETE_SOURCE_FILES oss_sample_util.c 
+				     oss_config.c 
+				     oss_put_get_head_delete_object.c)
+
+set(APPEND_GET_HEAD_DELETE_SOURCE_FILES oss_sample_util.c 
+					oss_config.c 
+					oss_append_get_head_delete_object.c)
+
+set(PUT_GET_DELETE_FROM_FILE_SOURCE_FILES oss_sample_util.c 
+					  oss_config.c 
+					  oss_put_get_delete_object_from_file.c)
+
+set(APPEND_GET_DELETE_FROM_FILE_SOURCE_FILES oss_sample_util.c 
+					     oss_config.c 
+					     oss_append_get_delete_object_from_file.c)
+
+set(INIT_ABORT_SOURCE_FILES oss_sample_util.c oss_config.c 
+			    oss_init_abort_multipart.c)
+
+set(INIT_COMPLETE_SOURCE_FILES oss_sample_util.c 
+			       oss_config.c 
+			       oss_init_complete_multipart.c)
+
+set(INIT_COMPLETE_FROM_FILE_SOURCE_FILES oss_sample_util.c 
+					 oss_config.c 
+					 oss_init_complete_multipart_from_file.c)
+
+set(SIGNED_URL_SOURCE_FILES oss_sample_util.c 
+			    oss_config.c 
+			    oss_signed_url.c)
 
 # find_path(APR_INCLUDE_DIR apr-1/apr_time.h)
 # find_path(APR_UTIL_INCLUDE_DIR apr/include/apr-1/apr_md5.h)
@@ -84,3 +107,12 @@ target_link_libraries(oss_init_complete_multipart_from_file ${MINIXML_LIBRARY})
 target_link_libraries(oss_init_complete_multipart_from_file ${CURL_LIBRARY})
 target_link_libraries(oss_init_complete_multipart_from_file ${PTHREAD_LIBRARY})
 target_link_libraries(oss_init_complete_multipart_from_file ${RT_LIBRARY})
+
+add_executable(signed_url ${SIGNED_URL_SOURCE_FILES})
+target_link_libraries(signed_url oss_c_sdk)
+target_link_libraries(signed_url ${APR_UTIL_LIBRARY})
+target_link_libraries(signed_url ${APR_LIBRARY})
+target_link_libraries(signed_url ${MINIXML_LIBRARY})
+target_link_libraries(signed_url ${CURL_LIBRARY})
+target_link_libraries(signed_url ${PTHREAD_LIBRARY})
+target_link_libraries(signed_url ${RT_LIBRARY})

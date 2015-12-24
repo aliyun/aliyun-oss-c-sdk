@@ -52,7 +52,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 
  > 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
- - 需要通过--with-apr指定apr安装目录，如果apr安装到系统目录下需要指定--with-apr=/usr/local/
+ - 需要通过--with-apr指定apr安装目录，如果apr安装到系统目录下需要指定--with-apr=/usr/local/apr/
 
 - minixml （建议 2.8 及以上版本）
 

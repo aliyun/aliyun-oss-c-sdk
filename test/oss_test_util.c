@@ -63,7 +63,8 @@ void init_test_request_options(oss_request_options_t *options, int is_oss_domain
 }
 
 aos_status_t * create_test_bucket(const oss_request_options_t *options,
-    const char *bucket_name, oss_acl_e oss_acl)
+                                  const char *bucket_name, 
+                                  oss_acl_e oss_acl)
 {
     aos_string_t bucket;
     aos_table_t *resp_headers;
@@ -75,8 +76,11 @@ aos_status_t * create_test_bucket(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *create_test_object(const oss_request_options_t *options, const char *bucket_name, 
-    const char *object_name, const char *data, aos_table_t *headers)
+aos_status_t *create_test_object(const oss_request_options_t *options, 
+                                 const char *bucket_name, 
+                                 const char *object_name, 
+                                 const char *data, 
+                                 aos_table_t *headers)
 {
     aos_string_t bucket;
     aos_string_t object;
@@ -90,12 +94,16 @@ aos_status_t *create_test_object(const oss_request_options_t *options, const cha
     content = aos_buf_pack(options->pool, data, strlen(data));
     aos_list_add_tail(&content->node, &buffer);
 
-    s = oss_put_object_from_buffer(options, &bucket, &object, &buffer, headers, &resp_headers);
+    s = oss_put_object_from_buffer(options, &bucket, &object, 
+                                   &buffer, headers, &resp_headers);
     return s;
 }
 
-aos_status_t *create_test_object_from_file(const oss_request_options_t *options, const char *bucket_name,
-    const char *object_name, const char *filename, aos_table_t *headers)
+aos_status_t *create_test_object_from_file(const oss_request_options_t *options, 
+                                          const char *bucket_name,
+                                          const char *object_name, 
+                                          const char *filename, 
+                                          aos_table_t *headers)
 {
     aos_string_t bucket;
     aos_string_t object;
@@ -106,12 +114,14 @@ aos_status_t *create_test_object_from_file(const oss_request_options_t *options,
     test_object_base();
     aos_str_set(&file, filename);
 
-    s = oss_put_object_from_file(options, &bucket, &object, &file, headers, &resp_headers);
+    s = oss_put_object_from_file(options, &bucket, &object, &file, 
+                                 headers, &resp_headers);
     return s;
 }
 
 aos_status_t *delete_test_object(const oss_request_options_t *options, 
-    const char *bucket_name, const char *object_name)
+                                 const char *bucket_name, 
+                                 const char *object_name)
 {
     aos_string_t bucket;
     aos_string_t object;
@@ -124,7 +134,9 @@ aos_status_t *delete_test_object(const oss_request_options_t *options,
 }
 
 aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, 
-    const char *bucket_name, const char *object_name, aos_string_t *upload_id)
+                                         const char *bucket_name, 
+                                         const char *object_name, 
+                                         aos_string_t *upload_id)
 {
     aos_string_t bucket;
     aos_string_t object;
@@ -137,13 +149,16 @@ aos_status_t *init_test_multipart_upload(const oss_request_options_t *options,
     headers = aos_table_make(options->pool, 5);
     oss_acl = OSS_ACL_PUBLIC_READ;
 
-    s = oss_init_multipart_upload(options, &bucket, &object, headers, upload_id, &resp_headers);
+    s = oss_init_multipart_upload(options, &bucket, &object, headers, 
+                                  upload_id, &resp_headers);
 
     return s;
 }
 
 aos_status_t *abort_test_multipart_upload(const oss_request_options_t *options, 
-    const char *bucket_name, const char *object_name, aos_string_t *upload_id)
+                                          const char *bucket_name, 
+                                          const char *object_name, 
+                                          aos_string_t *upload_id)
 {
     aos_string_t bucket;
     aos_string_t object;
@@ -151,13 +166,17 @@ aos_status_t *abort_test_multipart_upload(const oss_request_options_t *options,
     aos_status_t *s;
 
     test_object_base();
-    s = oss_abort_multipart_upload(options, &bucket, &object, upload_id, &resp_headers);
+    s = oss_abort_multipart_upload(options, &bucket, &object, upload_id, 
+                                   &resp_headers);
 
     return s;
 }
 
-char *gen_test_signed_url(const oss_request_options_t *options, const char *bucket_name,
-    const char *object_name, int64_t expires, aos_http_request_t *req)
+char *gen_test_signed_url(const oss_request_options_t *options, 
+                          const char *bucket_name,
+                          const char *object_name, 
+                          int64_t expires, 
+                          aos_http_request_t *req)
 {
     aos_string_t bucket;
     aos_string_t object;
