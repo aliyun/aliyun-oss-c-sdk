@@ -19,7 +19,6 @@ void put_object_from_buffer()
     oss_request_options_t *options;
     aos_list_t buffer;
     aos_buf_t *content;
-    char *object_name = "oss_put_and_get_object";
     char *str = "test oss c sdk";
     aos_status_t *s;
 
@@ -29,7 +28,7 @@ void put_object_from_buffer()
     headers = aos_table_make(p, 1);
     apr_table_set(headers, "x-oss-meta-author", "oss");
     aos_str_set(&bucket, BUCKET_NAME);
-    aos_str_set(&object, object_name);
+    aos_str_set(&object, OBJECT_NAME);
 
     aos_list_init(&buffer);
     content = aos_buf_pack(options->pool, str, strlen(str));
@@ -48,119 +47,99 @@ void put_object_from_buffer()
     aos_pool_destroy(p);
 }
 
-void get_object_to_buffer()
+void put_object_from_file()
 {
     aos_pool_t *p;
     aos_string_t bucket;
-    char *object_name = "oss_put_and_get_object";
     aos_string_t object;
     int is_oss_domain = 1;
-    oss_request_options_t *options;
     aos_table_t *headers;
     aos_table_t *resp_headers;
+    oss_request_options_t *options;
+    char *filename = __FILE__;
     aos_status_t *s;
-    aos_list_t buffer;
-    aos_buf_t *content;
-    char *buf;
-    int64_t len = 0;
-    int64_t size = 0;
-    int64_t pos = 0;
+    aos_string_t file;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_oss_domain);
+    headers = aos_table_make(options->pool, 0);
     aos_str_set(&bucket, BUCKET_NAME);
-    aos_str_set(&object, object_name);
-    headers = aos_table_make(p, 0);
-    aos_list_init(&buffer);
+    aos_str_set(&object, OBJECT_NAME);
+    aos_str_set(&file, filename);
 
-    s = oss_get_object_to_buffer(options, &bucket, &object, headers, &buffer, &resp_headers);
+    s = oss_put_object_from_file(options, &bucket, &object, &file, 
+                                 headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
-        printf("get object to buffer succeeded\n");
+        printf("put object from file succeeded\n");
     }
     else {
-        printf("get object to buffer failed\n");  
-    }
-
-    //get buffer len
-    aos_list_for_each_entry(content, &buffer, node) {
-        len += aos_buf_size(content);
-    }
-
-    buf = aos_pcalloc(p, len + 1);
-    buf[len] = '\0';
-
-    //copy buffer content to memory
-    aos_list_for_each_entry(content, &buffer, node) {
-        size = aos_buf_size(content);
-        memcpy(buf + pos, content->pos, size);
-        pos += size;
+	printf("put object from file failed\n");
     }
 
     aos_pool_destroy(p);
 }
 
-void head_object()
+void put_object_by_signed_url()
 {
     aos_pool_t *p;
     aos_string_t bucket;
-    char *object_name = "oss_put_and_get_object";
     aos_string_t object;
+    aos_string_t url;
     int is_oss_domain = 1;
-    oss_request_options_t *options;
+    aos_http_request_t *request = NULL;
     aos_table_t *headers;
     aos_table_t *resp_headers;
-    aos_status_t *s;
-    char *user_meta;
-
-    aos_pool_create(&p, NULL);
-    options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
-    aos_str_set(&bucket, BUCKET_NAME);
-    aos_str_set(&object, object_name);
-    headers = aos_table_make(p, 0);
-
-    s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
-    user_meta = (char*)(apr_table_get(resp_headers, "x-oss-meta-author"));
-
-    if (NULL != s && 2 == s->code / 100 && 0 == strcmp("oss", user_meta)) {
-        printf("head object succeeded\n");
-    }
-    else {
-        printf("head object failed\n");
-    }
-
-    aos_pool_destroy(p);
-}
-
-void delete_object()
-{
-    aos_pool_t *p;
-    aos_string_t bucket;
-    char *object_name = "oss_put_and_get_object";
-    aos_string_t object;
-    int is_oss_domain = 1;
     oss_request_options_t *options;
-    aos_table_t *resp_headers;
+    char *filename = __FILE__;
     aos_status_t *s;
+    aos_string_t file;
+    char *signed_url = NULL;
+    int64_t expires_time;
 
     aos_pool_create(&p, NULL);
+
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_oss_domain);
-    aos_str_set(&bucket, BUCKET_NAME);
-    aos_str_set(&object, object_name);
 
-    s = oss_delete_object(options, &bucket, &object, &resp_headers);
-    if (NULL != s && 204 == s->code) {
-        printf("delete object succeeded\n");
+    // create request
+    request = aos_http_request_create(p);
+    request->method = HTTP_PUT;
+
+    // create headers
+    headers = aos_table_make(options->pool, 0);
+
+    // set value
+    aos_str_set(&bucket, BUCKET_NAME);
+    aos_str_set(&object, OBJECT_NAME);
+    aos_str_set(&file, filename);
+
+    // expires time
+    expires_time = apr_time_now() / 1000000 + 120;    
+
+    // generate signed url for put 
+    signed_url = oss_gen_signed_url(options, &bucket, &object, 
+                                    expires_time, request);
+    aos_str_set(&url, signed_url);
+    
+    printf("signed put url : %s\n", signed_url);
+
+    // put object by signed url
+    s = oss_put_object_from_file_by_url(options, &url, &file, 
+                                        headers, &resp_headers);
+
+    if (NULL != s && 2 == s->code / 100) {
+        printf("put object by signed url succeeded\n");
     }
     else {
-        printf("delete object failed\n");
+	printf("put object by signed url failed\n");
     }
 
     aos_pool_destroy(p);
 }
+
+
 
 int main(int argc, char *argv[])
 {
@@ -170,10 +149,9 @@ int main(int argc, char *argv[])
     }
 
     put_object_from_buffer();
-    get_object_to_buffer();
-    head_object();
-    delete_object();
-
+    put_object_from_file();
+    put_object_by_signed_url();
+    
     //aos_http_io_deinitialize last
     aos_http_io_deinitialize();
 
