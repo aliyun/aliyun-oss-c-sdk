@@ -151,9 +151,85 @@ void get_object_by_signed_url()
     aos_pool_destroy(p);
 }
 
+void get_oss_dir_to_local_dir()
+{
+    aos_pool_t *parent_pool;    
+    aos_string_t bucket;
+    int is_oss_domain = 1;
+    aos_status_t *s;
+    oss_request_options_t *options;
+    oss_list_object_params_t *params;
+
+    aos_pool_create(&parent_pool, NULL);
+    options = oss_request_options_create(parent_pool);
+    init_sample_request_options(options, is_oss_domain);
+    aos_str_set(&bucket, BUCKET_NAME);
+    params = oss_create_list_object_params(parent_pool);
+    aos_str_set(&params->prefix, DIR_NAME);
+    params->truncated = 1;
+
+    while (params->truncated) {
+        aos_pool_t *list_object_pool;
+        aos_table_t *list_object_resp_headers;
+        oss_list_object_content_t *list_content;
+        oss_list_object_common_prefix_t *list_common_prefix;
+
+        aos_pool_create(&list_object_pool, parent_pool);
+        options->pool = list_object_pool;
+        s = oss_list_object(options, &bucket, params, &list_object_resp_headers);
+        if (!aos_status_is_ok(s)) {
+            aos_error_log("list objects of dir[%s] fail\n", DIR_NAME);
+            aos_status_dup(parent_pool, s);
+            aos_pool_destroy(list_object_pool);
+            options->pool = parent_pool;
+            return;
+        }        
+
+        aos_list_for_each_entry(list_content, &params->object_list, node) {
+            if ('/' == list_content->key.data[strlen(list_content->key.data) - 1]) {
+                apr_dir_make_recursive(list_content->key.data, 
+                        APR_OS_DEFAULT, parent_pool);                
+            } else {
+                aos_string_t object;
+                aos_pool_t *get_object_pool;
+                aos_table_t *headers;
+                aos_table_t *get_object_resp_headers;
+
+                aos_str_set(&object, list_content->key.data);
+
+                aos_pool_create(&get_object_pool, parent_pool);
+                options->pool = get_object_pool;
+                headers = aos_table_make(options->pool, 0);
+
+                s = oss_get_object_to_file(options, &bucket, &object, 
+                        headers, &object, &get_object_resp_headers);
+                if (!aos_status_is_ok(s)) {
+                    aos_error_log("get object[%s] fail\n", object.data);
+                }
+
+                aos_pool_destroy(get_object_pool);
+                options->pool = list_object_pool;
+            }
+        }
+
+        aos_list_init(&params->object_list);
+        if (params->next_marker.data) {
+            aos_str_set(&params->marker, params->next_marker.data);
+        }
+
+        aos_pool_destroy(list_object_pool);
+    }
+
+    if (NULL != s && 2 == s->code / 100) {
+        printf("get dir succeeded\n");
+    } else {
+	printf("get dir failed\n");
+    }
+    aos_pool_destroy(parent_pool);
+}
+
 int main(int argc, char *argv[])
 {
-    //aos_http_io_initialize first 
     if (aos_http_io_initialize("oss_sample", 0) != AOSE_OK) {
         exit(1);
     }
@@ -162,7 +238,8 @@ int main(int argc, char *argv[])
     get_object_to_local_file();
     get_object_by_signed_url();
 
-    //aos_http_io_deinitialize last
+    get_oss_dir_to_local_dir();
+    
     aos_http_io_deinitialize();
 
     return 0;

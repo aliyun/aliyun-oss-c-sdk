@@ -39,8 +39,7 @@ void put_object_from_buffer()
 
     if (NULL != s && 2 == s->code / 100) {
         printf("put object from buffer succeeded\n");
-    }
-    else {
+    } else {
 	printf("put object from buffer failed\n");      
     }    
 
@@ -73,8 +72,7 @@ void put_object_from_file()
 
     if (NULL != s && 2 == s->code / 100) {
         printf("put object from file succeeded\n");
-    }
-    else {
+    } else {
 	printf("put object from file failed\n");
     }
 
@@ -131,15 +129,83 @@ void put_object_by_signed_url()
 
     if (NULL != s && 2 == s->code / 100) {
         printf("put object by signed url succeeded\n");
-    }
-    else {
+    } else {
 	printf("put object by signed url failed\n");
     }
 
     aos_pool_destroy(p);
 }
 
+void create_dir()
+{
+    aos_pool_t *p;
+    aos_string_t bucket;
+    aos_string_t object;
+    int is_oss_domain = 1;
+    aos_table_t *headers;
+    aos_table_t *resp_headers;
+    oss_request_options_t *options;
+    aos_status_t *s;
+    aos_list_t buffer;
 
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_sample_request_options(options, is_oss_domain);
+    headers = aos_table_make(options->pool, 0);
+    aos_str_set(&bucket, BUCKET_NAME);
+    aos_str_set(&object, DIR_NAME);
+    aos_list_init(&buffer);
+
+    s = oss_put_object_from_buffer(options, &bucket, &object, &buffer,
+                                   headers, &resp_headers);
+
+    if (NULL != s && 2 == s->code / 100) {
+        printf("create dir succeeded\n");
+    } else {
+	printf("create dir failed\n");
+    }
+
+    aos_pool_destroy(p);
+}
+
+void put_object_to_dir()
+{
+    aos_pool_t *p;
+    aos_string_t bucket;
+    aos_string_t object;
+    int is_oss_domain = 1;
+    aos_table_t *headers;
+    aos_table_t *resp_headers;
+    oss_request_options_t *options;
+    char *filename = __FILE__;
+    char *key;
+    aos_status_t *s;
+    aos_string_t file;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_sample_request_options(options, is_oss_domain);
+    headers = aos_table_make(options->pool, 0);
+    aos_str_set(&bucket, BUCKET_NAME);
+
+    key = (char*)malloc(strlen(DIR_NAME) + strlen(OBJECT_NAME) + 1);
+    strcpy(key, DIR_NAME);
+    strcat(key, OBJECT_NAME);
+    aos_str_set(&object, key);
+    aos_str_set(&file, filename);
+
+    s = oss_put_object_from_file(options, &bucket, &object, &file, 
+                                 headers, &resp_headers);
+
+    if (NULL != s && 2 == s->code / 100) {
+        printf("put object to dir succeeded\n");
+    } else {
+	printf("put object to dir failed\n");
+    }
+
+    free(key);
+    aos_pool_destroy(p);
+}
 
 int main(int argc, char *argv[])
 {
@@ -150,7 +216,10 @@ int main(int argc, char *argv[])
 
     put_object_from_buffer();
     put_object_from_file();
-    put_object_by_signed_url();
+    put_object_by_signed_url();    
+
+    create_dir();
+    put_object_to_dir();
     
     //aos_http_io_deinitialize last
     aos_http_io_deinitialize();
