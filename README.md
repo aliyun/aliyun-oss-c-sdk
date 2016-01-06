@@ -17,7 +17,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 
 #### 第三方库下载以及安装
 
-- libcurl （建议 7.32.0 及以上版本）
+##### libcurl （建议 7.32.0 及以上版本）
 
   请从[这里](http://curl.haxx.se/download.html)下载，并参考[libcurl 安装指南](http://curl.haxx.se/docs/install.html)安装。典型的安装方式如下：
 ```shell
@@ -29,7 +29,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
-- apr （建议 1.5.2 及以上版本）
+##### apr （建议 1.5.2 及以上版本）
 
   请从[这里](https://apr.apache.org/download.cgi)下载，典型的安装方式如下：
  ```shell
@@ -41,7 +41,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
-- apr-util （建议 1.5.4 及以上版本）
+##### apr-util （建议 1.5.4 及以上版本）
 
   请从[这里](https://apr.apache.org/download.cgi)下载，安装时需要注意指定--with-apr选项，典型的安装方式如下：
 ```shell
@@ -54,7 +54,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
  - 需要通过--with-apr指定apr安装目录，如果apr安装到系统目录下需要指定--with-apr=/usr/local/apr/
 
-- minixml （建议 2.8 及以上版本）
+##### minixml （建议 2.8 及以上版本）
 
   请从[这里](http://www.msweet.org/downloads.php?L+Z3)下载，典型的安装方式如下:
 ```shell
@@ -67,7 +67,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
-- CMake (建议2.6.0及以上版本)
+##### CMake (建议2.6.0及以上版本)
 
   请从[这里](https://cmake.org/download)下载，典型的安装方式如下：
 ```shell
@@ -82,7 +82,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 #### OSS C SDK的安装
 
   安装时请在cmake命令中指定第三方库头文件以及库文件的路径，典型的编译命令如下：
-```
+```shell
     cmake -f CMakeLists.txt
     make
     sudo make install
