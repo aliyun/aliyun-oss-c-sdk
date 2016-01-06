@@ -26,7 +26,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     sudo make install
 ```
 
- > 注意：
+注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
 - apr （建议 1.5.2 及以上版本）
@@ -38,7 +38,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     sudo make install
 ```
 
- > 注意：
+注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
 - apr-util （建议 1.5.4 及以上版本）
@@ -50,7 +50,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     sudo make install
 ```    
 
- > 注意：
+注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
  - 需要通过--with-apr指定apr安装目录，如果apr安装到系统目录下需要指定--with-apr=/usr/local/apr/
 
@@ -64,7 +64,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```    
 
 
-> 注意：
+注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
 - CMake (建议2.6.0及以上版本)
@@ -76,7 +76,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     sudo make install
 ```    
 
-> 注意：
+注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
 
 #### OSS C SDK的安装
@@ -88,7 +88,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     sudo make install
 ```
 
-> 注意：
+注意：
  - 执行cmake -f CMakeLists.txt 时默认会到/usr/local/下面去寻找curl，apr，apr-util，mxml的头文件和库文件。
  - 默认编译是Debug类型，可以指定以下几种编译类型： Debug, Release, RelWithDebInfo和MinSizeRel，如果要使用release类型编译，则执行cmake -f CMakeLists.txt -DCMAKE_BUILD_TYPE=Release
  - 如果您在安装curl，apr，apr-util，mxml时指定了安装目录，则需要在执行cmake时指定这些库的路径，比如：
