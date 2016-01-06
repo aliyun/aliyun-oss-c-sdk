@@ -23,7 +23,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```shell
     ./configure
     make
-    sudo make install
+    make install
 ```
 
 注意：
@@ -35,7 +35,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
  ```shell
     ./configure
     make
-    sudo make install
+    make install
 ```
 
 注意：
@@ -47,7 +47,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```shell
     ./configure --with-apr=/your/apr/install/path
     make
-    sudo make install
+    make install
 ```    
 
 注意：
@@ -60,7 +60,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```shell
     ./configure
     make
-    sudo make install
+    make install
 ```    
 
 
@@ -73,7 +73,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```shell
     ./configure
     make
-    sudo make install
+    make install
 ```    
 
 注意：
@@ -85,7 +85,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```shell
     cmake -f CMakeLists.txt
     make
-    sudo make install
+    make install
 ```
 
 注意：
