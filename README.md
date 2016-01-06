@@ -20,11 +20,11 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 - libcurl （建议 7.32.0 及以上版本）
 
   请从[这里](http://curl.haxx.se/download.html)下载，并参考[libcurl 安装指南](http://curl.haxx.se/docs/install.html)安装。典型的安装方式如下：
-
+```shell
     ./configure
     make
     sudo make install
-    
+```
 
  > 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
@@ -32,11 +32,11 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 - apr （建议 1.5.2 及以上版本）
 
   请从[这里](https://apr.apache.org/download.cgi)下载，典型的安装方式如下：
-
+ ```shell
     ./configure
     make
     sudo make install
-    
+```
 
  > 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
@@ -44,11 +44,11 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 - apr-util （建议 1.5.4 及以上版本）
 
   请从[这里](https://apr.apache.org/download.cgi)下载，安装时需要注意指定--with-apr选项，典型的安装方式如下：
-
+```shell
     ./configure --with-apr=/your/apr/install/path
     make
     sudo make install
-    
+```    
 
  > 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
@@ -57,11 +57,11 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 - minixml （建议 2.8 及以上版本）
 
   请从[这里](http://www.msweet.org/downloads.php?L+Z3)下载，典型的安装方式如下:
-
+```shell
     ./configure
     make
     sudo make install
-    
+```    
 
 
 > 注意：
@@ -70,11 +70,11 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 - CMake (建议2.6.0及以上版本)
 
   请从[这里](https://cmake.org/download)下载，典型的安装方式如下：
-
+```shell
     ./configure
     make
     sudo make install
-    
+```    
 
 > 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
@@ -82,20 +82,24 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 #### OSS C SDK的安装
 
   安装时请在cmake命令中指定第三方库头文件以及库文件的路径，典型的编译命令如下：
-
+```
     cmake -f CMakeLists.txt
     make
     sudo make install
-    
+```
+
 > 注意：
  - 执行cmake -f CMakeLists.txt 时默认会到/usr/local/下面去寻找curl，apr，apr-util，mxml的头文件和库文件。
  - 默认编译是Debug类型，可以指定以下几种编译类型： Debug, Release, RelWithDebInfo和MinSizeRel，如果要使用release类型编译，则执行cmake -f CMakeLists.txt -DCMAKE_BUILD_TYPE=Release
- - 如果您在安装curl，apr，apr-util，mxml时指定了安装目录，则需要在执行cmake时指定这些库的路径，
-   - 比如：cmake -f CMakeLists.txt -DCURL_INCLUDE_DIR=/usr/local/include/curl/ -DCURL_LIBRARY=/usr/local/lib/libcurl.a -DAPR_INCLUDE_DIR=/usr/local/include/apr-1/ -DAPR_LIBRARY=/usr/local/lib/libapr-1.a -DAPR_UTIL_INCLUDE_DIR=/usr/local/apr/include/apr-1 -DAPR_UTIL_LIBRARY=/usr/local/apr/lib/libaprutil-1.a -DMINIXML_INCLUDE_DIR=/usr/local/include -DMINIXML_LIBRARY=/usr/local/lib/libmxml.a
+ - 如果您在安装curl，apr，apr-util，mxml时指定了安装目录，则需要在执行cmake时指定这些库的路径，比如：
+```shell 
+   cmake -f CMakeLists.txt -DCURL_INCLUDE_DIR=/usr/local/include/curl/ -DCURL_LIBRARY=/usr/local/lib/libcurl.a -DAPR_INCLUDE_DIR=/usr/local/include/apr-1/ -DAPR_LIBRARY=/usr/local/lib/libapr-1.a -DAPR_UTIL_INCLUDE_DIR=/usr/local/apr/include/apr-1 -DAPR_UTIL_LIBRARY=/usr/local/apr/lib/libaprutil-1.a -DMINIXML_INCLUDE_DIR=/usr/local/include -DMINIXML_LIBRARY=/usr/local/lib/libmxml.a
+```
  - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
 
   OSS C SDK编译后生成的build路径如下所示：
 
+```shell
     build
     `-- Release
         |-- bin
@@ -110,9 +114,10 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
             |-- liboss_c_sdk.so -> liboss_c_sdk.so.1.0.0
             |-- liboss_c_sdk.so.1.0.0
             `-- liboss_c_sdk_static.a
+ ```
 
   OSS C SDK安装后的目录结构如下所示：
-  
+```shell
     `-- usr
         `-- local
             |-- include
@@ -136,6 +141,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
                 |-- liboss_c_sdk.so -> liboss_c_sdk.so.1.0.0
                 |-- liboss_c_sdk.so.1.0.0
                 `-- liboss_c_sdk_static.a  
+```
 
 ## 联系我们
 - 阿里云OSS官方网站 [http://oss.aliyun.com](http://oss.aliyun.com)
