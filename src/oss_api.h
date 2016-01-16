@@ -293,7 +293,7 @@ aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options,
                                         const aos_string_t *bucket, 
                                         const aos_string_t *object, 
                                         aos_table_t *headers, 
-                                        aos_string_t *upload_id, 
+                                        aos_string_t *upload_id,
                                         aos_table_t **resp_headers);
 
 /**
@@ -348,6 +348,7 @@ aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options
                                             const aos_string_t *object, 
                                             const aos_string_t *upload_id, 
                                             aos_list_t *part_list, 
+                                            aos_table_t *headers,
                                             aos_table_t **resp_headers);
 
 /**

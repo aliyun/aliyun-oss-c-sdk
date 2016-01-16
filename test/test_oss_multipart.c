@@ -151,6 +151,7 @@ void test_multipart_upload(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
+    aos_table_t *headers = NULL;
     aos_table_t *upload_part_resp_headers = NULL;
     oss_list_upload_part_params_t *params = NULL;
     aos_table_t *list_part_resp_headers = NULL;
@@ -161,15 +162,20 @@ void test_multipart_upload(CuTest *tc)
     oss_complete_part_content_t *complete_content1 = NULL;
     oss_complete_part_content_t *complete_content2 = NULL;
     aos_table_t *complete_resp_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
     int part_num = 1;
     int part_num1 = 2;
     char *expect_part_num_marker = "1";
+    char *content_type_for_complete = "video/MP2T";
+    char *actual_content_type = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_oss_domain);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
+
+    headers = aos_table_make(options->pool, 2);
 
     //init mulitipart
     s = init_test_multipart_upload(options, TEST_BUCKET_NAME, object_name, &upload_id);
@@ -226,10 +232,21 @@ void test_multipart_upload(CuTest *tc)
     }
 
     //complete multipart
+    apr_table_add(headers, OSS_REPLACE_OBJECT_META, "yes");
+    apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-        &complete_part_list, &complete_resp_headers);
+            &complete_part_list, headers, &complete_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
+    
+    //check content type
+    apr_table_clear(headers);
+    s = oss_head_object(options, &bucket, &object, headers, &head_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+   
+    actual_content_type = (char*)(apr_table_get(head_resp_headers, OSS_CONTENT_TYPE));
+    CuAssertStrEquals(tc, content_type_for_complete, actual_content_type);
 
     aos_pool_destroy(p);
 
@@ -248,14 +265,18 @@ void test_multipart_upload_from_file(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
     oss_upload_file_t *upload_file = NULL;
+    aos_table_t *headers = NULL;
     aos_table_t *upload_part_resp_headers = NULL;
     oss_list_upload_part_params_t *params = NULL;
     aos_table_t *list_part_resp_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
     aos_string_t upload_id;
     aos_list_t complete_part_list;
     oss_list_part_content_t *part_content1 = NULL;
     oss_complete_part_content_t *complete_content1 = NULL;
     aos_table_t *complete_resp_headers = NULL;
+    char *content_type_for_complete = "video/MP2T";
+    char *actual_content_type = NULL;
     aos_string_t data;
     int part_num = 1;
     int part_num1 = 2;
@@ -265,6 +286,8 @@ void test_multipart_upload_from_file(CuTest *tc)
     init_test_request_options(options, is_oss_domain);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
+
+    headers = aos_table_make(options->pool, 1);
 
     // create multipart upload local file    
     make_rand_string(p, 10 * 1024 * 1024, &data);
@@ -315,10 +338,21 @@ void test_multipart_upload_from_file(CuTest *tc)
     }
 
     //complete multipart
+    apr_table_clear(headers);
+    apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-        &complete_part_list, &complete_resp_headers);
+            &complete_part_list, headers, &complete_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
+
+    //check content type
+    apr_table_clear(headers);
+    s = oss_head_object(options, &bucket, &object, headers, &head_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+
+    actual_content_type = (char*)(apr_table_get(head_resp_headers, OSS_CONTENT_TYPE));
+    CuAssertTrue(tc, content_type_for_complete != actual_content_type);
 
     remove(file_path);
     aos_pool_destroy(p);
@@ -432,7 +466,7 @@ void test_upload_part_copy(CuTest *tc)
      
     //complete multipart
     s = oss_complete_multipart_upload(options, &dest_bucket, &dest_object, &upload_id,
-        &complete_part_list, &complete_resp_headers);
+            &complete_part_list, headers, &complete_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
 

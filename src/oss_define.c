@@ -30,6 +30,7 @@ const char OSS_MULTIPART_CONTENT_TYPE[] = "application/x-www-form-urlencoded";
 const char OSS_COPY_SOURCE[] = "x-oss-copy-source";
 const char OSS_COPY_SOURCE_RANGE[] = "x-oss-copy-source-range";
 const char OSS_STS_SECURITY_TOKEN[] = "x-oss-security-token";
+const char OSS_REPLACE_OBJECT_META[] = "x-oss-replace-object-meta";
 const char OSS_LIFECYCLE[] = "lifecycle";
 const char OSS_DELETE[] = "delete";
 const int OSS_MAX_PART_NUM = 10000;

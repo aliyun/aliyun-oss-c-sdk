@@ -91,8 +91,10 @@ void multipart_upload_file_from_buffer()
     }
 
     //complete multipart
+    apr_table_add(headers, OSS_REPLACE_OBJECT_META, "yes");
+    apr_table_add(headers, OSS_CONTENT_TYPE, "video/MP2T");
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-        &complete_part_list, &resp_headers);
+            &complete_part_list, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Complete multipart upload succeeded, upload_id:%.*s\n", 
@@ -189,7 +191,7 @@ void multipart_upload_file_from_file()
 
     //complete multipart
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-        &complete_part_list, &resp_headers);
+            &complete_part_list, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Complete multipart upload from file succeeded, upload_id:%.*s\n", 

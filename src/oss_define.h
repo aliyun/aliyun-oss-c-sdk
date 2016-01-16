@@ -52,6 +52,7 @@ extern const char OSS_MULTIPART_CONTENT_TYPE[];
 extern const char OSS_COPY_SOURCE[];
 extern const char OSS_COPY_SOURCE_RANGE[];
 extern const char OSS_STS_SECURITY_TOKEN[];
+extern const char OSS_REPLACE_OBJECT_META[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_DELETE[];
 extern const int OSS_MAX_PART_NUM;

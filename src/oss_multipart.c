@@ -163,21 +163,19 @@ aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options
                                             const aos_string_t *object, 
                                             const aos_string_t *upload_id, 
                                             aos_list_t *part_list, 
+                                            aos_table_t *headers,
                                             aos_table_t **resp_headers)
 {
     aos_status_t *s;
     aos_http_request_t *req;
     aos_http_response_t *resp;
     apr_table_t *query_params;
-    aos_table_t *headers;
     aos_list_t body;
     //init query_params
     query_params = aos_table_make(options->pool, 1);
     apr_table_add(query_params, OSS_UPLOAD_ID, upload_id->data);
 
-    //init headers
-    headers = aos_table_make(options->pool, 1);
-    apr_table_set(headers, OSS_CONTENT_TYPE, OSS_MULTIPART_CONTENT_TYPE);
+    oss_set_multipart_content_type(headers);
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
                             &req, query_params, headers, &resp);
@@ -393,6 +391,7 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
     char *etag;
     aos_list_t complete_part_list;
     oss_complete_part_content_t *complete_content;
+    aos_table_t *complete_headers;
     aos_table_t *complete_resp_headers;
 
     aos_list_init(&complete_part_list);
@@ -480,11 +479,14 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
             end_pos = fb->file_last;
         part_num += 1;
     }
+
     //complete multipart
     aos_pool_create(&subpool, parent_pool);
     options->pool = subpool;
+    complete_headers = aos_table_make(subpool, 1);
+
     s = oss_complete_multipart_upload(options, bucket, object, upload_id,
-        &complete_part_list, &complete_resp_headers);
+            &complete_part_list, complete_headers, &complete_resp_headers);
     if (!aos_status_is_ok(s)) {
         aos_error_log("complete multipart upload fail, upload_id is %.*s\n", 
             upload_id->len, upload_id->data);
