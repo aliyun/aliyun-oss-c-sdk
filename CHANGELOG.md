@@ -1,5 +1,9 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：2.0.0 日期：2016-01-19
+### 变更内容
+ - complete multipart接口支持覆盖原有head
+
 ## 版本号：1.0.0 日期：2015-12-16
 ### 变更内容
  - 调整OSS C SDK依赖的XML第三方库，使用minixml替换libxml减小OSS C SDK的大小
