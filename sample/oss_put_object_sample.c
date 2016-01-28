@@ -13,7 +13,7 @@ void put_object_from_buffer()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -24,7 +24,7 @@ void put_object_from_buffer()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
     apr_table_set(headers, "x-oss-meta-author", "oss");
     aos_str_set(&bucket, BUCKET_NAME);
@@ -51,7 +51,7 @@ void put_object_from_file()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -61,7 +61,7 @@ void put_object_from_file()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(options->pool, 0);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
@@ -85,7 +85,7 @@ void put_object_by_signed_url()
     aos_string_t bucket;
     aos_string_t object;
     aos_string_t url;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_http_request_t *request = NULL;
     aos_table_t *headers;
     aos_table_t *resp_headers;
@@ -99,7 +99,7 @@ void put_object_by_signed_url()
     aos_pool_create(&p, NULL);
 
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
 
     // create request
     request = aos_http_request_create(p);
@@ -141,7 +141,7 @@ void create_dir()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -150,7 +150,7 @@ void create_dir()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(options->pool, 0);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, DIR_NAME);
@@ -173,7 +173,7 @@ void put_object_to_dir()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -184,7 +184,7 @@ void put_object_to_dir()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(options->pool, 0);
     aos_str_set(&bucket, BUCKET_NAME);
 

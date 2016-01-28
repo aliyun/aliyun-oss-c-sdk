@@ -13,7 +13,7 @@
 void test_bucket_setup(CuTest *tc)
 {
     aos_pool_t *p = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
@@ -40,7 +40,7 @@ void test_bucket_setup(CuTest *tc)
     //create test bucket
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
 
     CuAssertIntEquals(tc, 200, s->code);
@@ -70,14 +70,14 @@ void test_bucket_cleanup(CuTest *tc)
 void test_create_bucket(CuTest *tc)
 {
     aos_pool_t *p = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     oss_acl = OSS_ACL_PRIVATE;
 
     //create the same bucket twice with same bucket acl
@@ -101,13 +101,13 @@ void test_delete_bucket(CuTest *tc)
     aos_status_t *s = NULL;
     aos_string_t bucket;
     oss_acl_e oss_acl;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options;
     aos_table_t *resp_headers = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     oss_acl = OSS_ACL_PUBLIC_READ;
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
@@ -128,7 +128,7 @@ void test_put_bucket_acl(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
@@ -136,7 +136,7 @@ void test_put_bucket_acl(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     oss_acl = OSS_ACL_PUBLIC_READ_WRITE;
     s = oss_put_bucket_acl(options, &bucket, oss_acl, &resp_headers);
@@ -151,7 +151,7 @@ void test_get_bucket_acl(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
@@ -159,7 +159,7 @@ void test_get_bucket_acl(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_get_bucket_acl(options, &bucket, &oss_acl, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
@@ -175,7 +175,7 @@ void test_list_object(CuTest *tc)
     aos_pool_t *p = NULL;
     aos_string_t bucket;
     oss_request_options_t *options = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_list_object_params_t *params = NULL;
@@ -185,7 +185,7 @@ void test_list_object(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     params = oss_create_list_object_params(p);
     params->max_ret = 1;
     params->truncated = 0;
@@ -228,7 +228,7 @@ void test_list_object_with_delimiter(CuTest *tc)
     aos_pool_t *p = NULL;
     aos_string_t bucket;
     oss_request_options_t *options = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_list_object_params_t *params = NULL;
@@ -238,7 +238,7 @@ void test_list_object_with_delimiter(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     params = oss_create_list_object_params(p);
     params->max_ret = 5;
     params->truncated = 0;
@@ -269,7 +269,7 @@ void test_lifecycle(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
@@ -287,7 +287,7 @@ void test_lifecycle(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
 
     //put invalid lifecycle rule
@@ -380,7 +380,7 @@ void test_lifecycle(CuTest *tc)
 void test_delete_objects_quiet(CuTest *tc)
 {
     aos_pool_t *p = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_string_t bucket;
     aos_status_t *s = NULL;
     aos_table_t *resp_headers = NULL;
@@ -395,7 +395,7 @@ void test_delete_objects_quiet(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
 
     aos_list_init(&object_list);
@@ -420,7 +420,7 @@ void test_delete_objects_quiet(CuTest *tc)
 void test_delete_objects_not_quiet(CuTest *tc)
 {
     aos_pool_t *p = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_string_t bucket;
     aos_status_t *s = NULL;
     aos_table_t *resp_headers = NULL;
@@ -436,7 +436,7 @@ void test_delete_objects_not_quiet(CuTest *tc)
     
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
 
     aos_list_init(&object_list);
@@ -466,7 +466,7 @@ void test_delete_objects_by_prefix(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     oss_request_options_t *options = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_string_t bucket;
     aos_status_t *s = NULL;
     aos_string_t prefix;
@@ -474,7 +474,7 @@ void test_delete_objects_by_prefix(CuTest *tc)
     
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&prefix, prefix_str);
 

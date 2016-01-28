@@ -47,18 +47,18 @@ void make_random_body(aos_pool_t *p, int count, aos_list_t *bc)
     }
 }
 
-void init_sample_config(oss_config_t *config, int is_oss_domain)
+void init_sample_config(oss_config_t *config, int is_cname)
 {
-    aos_str_set(&config->host, OSS_HOST);
-    aos_str_set(&config->id, ACCESS_KEY_ID);
-    aos_str_set(&config->key, ACCESS_KEY_SECRET);
-    config->is_oss_domain = is_oss_domain;
+    aos_str_set(&config->endpoint, OSS_HOST);
+    aos_str_set(&config->access_key_id, ACCESS_KEY_ID);
+    aos_str_set(&config->access_key_secret, ACCESS_KEY_SECRET);
+    config->is_cname = is_cname;
 }
 
-void init_sample_request_options(oss_request_options_t *options, int is_oss_domain)
+void init_sample_request_options(oss_request_options_t *options, int is_cname)
 {
     options->config = oss_config_create(options->pool);
-    init_sample_config(options->config, is_oss_domain);
+    init_sample_config(options->config, is_cname);
     options->ctl = aos_http_controller_create(options->pool, 0);
 }
 

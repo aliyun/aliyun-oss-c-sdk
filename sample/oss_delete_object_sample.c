@@ -13,14 +13,14 @@ void delete_object()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options;
     aos_table_t *resp_headers;
     aos_status_t *s;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
 

@@ -13,7 +13,7 @@ void get_object_to_buffer()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options;
     aos_table_t *headers;
     aos_table_t *params;
@@ -28,7 +28,7 @@ void get_object_to_buffer()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
     aos_list_init(&buffer);
@@ -67,7 +67,7 @@ void get_object_to_local_file()
     aos_string_t bucket;
     char *download_filename = "get_object_to_local_file.txt";
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options;
     aos_table_t *headers;
     aos_table_t *params;
@@ -77,7 +77,7 @@ void get_object_to_local_file()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
     headers = aos_table_make(p, 0);
@@ -101,7 +101,7 @@ void get_object_by_signed_url()
     aos_string_t bucket;
     aos_string_t object;
     aos_string_t url;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_http_request_t *request = NULL;
     aos_table_t *headers;
     aos_table_t *resp_headers;
@@ -115,7 +115,7 @@ void get_object_by_signed_url()
     aos_pool_create(&p, NULL);
 
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
 
     // create request
     request = aos_http_request_create(p);
@@ -156,14 +156,14 @@ void get_oss_dir_to_local_dir()
 {
     aos_pool_t *parent_pool;    
     aos_string_t bucket;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_status_t *s;
     oss_request_options_t *options;
     oss_list_object_params_t *params;
 
     aos_pool_create(&parent_pool, NULL);
     options = oss_request_options_create(parent_pool);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     params = oss_create_list_object_params(parent_pool);
     aos_str_set(&params->prefix, DIR_NAME);

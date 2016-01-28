@@ -14,7 +14,7 @@
 void test_object_setup(CuTest *tc)
 {
     aos_pool_t *p = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
@@ -22,7 +22,7 @@ void test_object_setup(CuTest *tc)
     //create test bucket
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
 
     CuAssertIntEquals(tc, 200, s->code);
@@ -32,7 +32,7 @@ void test_object_setup(CuTest *tc)
 void test_object_cleanup(CuTest *tc)
 {
     aos_pool_t *p = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_string_t bucket;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
@@ -46,7 +46,7 @@ void test_object_cleanup(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
 
     //delete test object
     delete_test_object(options, TEST_BUCKET_NAME, object_name1);
@@ -69,14 +69,14 @@ void test_put_object_from_buffer(CuTest *tc)
     char *object_name = "oss_test_put_object.txt";
     char *str = "test oss c sdk";
     aos_status_t *s = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers = NULL;
     oss_request_options_t *options = NULL;
 
     //test put object
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
     apr_table_set(headers, "x-oss-meta-author", "oss");
     s = create_test_object(options, TEST_BUCKET_NAME, object_name, str, headers);
@@ -95,12 +95,12 @@ void test_put_object_from_file(CuTest *tc)
     char *filename = __FILE__;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     headers = aos_table_make(p, 5);
     s = create_test_object_from_file(options, TEST_BUCKET_NAME, object_name, filename, headers);
     CuAssertIntEquals(tc, 200, s->code);
@@ -117,7 +117,7 @@ void test_get_object_to_buffer(CuTest *tc)
     aos_string_t bucket;
     char *object_name = "oss_test_put_object.txt";
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *headers = NULL;
     aos_table_t *params = NULL;
@@ -134,7 +134,7 @@ void test_get_object_to_buffer(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     aos_list_init(&buffer);
@@ -172,7 +172,7 @@ void test_get_object_to_buffer_with_range(CuTest *tc)
     aos_string_t bucket;
     char *object_name = "oss_test_put_object.txt";
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *headers = NULL;
     aos_table_t *params = NULL;
@@ -188,7 +188,7 @@ void test_get_object_to_buffer_with_range(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     headers = aos_table_make(p, 1);
@@ -230,7 +230,7 @@ void test_get_object_to_file(CuTest *tc)
     char *source_filename = __FILE__;
     aos_string_t file;
     oss_request_options_t *options = NULL; 
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers = NULL;
     aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
@@ -239,7 +239,7 @@ void test_get_object_to_file(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     aos_str_set(&file, filename);
@@ -265,7 +265,7 @@ void test_head_object(CuTest *tc)
     aos_string_t bucket;
     char *object_name = "oss_test_put_object.txt";
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
@@ -274,7 +274,7 @@ void test_head_object(CuTest *tc)
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     headers = aos_table_make(p, 0);
@@ -298,14 +298,14 @@ void test_delete_object(CuTest *tc)
     aos_string_t bucket;
     char *object_name = "oss_test_put_object";
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
  
@@ -329,14 +329,14 @@ void test_copy_object(CuTest *tc)
     char *dest_object_name = "oss_test_copy_object";
     aos_string_t dest_object;
     oss_request_options_t *options = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     aos_str_set(&source_bucket, TEST_BUCKET_NAME);
     aos_str_set(&source_object, source_object_name);
     aos_str_set(&dest_bucket, TEST_BUCKET_NAME);
@@ -366,7 +366,7 @@ void test_object_by_url(CuTest *tc)
     aos_string_t url;
     apr_time_t now;
     int two_minute = 120;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     char *object_name = "oss_test_object_by_url";
     aos_string_t bucket;
     aos_string_t object;
@@ -381,7 +381,7 @@ void test_object_by_url(CuTest *tc)
    
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     req = aos_http_request_create(p);
     headers = aos_table_make(p, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
@@ -448,7 +448,7 @@ void test_append_object_from_buffer(CuTest *tc)
     aos_string_t object;
     char *str = "test oss c sdk";
     aos_status_t *s = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     int64_t position = 0;
     aos_table_t *headers = NULL;
     aos_table_t *headers1 = NULL;
@@ -461,7 +461,7 @@ void test_append_object_from_buffer(CuTest *tc)
     //test append object 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     headers = aos_table_make(p, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
@@ -496,7 +496,7 @@ void test_append_object_from_file(CuTest *tc)
     char *filename = __FILE__;
     aos_string_t append_file;
     aos_status_t *s = NULL;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     int64_t position = 0;
     aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
@@ -505,7 +505,7 @@ void test_append_object_from_file(CuTest *tc)
     //test append object 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_test_request_options(options, is_oss_domain);
+    init_test_request_options(options, is_cname);
     headers = aos_table_make(p, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);

@@ -13,7 +13,7 @@ void multipart_upload_file_from_buffer()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -29,7 +29,7 @@ void multipart_upload_file_from_buffer()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
     resp_headers = aos_table_make(options->pool, 5); 
     aos_str_set(&bucket, BUCKET_NAME);
@@ -110,7 +110,7 @@ void multipart_upload_file_from_file()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -126,7 +126,7 @@ void multipart_upload_file_from_file()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
     resp_headers = aos_table_make(options->pool, 5); 
     aos_str_set(&bucket, BUCKET_NAME);
@@ -207,7 +207,7 @@ void abort_multipart_upload()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers;
     aos_table_t *resp_headers;
     oss_request_options_t *options;
@@ -216,7 +216,7 @@ void abort_multipart_upload()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);

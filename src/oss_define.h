@@ -80,11 +80,11 @@ typedef enum {
 } oss_acl_e;
 
 typedef struct {
-    aos_string_t host;          
-    aos_string_t id;     
-    aos_string_t key; 
+    aos_string_t endpoint;
+    aos_string_t access_key_id;
+    aos_string_t access_key_secret;
     aos_string_t sts_token;
-    int is_oss_domain;
+    int is_cname;
 } oss_config_t;
 
 typedef struct {

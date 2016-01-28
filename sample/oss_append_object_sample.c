@@ -15,7 +15,7 @@ void append_object_from_buffer()
     aos_string_t object;
     char *str = "test oss c sdk";
     aos_status_t *s;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     int64_t position = 0;
     aos_table_t *headers1;
     aos_table_t *headers2;
@@ -27,7 +27,7 @@ void append_object_from_buffer()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers1 = aos_table_make(p, 0);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
@@ -60,7 +60,7 @@ void append_object_from_file()
     aos_pool_t *p;
     aos_string_t bucket;
     aos_string_t object;
-    int is_oss_domain = 1;
+    int is_cname = 0;
     aos_table_t *headers1;
     aos_table_t *headers2;
     aos_table_t *resp_headers;
@@ -73,7 +73,7 @@ void append_object_from_file()
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    init_sample_request_options(options, is_oss_domain);
+    init_sample_request_options(options, is_cname);
     headers1 = aos_table_make(options->pool, 0);
     headers2 = aos_table_make(options->pool, 0);
     aos_str_set(&bucket, BUCKET_NAME);

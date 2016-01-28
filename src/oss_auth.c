@@ -22,8 +22,10 @@ static const char *g_s_oss_sub_resource_list[] = {
 
 static int is_oss_sub_resource(const char *str);
 static int is_oss_canonicalized_header(const char *str);
-static int oss_get_canonicalized_headers(aos_pool_t *p, const aos_table_t *headers, aos_buf_t *signbuf);
-static int oss_get_canonicalized_resource(aos_pool_t *p, const aos_table_t *params, aos_buf_t *signbuf);
+static int oss_get_canonicalized_headers(aos_pool_t *p, 
+        const aos_table_t *headers, aos_buf_t *signbuf);
+static int oss_get_canonicalized_resource(aos_pool_t *p, 
+        const aos_table_t *params, aos_buf_t *signbuf);
 
 static int is_oss_sub_resource(const char *str)
 {
@@ -42,7 +44,9 @@ static int is_oss_canonicalized_header(const char *str)
     return strncasecmp(str, OSS_CANNONICALIZED_HEADER_PREFIX, len) == 0;
 }
 
-static int oss_get_canonicalized_headers(aos_pool_t *p, const aos_table_t *headers, aos_buf_t *signbuf)
+static int oss_get_canonicalized_headers(aos_pool_t *p, 
+                                         const aos_table_t *headers, 
+                                         aos_buf_t *signbuf)
 {
     int pos;
     int meta_count = 0;
@@ -80,7 +84,8 @@ static int oss_get_canonicalized_headers(aos_pool_t *p, const aos_table_t *heade
         value = apr_table_get(headers, meta_headers[i]);
         aos_str_set(&tmp_str, value);
         aos_strip_space(&tmp_str);
-        len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%s:%.*s", meta_headers[i], tmp_str.len, tmp_str.data);
+        len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%s:%.*s", 
+                           meta_headers[i], tmp_str.len, tmp_str.data);
         if (len >= AOS_MAX_HEADER_LEN) {
             aos_error_log("user meta header too many, %s.", tmpbuf);
             return AOSE_INVALID_ARGUMENT;
@@ -94,7 +99,9 @@ static int oss_get_canonicalized_headers(aos_pool_t *p, const aos_table_t *heade
     return AOSE_OK;
 }
 
-static int oss_get_canonicalized_resource(aos_pool_t *p, const aos_table_t *params, aos_buf_t *signbuf)
+static int oss_get_canonicalized_resource(aos_pool_t *p, 
+                                          const aos_table_t *params, 
+                                          aos_buf_t *signbuf)
 {
     int pos;
     int subres_count = 0;
@@ -130,9 +137,11 @@ static int oss_get_canonicalized_resource(aos_pool_t *p, const aos_table_t *para
     for (i = 0; i < subres_count; ++i) {
         value = apr_table_get(params, subres_headers[i]);
         if (value != NULL && *value != '\0') {
-            len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%c%s=%s", sep, subres_headers[i], value);
+            len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%c%s=%s", 
+                    sep, subres_headers[i], value);
         } else {
-            len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%c%s", sep, subres_headers[i]);
+            len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%c%s", 
+                    sep, subres_headers[i]);
         }
         if (len >= AOS_MAX_QUERY_ARG_LEN) {
             aos_error_log("http query params too long, %s.", tmpbuf);
@@ -145,8 +154,12 @@ static int oss_get_canonicalized_resource(aos_pool_t *p, const aos_table_t *para
     return AOSE_OK;
 }    
 
-int oss_get_string_to_sign(aos_pool_t *p, http_method_e method, const aos_string_t *canon_res,
-                        const aos_table_t *headers, const aos_table_t *params, aos_string_t *signstr)
+int oss_get_string_to_sign(aos_pool_t *p, 
+                           http_method_e method, 
+                           const aos_string_t *canon_res,
+                           const aos_table_t *headers, 
+                           const aos_table_t *params, 
+                           aos_string_t *signstr)
 {
     int res;
     aos_buf_t *signbuf;
@@ -202,9 +215,11 @@ int oss_get_string_to_sign(aos_pool_t *p, http_method_e method, const aos_string
     return AOSE_OK;
 }
 
-void oss_sign_headers(aos_pool_t *p, const aos_string_t *signstr, 
+void oss_sign_headers(aos_pool_t *p, 
+                      const aos_string_t *signstr, 
                       const aos_string_t *access_key_id,
-                      const aos_string_t *access_key_secret, aos_table_t *headers)
+                      const aos_string_t *access_key_secret, 
+                      aos_table_t *headers)
 {
     int b64Len;
     char *value;
@@ -222,14 +237,17 @@ void oss_sign_headers(aos_pool_t *p, const aos_string_t *signstr,
     return;
 }
 
-int oss_get_signed_headers(aos_pool_t *p, const aos_string_t *access_key_id, 
+int oss_get_signed_headers(aos_pool_t *p, 
+                           const aos_string_t *access_key_id, 
                            const aos_string_t *access_key_secret,
-                           const aos_string_t* canon_res, aos_http_request_t *req)
+                           const aos_string_t* canon_res, 
+                           aos_http_request_t *req)
 {
     int res;
     aos_string_t signstr;
     
-    if ((res = oss_get_string_to_sign(p, req->method, canon_res, req->headers, req->query_params, &signstr))
+    if ((res = oss_get_string_to_sign(p, req->method, canon_res, 
+                            req->headers, req->query_params, &signstr))
         != AOSE_OK) {
         return res;
     }
@@ -241,7 +259,8 @@ int oss_get_signed_headers(aos_pool_t *p, const aos_string_t *access_key_id,
     return AOSE_OK;
 }
 
-int oss_sign_request(aos_http_request_t *req, const oss_config_t *config)
+int oss_sign_request(aos_http_request_t *req, 
+                     const oss_config_t *config)
 {
     aos_string_t canon_res;
     char canon_buf[AOS_MAX_URI_LEN];
@@ -264,12 +283,15 @@ int oss_sign_request(aos_http_request_t *req, const oss_config_t *config)
         apr_table_set(req->headers, OSS_DATE, datestr);
     }
 
-    res = oss_get_signed_headers(req->pool, &config->id, &config->key, &canon_res, req);
+    res = oss_get_signed_headers(req->pool, &config->access_key_id, 
+                                 &config->access_key_secret, &canon_res, req);
     return res;
 }
 
-int get_oss_request_signature(const oss_request_options_t *options, aos_http_request_t *req,
-        const aos_string_t *expires, aos_string_t *signature)
+int get_oss_request_signature(const oss_request_options_t *options, 
+                              aos_http_request_t *req,
+                              const aos_string_t *expires, 
+                              aos_string_t *signature)
 {
     aos_string_t canon_res;
     char canon_buf[AOS_MAX_URI_LEN];
@@ -290,8 +312,9 @@ int get_oss_request_signature(const oss_request_options_t *options, aos_http_req
         return res;
     }
 
-    HMAC_SHA1(hmac, (unsigned char *)options->config->key.data, options->config->key.len,
-        (unsigned char *)signstr.data, signstr.len);
+    HMAC_SHA1(hmac, (unsigned char *)options->config->access_key_secret.data, 
+              options->config->access_key_secret.len,
+              (unsigned char *)signstr.data, signstr.len);
 
     b64Len = aos_base64_encode(hmac, 20, b64);
     value = apr_psprintf(options->pool, "%.*s", b64Len, b64);
@@ -300,8 +323,10 @@ int get_oss_request_signature(const oss_request_options_t *options, aos_http_req
     return res;
 }
 
-int oss_get_signed_url(const oss_request_options_t *options, aos_http_request_t *req,
-        const aos_string_t *expires, aos_string_t *signed_url)
+int oss_get_signed_url(const oss_request_options_t *options, 
+                       aos_http_request_t *req,
+                       const aos_string_t *expires, 
+                       aos_string_t *signed_url)
 {
     char *signed_url_str;
     aos_string_t querystr;
@@ -314,7 +339,8 @@ int oss_get_signed_url(const oss_request_options_t *options, aos_http_request_t 
         return res;
     }
 
-    apr_table_set(req->query_params, OSS_ACCESSKEYID, options->config->id.data);
+    apr_table_set(req->query_params, OSS_ACCESSKEYID, 
+                  options->config->access_key_id.data);
     apr_table_set(req->query_params, OSS_EXPIRES, expires->data);
     apr_table_set(req->query_params, OSS_SIGNATURE, signature.data);
 
