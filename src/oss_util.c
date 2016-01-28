@@ -549,3 +549,13 @@ void set_content_type_for_file(const char* filename, aos_table_t *headers)
         }
     }
 }
+
+aos_table_t* aos_table_create_if_null(const oss_request_options_t *options, 
+                                      aos_table_t *table, 
+                                      int table_size) 
+{
+    if (table == NULL) {
+        table = aos_table_make(options->pool, table_size);
+    }
+    return table;
+}

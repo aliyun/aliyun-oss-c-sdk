@@ -120,6 +120,7 @@ void test_get_object_to_buffer(CuTest *tc)
     int is_oss_domain = 1;
     oss_request_options_t *options = NULL;
     aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
@@ -136,11 +137,11 @@ void test_get_object_to_buffer(CuTest *tc)
     init_test_request_options(options, is_oss_domain);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
-    headers = aos_table_make(p, 0);
     aos_list_init(&buffer);
 
     //test get object to buffer
-    s = oss_get_object_to_buffer(options, &bucket, &object, headers, &buffer, &resp_headers);
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
+                                 params, &buffer, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -174,6 +175,7 @@ void test_get_object_to_buffer_with_range(CuTest *tc)
     int is_oss_domain = 1;
     oss_request_options_t *options = NULL;
     aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
@@ -194,7 +196,8 @@ void test_get_object_to_buffer_with_range(CuTest *tc)
     aos_list_init(&buffer);
 
     //test get object to buffer
-    s = oss_get_object_to_buffer(options, &bucket, &object, headers, &buffer, &resp_headers);
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
+                                 params,&buffer, &resp_headers);
     CuAssertIntEquals(tc, 206, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -229,6 +232,7 @@ void test_get_object_to_file(CuTest *tc)
     oss_request_options_t *options = NULL; 
     int is_oss_domain = 1;
     aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     char *content_type = NULL;
@@ -239,10 +243,10 @@ void test_get_object_to_file(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     aos_str_set(&file, filename);
-    headers = aos_table_make(p, 5);
 
     //test get object to file
-    s = oss_get_object_to_file(options, &bucket, &object, headers, &file, &resp_headers);
+    s = oss_get_object_to_file(options, &bucket, &object, headers, 
+                               params, &file, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertIntEquals(tc, get_file_size(source_filename), get_file_size(filename));
     content_type = (char*)(apr_table_get(resp_headers, OSS_CONTENT_TYPE));

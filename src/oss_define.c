@@ -33,6 +33,7 @@ const char OSS_STS_SECURITY_TOKEN[] = "x-oss-security-token";
 const char OSS_REPLACE_OBJECT_META[] = "x-oss-replace-object-meta";
 const char OSS_LIFECYCLE[] = "lifecycle";
 const char OSS_DELETE[] = "delete";
+const char OSS_YES[] = "yes";
 const int OSS_MAX_PART_NUM = 10000;
 const int OSS_PER_RET_NUM = 1000;
 const int MAX_SUFFIX_LEN = 1024;

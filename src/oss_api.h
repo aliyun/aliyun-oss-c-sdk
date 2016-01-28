@@ -95,7 +95,7 @@ aos_status_t *oss_put_object_from_buffer(const oss_request_options_t *options,
                                          const aos_string_t *bucket, 
                                          const aos_string_t *object, 
                                          aos_list_t *buffer, 
-                                         aos_table_t *headers, 
+                                         aos_table_t *headers,
                                          aos_table_t **resp_headers);
 
 /**
@@ -119,6 +119,7 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
                                        const aos_string_t *bucket, 
                                        const aos_string_t *object,
                                        aos_table_t *headers, 
+                                       aos_table_t *params,
                                        aos_list_t *buffer, 
                                        aos_table_t **resp_headers);
 
@@ -131,6 +132,7 @@ aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
                                      const aos_string_t *bucket, 
                                      const aos_string_t *object,
                                      aos_table_t *headers, 
+                                     aos_table_t *params,
                                      aos_string_t *filename, 
                                      aos_table_t **resp_headers);
 
@@ -396,7 +398,8 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
                               const aos_string_t *object, 
                               aos_string_t *upload_id,
                               aos_string_t *filename, 
-                              int64_t part_size);
+                              int64_t part_size,
+                              aos_table_t *headers);
 
 OSS_CPP_END
 

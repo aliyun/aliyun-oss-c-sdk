@@ -55,6 +55,7 @@ extern const char OSS_STS_SECURITY_TOKEN[];
 extern const char OSS_REPLACE_OBJECT_META[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_DELETE[];
+extern const char OSS_YES[];
 extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
@@ -79,11 +80,11 @@ typedef enum {
 } oss_acl_e;
 
 typedef struct {
-    aos_string_t host;  /*< oss hostname */
-    aos_string_t id;    /*< oss access_key_id */
-    aos_string_t key;   /*< oss access_key_secret */
-    int is_oss_domain;  /*< oss hostname is oss domain or not, check by function is_oss_domain */
+    aos_string_t host;          
+    aos_string_t id;     
+    aos_string_t key; 
     aos_string_t sts_token;
+    int is_oss_domain;
 } oss_config_t;
 
 typedef struct {

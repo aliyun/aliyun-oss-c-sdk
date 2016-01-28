@@ -13,18 +13,17 @@ aos_status_t *oss_create_bucket(const oss_request_options_t *options,
                                 oss_acl_e oss_acl, 
                                 aos_table_t **resp_headers)
 {
-    const char *oss_acl_str;
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *headers;
-    aos_table_t *query_params;
+    const char *oss_acl_str = NULL;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *query_params = NULL;
 
-    //init query_params
-    query_params = aos_table_make(options->pool, 0);
+    query_params = aos_table_create_if_null(options, query_params, 0);
 
     //init headers
-    headers = aos_table_make(options->pool, 1);
+    headers = aos_table_create_if_null(options, headers, 1);
     oss_acl_str = get_oss_acl_str(oss_acl);
     if (oss_acl_str) {
         apr_table_set(headers, OSS_CANNONICALIZED_HEADER_ACL, oss_acl_str);
@@ -43,17 +42,14 @@ aos_status_t *oss_delete_bucket(const oss_request_options_t *options,
                                 const aos_string_t *bucket, 
                                 aos_table_t **resp_headers)
 {
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *query_params;
-    aos_table_t *headers;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
 
-    //init query_params
-    query_params = aos_table_make(options->pool, 0);
-
-    //init headers
-    headers = aos_table_make(options->pool, 0);
+    headers = aos_table_create_if_null(options, headers, 0);
+    query_params = aos_table_create_if_null(options, query_params, 0);
 
     oss_init_bucket_request(options, bucket, HTTP_DELETE, &req, 
                             query_params, headers, &resp);
@@ -69,21 +65,18 @@ aos_status_t *oss_put_bucket_acl(const oss_request_options_t *options,
                                  oss_acl_e oss_acl,
                                  aos_table_t **resp_headers)
 {
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     int res;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *query_params;
-    aos_table_t *headers;
-    const char *oss_acl_str;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
+    const char *oss_acl_str = NULL;
 
-    //init query_params
-    query_params = aos_table_make(options->pool, 1);
+    query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
 
-    //init headers
-    headers = aos_table_make(options->pool, 1);
-
+    headers = aos_table_create_if_null(options, headers, 1);
     oss_acl_str = get_oss_acl_str(oss_acl);
     if (oss_acl_str) {
         apr_table_set(headers, OSS_CANNONICALIZED_HEADER_ACL, oss_acl_str);
@@ -103,19 +96,17 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
                                  aos_string_t *oss_acl, 
                                  aos_table_t **resp_headers)
 {
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     int res;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *query_params;
-    aos_table_t *headers;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
 
-    //init query_params
-    query_params = aos_table_make(options->pool, 1);
+    query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
 
-    //init headers
-    headers = aos_table_make(options->pool, 0);
+    headers = aos_table_create_if_null(options, headers, 0);    
 
     oss_init_bucket_request(options, bucket, HTTP_GET, &req, 
                             query_params, headers, &resp);
@@ -140,21 +131,21 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
                               aos_table_t **resp_headers)
 {
     int res;
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *query_params;
-    aos_table_t *headers;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
 
     //init query_params
-    query_params = aos_table_make(options->pool, 4);
+    query_params = aos_table_create_if_null(options, query_params, 4);
     apr_table_add(query_params, OSS_PREFIX, params->prefix.data);
     apr_table_add(query_params, OSS_DELIMITER, params->delimiter.data);
     apr_table_add(query_params, OSS_MARKER, params->marker.data);
     aos_table_add_int(query_params, OSS_MAX_KEYS, params->max_ret);
     
     //init headers
-    headers = aos_table_make(options->pool, 0);
+    headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_bucket_request(options, bucket, HTTP_GET, &req, 
                             query_params, headers, &resp);
@@ -180,19 +171,19 @@ aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
                                        aos_list_t *lifecycle_rule_list, 
                                        aos_table_t **resp_headers)
 {
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    apr_table_t *query_params;
-    aos_table_t *headers;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    apr_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
     aos_list_t body;
 
     //init query_params
-    query_params = aos_table_make(options->pool, 1);
+    query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIFECYCLE, "");
 
     //init headers
-    headers = aos_table_make(options->pool, 5);
+    headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_bucket_request(options, bucket, HTTP_PUT, &req, 
                             query_params, headers, &resp);
@@ -212,18 +203,18 @@ aos_status_t *oss_get_bucket_lifecycle(const oss_request_options_t *options,
                                        aos_table_t **resp_headers)
 {
     int res;
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *query_params;
-    aos_table_t *headers;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
 
     //init query_params
-    query_params = aos_table_make(options->pool, 1);
+    query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIFECYCLE, "");
 
     //init headers
-    headers = aos_table_make(options->pool, 5);
+    headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_bucket_request(options, bucket, HTTP_GET, &req, 
                             query_params, headers, &resp);
@@ -247,18 +238,18 @@ aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
                                           const aos_string_t *bucket, 
                                           aos_table_t **resp_headers)
 {
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *query_params;
-    aos_table_t *headers;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
 
     //init query_params
-    query_params = aos_table_make(options->pool, 1);
+    query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIFECYCLE, "");
 
     //init headers
-    headers = aos_table_make(options->pool, 5);
+    headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_bucket_request(options, bucket, HTTP_DELETE, &req, 
                             query_params, headers, &resp);
@@ -277,25 +268,25 @@ aos_status_t *oss_delete_objects(const oss_request_options_t *options,
                                  aos_list_t *deleted_object_list)
 {
     int res;
-    aos_status_t *s;
-    aos_http_request_t *req;
-    aos_http_response_t *resp;
-    aos_table_t *headers;
-    aos_table_t *query_params;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *query_params = NULL;
     aos_list_t body;
     unsigned char *md5 = NULL;
-    char *buf;
+    char *buf = NULL;
     int64_t body_len;
-    char *b64_value;
+    char *b64_value = NULL;
     int b64_buf_len = (20 + 1) * 4 / 3;
     int b64_len;
 
     //init query_params
-    query_params = aos_table_make(options->pool, 0);
+    query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_DELETE, "");
 
     //init headers
-    headers = aos_table_make(options->pool, 0);
+    headers = aos_table_create_if_null(options, headers, 1);
     apr_table_set(headers, OSS_CONTENT_TYPE, OSS_MULTIPART_CONTENT_TYPE);
 
     oss_init_bucket_request(options, bucket, HTTP_POST, &req, 
@@ -338,12 +329,12 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
                                            const aos_string_t *bucket, 
                                            const aos_string_t *prefix)
 {
-    aos_pool_t *subpool;
-    aos_pool_t *parent_pool;
+    aos_pool_t *subpool = NULL;
+    aos_pool_t *parent_pool = NULL;
     int is_quiet = 1;
-    aos_status_t *s;
-    aos_status_t *ret;
-    oss_list_object_params_t *params;
+    aos_status_t *s = NULL;
+    aos_status_t *ret = NULL;
+    oss_list_object_params_t *params = NULL;
     int list_object_count = 0;
     
     parent_pool = options->pool;
@@ -354,12 +345,12 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
         aos_str_set(&params->prefix, prefix->data);
     }
     while (params->truncated) {
-        aos_table_t *list_object_resp_headers;
+        aos_table_t *list_object_resp_headers = NULL;
         aos_list_t object_list;
         aos_list_t deleted_object_list;
-        oss_list_object_content_t *list_content;
-        aos_table_t *delete_objects_resp_headers;
-        char *key;
+        oss_list_object_content_t *list_content = NULL;
+        aos_table_t *delete_objects_resp_headers = NULL;
+        char *key = NULL;
 
         aos_pool_create(&subpool, parent_pool);
         options->pool = subpool;

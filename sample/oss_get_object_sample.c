@@ -16,6 +16,7 @@ void get_object_to_buffer()
     int is_oss_domain = 1;
     oss_request_options_t *options;
     aos_table_t *headers;
+    aos_table_t *params;
     aos_table_t *resp_headers;
     aos_status_t *s;
     aos_list_t buffer;
@@ -30,11 +31,10 @@ void get_object_to_buffer()
     init_sample_request_options(options, is_oss_domain);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
-    headers = aos_table_make(p, 0);
     aos_list_init(&buffer);
 
     s = oss_get_object_to_buffer(options, &bucket, &object, 
-                                 headers, &buffer, &resp_headers);
+                                 headers, params, &buffer, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("get object to buffer succeeded\n");
@@ -70,6 +70,7 @@ void get_object_to_local_file()
     int is_oss_domain = 1;
     oss_request_options_t *options;
     aos_table_t *headers;
+    aos_table_t *params;
     aos_table_t *resp_headers;
     aos_status_t *s;
     aos_string_t file;
@@ -83,7 +84,7 @@ void get_object_to_local_file()
     aos_str_set(&file, download_filename);
 
     s = oss_get_object_to_file(options, &bucket, &object, headers, 
-                               &file, &resp_headers);
+                               params, &file, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("get object to local file succeeded\n");
@@ -193,16 +194,16 @@ void get_oss_dir_to_local_dir()
                 aos_string_t object;
                 aos_pool_t *get_object_pool;
                 aos_table_t *headers;
+                aos_table_t *query_params;
                 aos_table_t *get_object_resp_headers;
 
                 aos_str_set(&object, list_content->key.data);
 
                 aos_pool_create(&get_object_pool, parent_pool);
                 options->pool = get_object_pool;
-                headers = aos_table_make(options->pool, 0);
 
                 s = oss_get_object_to_file(options, &bucket, &object, 
-                        headers, &object, &get_object_resp_headers);
+                        headers, query_params, &object, &get_object_resp_headers);
                 if (!aos_status_is_ok(s)) {
                     aos_error_log("get object[%s] fail\n", object.data);
                 }

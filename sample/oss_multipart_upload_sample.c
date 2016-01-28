@@ -91,7 +91,6 @@ void multipart_upload_file_from_buffer()
     }
 
     //complete multipart
-    apr_table_add(headers, OSS_REPLACE_OBJECT_META, "yes");
     apr_table_add(headers, OSS_CONTENT_TYPE, "video/MP2T");
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
             &complete_part_list, headers, &resp_headers);

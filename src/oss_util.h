@@ -195,6 +195,9 @@ char *get_content_type_by_suffix(const char *suffix);
 **/
 void set_content_type_for_file(const char* filename, aos_table_t *headers);
 
+aos_table_t* aos_table_create_if_null(const oss_request_options_t *options, 
+                                      aos_table_t *table, int table_size);
+
 OSS_CPP_END
 
 #endif

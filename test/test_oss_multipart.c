@@ -232,7 +232,6 @@ void test_multipart_upload(CuTest *tc)
     }
 
     //complete multipart
-    apr_table_add(headers, OSS_REPLACE_OBJECT_META, "yes");
     apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
             &complete_part_list, headers, &complete_resp_headers);
@@ -338,21 +337,10 @@ void test_multipart_upload_from_file(CuTest *tc)
     }
 
     //complete multipart
-    apr_table_clear(headers);
-    apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-            &complete_part_list, headers, &complete_resp_headers);
+            &complete_part_list, NULL, &complete_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
-
-    //check content type
-    apr_table_clear(headers);
-    s = oss_head_object(options, &bucket, &object, headers, &head_resp_headers);
-    CuAssertIntEquals(tc, 200, s->code);
-    CuAssertPtrNotNull(tc, head_resp_headers);
-
-    actual_content_type = (char*)(apr_table_get(head_resp_headers, OSS_CONTENT_TYPE));
-    CuAssertTrue(tc, content_type_for_complete != actual_content_type);
 
     remove(file_path);
     aos_pool_destroy(p);
@@ -370,6 +358,7 @@ void test_upload_part_copy(CuTest *tc)
     oss_upload_part_copy_params_t *upload_part_copy_params1 = NULL;
     oss_upload_part_copy_params_t *upload_part_copy_params2 = NULL;
     aos_table_t *headers = NULL;
+    aos_table_t *query_params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_table_t *list_part_resp_headers = NULL;
     aos_list_t complete_part_list;
@@ -465,15 +454,17 @@ void test_upload_part_copy(CuTest *tc)
     }
      
     //complete multipart
-    s = oss_complete_multipart_upload(options, &dest_bucket, &dest_object, &upload_id,
-            &complete_part_list, headers, &complete_resp_headers);
+    headers = aos_table_make(p, 0);
+    s = oss_complete_multipart_upload(options, &dest_bucket, &dest_object, 
+            &upload_id, &complete_part_list, headers, &complete_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
 
     //check upload copy part content equal to local file
     headers = aos_table_make(p, 0);
     aos_str_set(&download_file, download_filename);
-    s = oss_get_object_to_file(options, &dest_bucket, &dest_object, headers, &download_file, &resp_headers);
+    s = oss_get_object_to_file(options, &dest_bucket, &dest_object, headers, 
+                               query_params, &download_file, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertIntEquals(tc, get_file_size(local_filename), get_file_size(download_filename));    
     CuAssertPtrNotNull(tc, resp_headers);
@@ -505,7 +496,8 @@ void test_upload_file(CuTest *tc)
     aos_str_set(&object, object_name);
     aos_str_null(&upload_id);
     aos_str_set(&filepath, __FILE__);
-    s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, part_size);
+    s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
+                        part_size, NULL);
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_pool_destroy(p);

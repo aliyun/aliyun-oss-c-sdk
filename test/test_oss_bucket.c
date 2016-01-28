@@ -251,7 +251,8 @@ void test_list_object_with_delimiter(CuTest *tc)
 
     aos_list_for_each_entry(common_prefix, &params->common_prefix_list, node) {
         ++size;
-        prefix = apr_psprintf(p, "%.*s", common_prefix->prefix.len, common_prefix->prefix.data);
+        prefix = apr_psprintf(p, "%.*s", common_prefix->prefix.len, 
+                              common_prefix->prefix.data);
         if (size == 1) {
             CuAssertStrEquals(tc, "oss_tmp1/", prefix);
         } else if(size == 2) {
@@ -295,7 +296,8 @@ void test_lifecycle(CuTest *tc)
     aos_str_set(&invalid_rule_content->id, "");
     aos_str_set(&invalid_rule_content->prefix, "pre");
     aos_list_add_tail(&invalid_rule_content->node, &lifecycle_rule_list);
-    s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, &resp_headers);
+    s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
+                                 &resp_headers);
     CuAssertIntEquals(tc, 400, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -315,38 +317,48 @@ void test_lifecycle(CuTest *tc)
     aos_list_add_tail(&rule_content1->node, &lifecycle_rule_list);
     aos_list_add_tail(&rule_content2->node, &lifecycle_rule_list);
 
-    s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, &resp_headers);
+    s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
+                                 &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
     //get lifecycle
     resp_headers = NULL;
     aos_list_init(&lifecycle_rule_list);
-    s = oss_get_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, &resp_headers);
+    s = oss_get_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
+                                 &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
     aos_list_for_each_entry(rule_content, &lifecycle_rule_list, node) {
         if (size == 0) {
-            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len, rule_content->id.data);
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len, 
+                    rule_content->id.data);
             CuAssertStrEquals(tc, "1", rule_id);
-            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len, rule_content->prefix.data);
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len, 
+                    rule_content->prefix.data);
             CuAssertStrEquals(tc, "pre1", prefix);
-            date = apr_psprintf(p, "%.*s", rule_content->date.len, rule_content->date.data);
+            date = apr_psprintf(p, "%.*s", rule_content->date.len, 
+                    rule_content->date.data);
             CuAssertStrEquals(tc, "", date);
-            status = apr_psprintf(p, "%.*s", rule_content->status.len, rule_content->status.data);
+            status = apr_psprintf(p, "%.*s", rule_content->status.len, 
+                    rule_content->status.data);
             CuAssertStrEquals(tc, "Enabled", status);
             days = rule_content->days;
             CuAssertIntEquals(tc, 1, days);
         }
         else if (size == 1){
-            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len, rule_content->id.data);
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len, 
+                    rule_content->id.data);
             CuAssertStrEquals(tc, "2", rule_id);
-            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len, rule_content->prefix.data);
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len, 
+                    rule_content->prefix.data);
             CuAssertStrEquals(tc, "pre2", prefix);
-            date = apr_psprintf(p, "%.*s", rule_content->date.len, rule_content->date.data);
+            date = apr_psprintf(p, "%.*s", rule_content->date.len, 
+                    rule_content->date.data);
             CuAssertStrEquals(tc, "2022-10-11T00:00:00.000Z", date);
-            status = apr_psprintf(p, "%.*s", rule_content->status.len, rule_content->status.data);
+            status = apr_psprintf(p, "%.*s", rule_content->status.len, 
+                    rule_content->status.data);
             CuAssertStrEquals(tc, "Enabled", status);
             days = rule_content->days;
             CuAssertIntEquals(tc, INT_MAX, days);
