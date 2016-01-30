@@ -96,8 +96,7 @@ int run_all_tests(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     int exit_code;
-    //aos_http_io_initialize first 
-    if (aos_http_io_initialize("oss_test", 0) != AOSE_OK) {
+    if (aos_http_io_initialize(0) != AOSE_OK) {
         exit(1);
     }
     

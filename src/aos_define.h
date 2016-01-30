@@ -114,7 +114,6 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define aos_version    0000001
 #define AOS_VERSION    "1.0.0"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 

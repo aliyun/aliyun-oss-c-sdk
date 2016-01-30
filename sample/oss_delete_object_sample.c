@@ -37,7 +37,7 @@ void delete_object()
 
 int main(int argc, char *argv[])
 {
-    if (aos_http_io_initialize("oss_sample", 0) != AOSE_OK) {
+    if (aos_http_io_initialize(0) != AOSE_OK) {
         exit(1);
     }
 
