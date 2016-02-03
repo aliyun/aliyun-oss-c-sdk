@@ -49,7 +49,7 @@ void make_random_body(aos_pool_t *p, int count, aos_list_t *bc)
 
 void init_sample_config(oss_config_t *config, int is_cname)
 {
-    aos_str_set(&config->endpoint, OSS_HOST);
+    aos_str_set(&config->endpoint, OSS_ENDPOINT);
     aos_str_set(&config->access_key_id, ACCESS_KEY_ID);
     aos_str_set(&config->access_key_secret, ACCESS_KEY_SECRET);
     config->is_cname = is_cname;

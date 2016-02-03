@@ -5,7 +5,7 @@
 
 OSS_CPP_START
 
-extern const char TEST_OSS_HOST[];
+extern const char TEST_OSS_ENDPOINT[];
 extern const char TEST_ACCESS_KEY_ID[];
 extern const char TEST_ACCESS_KEY_SECRET[];
 extern const char TEST_BUCKET_NAME[];

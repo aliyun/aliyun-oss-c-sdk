@@ -23,7 +23,6 @@ char *oss_gen_signed_url(const oss_request_options_t *options,
     oss_get_object_uri(options, bucket, object, req);
     res = oss_get_signed_url(options, req, &expires_time, &signed_url);
     if (res != AOSE_OK) {
-        aos_error_log("\ngen signed url fail!");
         return NULL;
     }
     return signed_url.data;

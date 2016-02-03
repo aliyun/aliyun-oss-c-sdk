@@ -194,7 +194,6 @@ aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
     *resp_headers = resp->headers;
 
     return s;
-
 }
 
 aos_status_t *oss_get_bucket_lifecycle(const oss_request_options_t *options,
@@ -358,8 +357,6 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
         aos_list_init(&object_list);
         s = oss_list_object(options, bucket, params, &list_object_resp_headers);
         if (!aos_status_is_ok(s)) {
-            aos_error_log("list objects by prefix fail! prefix:%.*s\n", 
-                          prefix->len, prefix->data);
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
             options->pool = parent_pool;
@@ -389,8 +386,6 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
         s = oss_delete_objects(options, bucket, &object_list, is_quiet,
                                &delete_objects_resp_headers, &deleted_object_list);
         if (!aos_status_is_ok(s)) {
-            aos_error_log("delete objects by prefix fail! prefix:%.*s error_msg:%s\n",
-                          prefix->len, prefix->data, s->error_msg);
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
             options->pool = parent_pool;

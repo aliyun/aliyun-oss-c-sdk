@@ -332,8 +332,6 @@ aos_status_t *oss_get_sorted_uploaded_part(oss_request_options_t *options,
         s = oss_list_upload_part(options, bucket, object,
             upload_id, params, &list_part_resp_headers);
         if (!aos_status_is_ok(s)) {
-            aos_error_log("list upload fail, upload_id is %.*s\n",
-                upload_id->len, upload_id->data);
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
             options->pool = parent_pool;
@@ -412,7 +410,6 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
         s = oss_init_multipart_upload(options, bucket, object, 
             init_multipart_headers, upload_id, &init_multipart_resp_headers);
         if (!aos_status_is_ok(s)) {
-            aos_error_log("Init multipart upload fail!\n");
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
             options->pool = parent_pool;
@@ -422,7 +419,6 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
         s = oss_get_sorted_uploaded_part(options, bucket, object, upload_id, 
             &complete_part_list, &part_count);
         if (!aos_status_is_ok(s)) {
-            aos_error_log("Get multipart uploaded part fail!\n");
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
             options->pool = parent_pool;
@@ -458,8 +454,6 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
         s = oss_upload_part_from_file(options, bucket, object, upload_id,
             part_num, upload_file, &upload_part_resp_headers);
         if (!aos_status_is_ok(s)) {
-            aos_error_log("upload file fail, upload_id is %.*s fail part_num:%d\n", 
-                upload_id->len, upload_id->data, part_num);
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
             options->pool = parent_pool;
@@ -492,10 +486,6 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
 
     s = oss_complete_multipart_upload(options, bucket, object, upload_id,
             &complete_part_list, headers, &complete_resp_headers);
-    if (!aos_status_is_ok(s)) {
-        aos_error_log("complete multipart upload fail, upload_id is %.*s\n", 
-            upload_id->len, upload_id->data);
-    }
     ret = aos_status_dup(parent_pool, s);
     aos_pool_destroy(subpool);
     options->pool = parent_pool;

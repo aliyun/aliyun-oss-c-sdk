@@ -259,7 +259,8 @@ int aos_http_io_initialize(int flags)
     requestStackCountG = 0;
 
     if ((ecode = curl_global_init(CURL_GLOBAL_ALL &
-           ~((flags & AOS_INIT_WINSOCK) ? 0: CURL_GLOBAL_WIN32))) != CURLE_OK) {
+           ~((flags & AOS_INIT_WINSOCK) ? 0: CURL_GLOBAL_WIN32))) != CURLE_OK) 
+    {
         aos_error_log("curl_global_init failure, code:%d %s.\n", ecode, curl_easy_strerror(ecode));
         return AOSE_INTERNAL_ERROR;
     }
