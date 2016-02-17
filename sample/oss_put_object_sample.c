@@ -10,17 +10,17 @@
 
 void put_object_from_buffer()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     aos_list_t buffer;
-    aos_buf_t *content;
+    aos_buf_t *content = NULL;
     char *str = "test oss c sdk";
-    aos_status_t *s;
+    aos_status_t *s = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -48,15 +48,15 @@ void put_object_from_buffer()
 
 void put_object_from_file()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     char *filename = __FILE__;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     aos_string_t file;
 
     aos_pool_create(&p, NULL);
@@ -81,17 +81,17 @@ void put_object_from_file()
 
 void put_object_by_signed_url()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     aos_string_t url;
     int is_cname = 0;
     aos_http_request_t *request = NULL;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     char *filename = __FILE__;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     aos_string_t file;
     char *signed_url = NULL;
     int64_t expires_time;
@@ -138,14 +138,14 @@ void put_object_by_signed_url()
 
 void create_dir()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
-    aos_status_t *s;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
     aos_list_t buffer;
 
     aos_pool_create(&p, NULL);
@@ -170,16 +170,16 @@ void create_dir()
 
 void put_object_to_dir()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     char *filename = __FILE__;
-    char *key;
-    aos_status_t *s;
+    char *key = NULL;
+    aos_status_t *s = NULL;
     aos_string_t file;
 
     aos_pool_create(&p, NULL);

@@ -10,20 +10,20 @@
 
 void append_object_from_buffer()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     char *str = "test oss c sdk";
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     int is_cname = 0;
     int64_t position = 0;
-    aos_table_t *headers1;
-    aos_table_t *headers2;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers1 = NULL;
+    aos_table_t *headers2 = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     aos_list_t buffer;
-    aos_buf_t *content;
-    char *next_append_position;
+    aos_buf_t *content = NULL;
+    char *next_append_position = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -57,19 +57,19 @@ void append_object_from_buffer()
 
 void append_object_from_file()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers1;
-    aos_table_t *headers2;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers1 = NULL;
+    aos_table_t *headers2 = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     char *filename = __FILE__;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     aos_string_t file;
     int64_t position = 0;
-    char *next_append_position;
+    char *next_append_position = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

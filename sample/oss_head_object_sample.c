@@ -10,14 +10,14 @@
 
 void head_object()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    oss_request_options_t *options;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

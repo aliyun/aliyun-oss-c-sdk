@@ -107,10 +107,32 @@ static oss_content_type_t file_type[] = {
     {NULL, NULL}
 };
 
-int is_valid_ip(const aos_string_t *str)
+static int starts_with(const aos_string_t *str, const char *prefix) {
+    uint32_t i;
+    if(NULL != str && prefix && str->len > 0 && strlen(prefix)) {
+        for(i = 0; str->data[i] != '\0' && prefix[i] != '\0'; i++) {
+            if(prefix[i] != str->data[i]) return 0;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+static void generate_proto(const oss_request_options_t *options, 
+                           aos_http_request_t *req) 
+{
+    const char *proto;
+    proto = starts_with(&options->config->endpoint, AOS_HTTP_PREFIX) ? 
+            AOS_HTTP_PREFIX : "";
+    proto = starts_with(&options->config->endpoint, AOS_HTTPS_PREFIX) ? 
+            AOS_HTTPS_PREFIX : proto;
+    req->proto = apr_psprintf(options->pool, "%.*s", strlen(proto), proto);
+}
+
+int is_valid_ip(const char *str)
 {
     struct in_addr addr;
-    if (inet_pton(AF_INET, str->data, &addr) == 0) {
+    if (inet_pton(AF_INET, str, &addr) == 0) {
         return 0;
     }
     return 1;
@@ -144,24 +166,34 @@ void oss_get_object_uri(const oss_request_options_t *options,
                         const aos_string_t *object, 
                         aos_http_request_t *req)
 {
+    generate_proto(options, req);
+
+    int32_t proto_len = strlen(req->proto);
+
     req->resource = apr_psprintf(options->pool, "%.*s/%.*s", 
                                  bucket->len, bucket->data, 
                                  object->len, object->data);
+
+    const char *raw_endpoint_str = aos_pstrdup(options->pool, 
+            &options->config->endpoint) + proto_len;
+    aos_string_t raw_endpoint = {options->config->endpoint.len - proto_len,
+                                 options->config->endpoint.data + proto_len};
+
     if (options->config->is_cname) {
         req->host = apr_psprintf(options->pool, "%.*s",
-                options->config->endpoint.len, 
-                options->config->endpoint.data);
+                raw_endpoint.len, raw_endpoint.data);
         req->uri = object->data;
-    } else if (is_valid_ip(&options->config->endpoint)){
-        req->host = options->config->endpoint.data;
+    } else if (is_valid_ip(raw_endpoint_str)){
+        req->host = apr_psprintf(options->pool, "%.*s",
+                raw_endpoint.len, raw_endpoint.data);
         req->uri = apr_psprintf(options->pool, "%.*s/%.*s",
                                 bucket->len, bucket->data, 
                                 object->len, object->data);
     } else {
         req->host = apr_psprintf(options->pool, "%.*s.%.*s",
                 bucket->len, bucket->data, 
-                options->config->endpoint.len, options->config->endpoint.data);
-        req->uri = object->data;        
+                raw_endpoint.len, raw_endpoint.data);
+        req->uri = object->data;
     }
 }
 
@@ -169,19 +201,33 @@ void oss_get_bucket_uri(const oss_request_options_t *options,
                         const aos_string_t *bucket,
                         aos_http_request_t *req)
 {
-    if (is_valid_ip(&options->config->endpoint)) {
-        req->resource = apr_psprintf(options->pool, "%.*s", bucket->len, bucket->data);    
+    generate_proto(options, req);
+
+    int32_t proto_len = strlen(req->proto);
+    const char *raw_endpoint_str = aos_pstrdup(options->pool, 
+            &options->config->endpoint) + proto_len;
+    aos_string_t raw_endpoint = {options->config->endpoint.len - proto_len,
+                                 options->config->endpoint.data + proto_len};
+
+    if (is_valid_ip(raw_endpoint_str)) {
+        req->resource = apr_psprintf(options->pool, "%.*s", 
+                bucket->len, bucket->data);
     } else {
-        req->resource = apr_psprintf(options->pool, "%.*s/", bucket->len, bucket->data);
+        req->resource = apr_psprintf(options->pool, "%.*s/", 
+                bucket->len, bucket->data);
     }
     
-    if (options->config->is_cname || is_valid_ip(&options->config->endpoint)) {
-        req->host = options->config->endpoint.data;
-        req->uri = apr_psprintf(options->pool, "%.*s", bucket->len, bucket->data);
+    if (options->config->is_cname || 
+        is_valid_ip(raw_endpoint_str))
+    {
+        req->host = apr_psprintf(options->pool, "%.*s", 
+                raw_endpoint.len, raw_endpoint.data);
+        req->uri = apr_psprintf(options->pool, "%.*s", bucket->len, 
+                                bucket->data);
     } else {
         req->host = apr_psprintf(options->pool, "%.*s.%.*s", 
-                bucket->len, bucket->data, options->config->endpoint.len, 
-                options->config->endpoint.data);
+                bucket->len, bucket->data, 
+                raw_endpoint.len, raw_endpoint.data);
         req->uri = apr_psprintf(options->pool, "%s", "");
     }
 }

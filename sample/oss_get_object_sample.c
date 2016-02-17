@@ -10,18 +10,18 @@
 
 void get_object_to_buffer()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    oss_request_options_t *options;
-    aos_table_t *headers;
-    aos_table_t *params;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
     aos_list_t buffer;
-    aos_buf_t *content;
-    char *buf;
+    aos_buf_t *content = NULL;
+    char *buf = NULL;
     int64_t len = 0;
     int64_t size = 0;
     int64_t pos = 0;
@@ -63,16 +63,16 @@ void get_object_to_buffer()
 
 void get_object_to_local_file()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     char *download_filename = "get_object_to_local_file.txt";
     aos_string_t object;
     int is_cname = 0;
-    oss_request_options_t *options;
-    aos_table_t *headers;
-    aos_table_t *params;
-    aos_table_t *resp_headers;
-    aos_status_t *s;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
     aos_string_t file;
 
     aos_pool_create(&p, NULL);
@@ -97,17 +97,17 @@ void get_object_to_local_file()
 
 void get_object_by_signed_url()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     aos_string_t url;
     int is_cname = 0;
     aos_http_request_t *request = NULL;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     aos_list_t buffer;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     aos_string_t file;
     char *signed_url = NULL;
     int64_t expires_time;
@@ -154,12 +154,12 @@ void get_object_by_signed_url()
 
 void get_oss_dir_to_local_dir()
 {
-    aos_pool_t *parent_pool;    
+    aos_pool_t *parent_pool = NULL;
     aos_string_t bucket;
     int is_cname = 0;
-    aos_status_t *s;
-    oss_request_options_t *options;
-    oss_list_object_params_t *params;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    oss_list_object_params_t *params = NULL;
 
     aos_pool_create(&parent_pool, NULL);
     options = oss_request_options_create(parent_pool);
@@ -170,10 +170,10 @@ void get_oss_dir_to_local_dir()
     params->truncated = 1;
 
     while (params->truncated) {
-        aos_pool_t *list_object_pool;
-        aos_table_t *list_object_resp_headers;
-        oss_list_object_content_t *list_content;
-        oss_list_object_common_prefix_t *list_common_prefix;
+        aos_pool_t *list_object_pool = NULL;
+        aos_table_t *list_object_resp_headers = NULL;
+        oss_list_object_content_t *list_content = NULL;
+        oss_list_object_common_prefix_t *list_common_prefix = NULL;
 
         aos_pool_create(&list_object_pool, parent_pool);
         options->pool = list_object_pool;
@@ -192,10 +192,10 @@ void get_oss_dir_to_local_dir()
                         APR_OS_DEFAULT, parent_pool);                
             } else {
                 aos_string_t object;
-                aos_pool_t *get_object_pool;
-                aos_table_t *headers;
-                aos_table_t *query_params;
-                aos_table_t *get_object_resp_headers;
+                aos_pool_t *get_object_pool = NULL;
+                aos_table_t *headers = NULL;
+                aos_table_t *query_params = NULL;
+                aos_table_t *get_object_resp_headers = NULL;
 
                 aos_str_set(&object, list_content->key.data);
 

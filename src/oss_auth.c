@@ -333,6 +333,7 @@ int oss_get_signed_url(const oss_request_options_t *options,
     char uristr[3*AOS_MAX_URI_LEN+1];
     int res = AOSE_OK;
     aos_string_t signature;
+    const char *proto;
 
     res = get_oss_request_signature(options, req, expires, &signature);
     if (res != AOSE_OK) {
@@ -356,8 +357,10 @@ int oss_get_signed_url(const oss_request_options_t *options,
         return res;
     }
 
-    signed_url_str = apr_psprintf(options->pool, "http://%s/%s%.*s",
-        req->host, uristr, querystr.len, querystr.data);
+    proto = strlen(req->proto) != 0 ? req->proto : AOS_HTTP_PREFIX;
+    signed_url_str = apr_psprintf(options->pool, "%s%s/%s%.*s",
+                                  proto, req->host, uristr,
+                                  querystr.len, querystr.data);
     aos_str_set(signed_url, signed_url_str);
 
     return res;

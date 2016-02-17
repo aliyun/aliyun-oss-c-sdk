@@ -44,6 +44,7 @@ static void aos_init_curl_headers(aos_curl_http_transport_t *t)
 static int aos_init_curl_url(aos_curl_http_transport_t *t)
 {
     int rs;
+    const char *proto;
     aos_string_t querystr;
     char uristr[3*AOS_MAX_URI_LEN+1];
 
@@ -62,12 +63,15 @@ static int aos_init_curl_url(aos_curl_http_transport_t *t)
         return rs;
     }
 
+    proto = strlen(t->req->proto) != 0 ? t->req->proto : AOS_HTTP_PREFIX;
     if (querystr.len == 0) {
-        t->url = apr_psprintf(t->pool, "http://%s/%s",
+        t->url = apr_psprintf(t->pool, "%s%s/%s",
+                              proto,
                               t->req->host,
                               uristr);
     } else {
-        t->url = apr_psprintf(t->pool, "http://%s/%s%.*s",
+        t->url = apr_psprintf(t->pool, "%s%s/%s%.*s",
+                              proto,
                               t->req->host,
                               uristr,
                               querystr.len,

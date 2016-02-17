@@ -10,20 +10,20 @@
 
 void multipart_upload_file_from_buffer()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     aos_string_t upload_id;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
     aos_list_t buffer;
-    oss_list_upload_part_params_t *params;
+    oss_list_upload_part_params_t *params = NULL;
     aos_list_t complete_part_list;
-    oss_list_part_content_t *part_content;
-    oss_complete_part_content_t *complete_part_content;
+    oss_list_part_content_t *part_content = NULL;
+    oss_complete_part_content_t *complete_part_content = NULL;
     int part_num1 = 1;
     int part_num2 = 2;
 
@@ -107,20 +107,20 @@ void multipart_upload_file_from_buffer()
 
 void multipart_upload_file_from_file()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     aos_string_t upload_id;
-    oss_upload_file_t *upload_file;
-    aos_status_t *s;
-    oss_list_upload_part_params_t *params;
+    oss_upload_file_t *upload_file = NULL;
+    aos_status_t *s = NULL;
+    oss_list_upload_part_params_t *params = NULL;
     aos_list_t complete_part_list;
-    oss_list_part_content_t *part_content;
-    oss_complete_part_content_t *complete_part_content;
+    oss_list_part_content_t *part_content = NULL;
+    oss_complete_part_content_t *complete_part_content = NULL;
     int part_num1 = 1;
     int part_num2 = 2;
 
@@ -133,7 +133,8 @@ void multipart_upload_file_from_file()
     aos_str_set(&object, OBJECT_NAME);
     
     //init mulitipart
-    s = oss_init_multipart_upload(options, &bucket, &object, headers, &upload_id, &resp_headers);
+    s = oss_init_multipart_upload(options, &bucket, &object, 
+                                  headers, &upload_id, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 
@@ -183,7 +184,8 @@ void multipart_upload_file_from_file()
 
     aos_list_for_each_entry(part_content, &params->part_list, node) {
         complete_part_content = oss_create_complete_part_content(p);
-        aos_str_set(&complete_part_content->part_number, part_content->part_number.data);
+        aos_str_set(&complete_part_content->part_number, 
+                    part_content->part_number.data);
         aos_str_set(&complete_part_content->etag, part_content->etag.data);
         aos_list_add_tail(&complete_part_content->node, &complete_part_list);
     }
@@ -204,15 +206,15 @@ void multipart_upload_file_from_file()
 
 void abort_multipart_upload()
 {
-    aos_pool_t *p;
+    aos_pool_t *p = NULL;
     aos_string_t bucket;
     aos_string_t object;
     int is_cname = 0;
-    aos_table_t *headers;
-    aos_table_t *resp_headers;
-    oss_request_options_t *options;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
     aos_string_t upload_id;
-    aos_status_t *s;
+    aos_status_t *s = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

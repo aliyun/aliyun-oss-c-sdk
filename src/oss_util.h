@@ -22,7 +22,7 @@ int is_oss_domain(const aos_string_t *str);
 /**
   * @brief  check hostname is ip.
 **/
-int is_valid_ip(const aos_string_t *str);
+int is_valid_ip(const char *str);
 
 /**
   * @brief  get oss acl str according oss_acl
