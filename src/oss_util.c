@@ -126,7 +126,7 @@ static void generate_proto(const oss_request_options_t *options,
             AOS_HTTP_PREFIX : "";
     proto = starts_with(&options->config->endpoint, AOS_HTTPS_PREFIX) ? 
             AOS_HTTPS_PREFIX : proto;
-    req->proto = apr_psprintf(options->pool, "%.*s", strlen(proto), proto);
+    req->proto = apr_psprintf(options->pool, "%.*s", (int)strlen(proto), proto);
 }
 
 int is_valid_ip(const char *str)
