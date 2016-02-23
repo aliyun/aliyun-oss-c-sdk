@@ -103,6 +103,8 @@ static oss_content_type_t file_type[] = {
     {"asf", "video/x-ms-asf"},
     {"wmv", "video/x-ms-wmv"},
     {"avi", "video/x-msvideo"},
+    {"ts", "video/MP2T"},
+    {"m3u8", "application/x-mpegURL"},
     {"apk", "application/vnd.android.package-archive"},
     {NULL, NULL}
 };
@@ -607,7 +609,7 @@ void set_content_type_for_file(const char* filename, aos_table_t *headers)
     char *user_content_type = NULL;
     char *content_type = NULL;
     user_content_type = (char*)apr_table_get(headers, OSS_CONTENT_TYPE);
-    if (user_content_type) {
+    if (NULL == user_content_type) {
         content_type = get_content_type(filename);
         if (content_type) {
             apr_table_set(headers, OSS_CONTENT_TYPE, content_type);

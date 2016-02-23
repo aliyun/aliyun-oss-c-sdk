@@ -62,7 +62,8 @@ void put_object_from_file()
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_cname);
-    headers = aos_table_make(options->pool, 0);
+    headers = aos_table_make(options->pool, 1);
+    apr_table_set(headers, OSS_CONTENT_TYPE, "image/jpeg");
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
     aos_str_set(&file, filename);
@@ -220,7 +221,6 @@ int main(int argc, char *argv[])
     create_dir();
     put_object_to_dir();
     
-    //aos_http_io_deinitialize last
     aos_http_io_deinitialize();
 
     return 0;
