@@ -1,6 +1,7 @@
 #include "CuTest.h"
 #include "aos_log.h"
 #include "aos_http_io.h"
+#include "oss_config.h"
 
 extern CuSuite *test_xml();
 extern CuSuite *test_util();
@@ -32,7 +33,7 @@ int run_all_tests(int argc, char *argv[])
     int found;
     CuSuite *st = NULL;
     CuString *output = NULL;
-    
+
     for (i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "-v")) {
             continue;
@@ -95,16 +96,21 @@ int run_all_tests(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+    TEST_OSS_ENDPOINT = getenv("OSS_TEST_ENDPOINT");
+    TEST_ACCESS_KEY_ID = getenv("OSS_TEST_ACCESS_KEY_ID");
+    TEST_ACCESS_KEY_SECRET = getenv("OSS_TEST_ACCESS_KEY_SECRET");
+    TEST_BUCKET_NAME = getenv("OSS_TEST_BUCKET");
+
     int exit_code;
     if (aos_http_io_initialize(0) != AOSE_OK) {
         exit(1);
     }
-    
+
     aos_log_level = AOS_LOG_OFF;
     exit_code = run_all_tests(argc, argv);
 
     //aos_http_io_deinitialize last
     aos_http_io_deinitialize();
-    
+
     return exit_code;
 }

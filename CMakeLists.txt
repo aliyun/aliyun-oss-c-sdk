@@ -14,6 +14,9 @@ set(CMAKE_CXX_FLAGS_DEBUG " -g -ggdb -O0 -Werror -fpic -fPIC -D_LARGEFILE64_SOUR
 set(CMAKE_C_FLAGS_RELEASE " -O3 -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
 set(CMAKE_CXX_FLAGS_RELEASE " -O3 -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
 
+set(CMAKE_C_FLAGS_COVERAGE " ${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverage")
+set(CMAKE_CXX_FLAGS_COVERAGE " ${CMAKE_C_FLAGS_DEBUG} -fprofile-arcs -ftest-coverag")
+
 set(CMAKE_C_FLAGS_MINSIZEREF " -Os -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
 set(CMAKE_CXX_FLAGS_MINSIZEREF " -Os -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
 
@@ -22,6 +25,8 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO " -O2 -Werror -fpic -fPIC -D_LARGEFILE64_SOUR
 
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/build/${CMAKE_BUILD_TYPE}/lib)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/build/${CMAKE_BUILD_TYPE}/bin)
+set(CMAKE_C_OUTPUT_EXTENSION_REPLACE 1)
+set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 
 FIND_PROGRAM(APR_CONFIG_BIN NAMES apr-config apr-1-config PATHS /usr/bin /usr/local/bin /usr/local/apr/bin/)
 FIND_PROGRAM(APU_CONFIG_BIN NAMES apu-config apu-1-config PATHS /usr/bin /usr/local/bin /usr/local/apr/bin/)
