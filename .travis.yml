@@ -10,7 +10,7 @@ install:
   - wget --quiet http://www.msweet.org/files/project3/mxml-2.9.tar.gz
   - tar zxf mxml-2.9.tar.gz
   - cd mxml-2.9
-  - ./configure && make && make install
+  - ./configure && make && sudo make install
   - cd -
   - pip install --user cpp-coveralls
 
