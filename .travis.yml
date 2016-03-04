@@ -3,16 +3,27 @@ language: c
 compiler:
   - gcc
 
-before_script:
+install:
   - sudo apt-get update
-  - sudo apt-get install libapr1-dev libaprutil1-dev curl 
+  - sudo apt-get install libapr1-dev libaprutil1-dev curl
   - wget --quiet http://www.msweet.org/files/project3/mxml-2.9.tar.gz
   - tar zxf mxml-2.9.tar.gz
   - cd mxml-2.9
-  - ./configure
-  - make
-  - sudo make install
+  - ./configure && make && sudo make install
   - cd -
+  - pip install --user cpp-coveralls
 
-script: 
-  - cmake . && make
+script:
+  - cmake -DCMAKE_BUILD_TYPE=Coverage .
+  - make
+  - ./build/Coverage/bin/oss_c_sdk_test
+
+after_success:
+  - coveralls --include src/ --gcov-options '\-lp'
+
+env:
+  global:
+    - secure: kvjsFXirn2+Nys0TO0eViDHTlhz0ow5AuWuQeEzJAJnLbJfqupWng0o3i4vGF7bPpxWgbrIFJro/Pwk15F1gvUGaKjXbPWn5hae3G3ZqDwdNkDYy8Hs8VnjvqlaZ4dbpqDQOFA7+49jUuzVPdHFWJgLEleE53RADfuESN/rd0Uo6C1mZEEmyEhmj2pyHSKr08UWLbbuoLuVeaF1rfLxLRAU/Ki0S1AnnFirJcsbMSICexwQ96G+bdQTdqHass6JfQfOYklnKVSrMbk/0MuV5LmeQ3A1j1AF3iRzZ4KT4FmNXwk0hoocz+la8M3B7zaUu2wuea8LV5mZ6G5bN5p2fYHXlpZaoxstMl3HUwiQH5ETX0W6bzB1rjWl2CteKR3xt2wW1qj5XDvjqBUrPNV0yibpfMdkVfLnvic16+0qZua2cjsn93d0AyNnS6cFCGAH3PGI7+3Mmg4T1S43z9XjXjHmOCT0EQ/kfGI0m+3p8TYqqQMandWbphpXZYPdHBeSv4tMMFn1p7bjwn5fxvUKCou/tvef7qD3OYjectiEzTou7Ttxz6gThiDekIf8Pbeuzq5mgnSDXr+8DTpHzKltsQBLyhezlBL9P5PW6GH3xp+/4yFHPOnsOhK7qLkiJ6CQ9JPq2noeAAh+cgKiSoZibaWj3ht2p1LynR/Kr8XQfZfQ=
+    - secure: pLU+jHSLKimMSX0I3sL9To7sg+hO7vEplZhCL9OPUj8vTVmdLCRnbNiTAUaUrSA0/O55lxeleBfyi6joPY5IOgCRASExhFxfsidKjskb77bKl1/izt4EH41sahlcrbmpgPRdXORyOzCN9HkuWvrR8FZsTwnBpHJ3+IxsxKURGlY8NYN50sscqM+KvctUvXf+j/y0gZK42F78bLD3WRr1Fiph9UOYOUPvnQe69tOUwrKil5u8Ho+JeQCpuXsiDJkYz232WSgKOw326AIjo99VLvw1Q3HTdU8ztsarcswjLTSMpHpPT6vxNKVd0WUi6zmZpO/CLZvqtPxtPizT54OurDB7ClUJ0KJyFRgOaaRofbKDi8xWXATIYfI92x0IHIq/4aeufc3N4zQDgjdRrp4silS56IxTi+OM/T6opIg258j7lrEUP3nz+DBOqCSYBL1pIfhJDeoWSFYE2Ehc7paVCFkoEp41lv1sgBX1At0dM7lobIlsMX2zmQPszLQTgaj8mu/5u7/tFMFSw4TWydI+el3xJVlq4ad2DpYP/yRPEcUkq64/qPZP1dSfxlwBzEOCk4zoAQHev3php32O5vDyLcV3R1Zvyr0Y1/suPMXeUEU6kvS26I9jSpwB/E3i+6HhfcqcnmaGxqr1pRw/dhedGAAayKZEqDcEpTdXf9D6BcE=
+    - secure: wFXioHVdO0bP4N8o/q+y76K65vyls3CIzM3I71ZN1+Ayl01Z0c1WxL+84LlhHjUetMzFG2X10zdnMmuthUz9mkIRMxBxrbp6O2VzrniMkkFjzkK0P2obuLn3N0DfCT072XxvSt5l6aymB0+8Jv77d/nLxslGMIEkJWW9qgZQuTABRjQxCNwJ6Yo2I85kH6nXvdBsYvGCAkM+N1bZP7HvncvQgncZq+ImgOG7Hj21mdVCRF+qSw4o4YOBd6JELUtntpqRpp9gx52H2CgvTUYIb3gppmm392cAlNrUZirINCVXfJdfnq1pbHFJW5L9jdkJxq1L4SIOpZZX3yf5+pDqVHXXVh4hyW1oUBQejTzX76GD8Xwh51NzGXATkhEuGgchvQeb6ul7Q/+S6JzdWlrkQwc4cIZS3fjdpAsXtPlaiEsoQja1zNWHlQvylF//5+r69TiYFTJ737YyckKv6iEhY92zWg0qBDaDQGQ7lM/kudb1WrDOAV7xaNMuY1ys7mXZmaiyq6sD03EkBrndJMtcu3Z2ofId4IOMOvLT0sWACtKP8R3ajo8oyGJAftcvi4w/2bz1OwJ010vVvPwrbmT16WFrSuzUrMXZwkjDHBT//PxjrY7OLl0js6xxrujjm1sc+ekSUOfnZFshT+4yRCAxcLrrmuclvLVSPAYHMQ6E4lA=
+    - secure: WSTMesLCs2QMOzSkfNrMnYPUaWBRG+RFWGFWC1GvXaxz0rJxRdtFkWJ05mcmsOMBCPbBwzh9LWm1a7ssDcljnDHc/3nOuiyKc3AgZ8pxlVxJj0ujj/HIxB5GbcbEePzMvJcSPMq/QFYpfyWM/8qRo3I0PYpLQatq75tILSuHkmay9Ic96ixqNsjVCey/uOB3RZB68fzmxok+wVnpPe6y0wcL9uK7xKmrRc7pEMr8/9BjbtyBKOPbBgtV6ArJf4j3Wy9Di9ZOdkR8PLGtWaf8vEFat3NtvzXG/Ag9cCkbU/t4ZZuwmF5MiaWNpQeZt8pdvPh0WFnmhs9kZyq0vm0W3lDoJ5tBBSHmu+LdZSCnkHuGWvaaofpPKOSLE5MBVucKHLGurQj0wGY3Xw4Vc9m76YKGRcbJ6iWjcf+WOSLdcepagpN+aeGgG+yY60mCnNiEUPKCK7A8bZmF2GyMR3JgJSEQ1gjfI4iDi8PBZ9dMAWFDUqhixwCZQuVbsEcspXFVNFjjks/2aRG5RnAAIEhatz4ja2Koxv/ZhJn752sw4l3N6GNSjYlqZl5xA41Ycr6nDGqbB87xp+DiYeEzNmwFmpAnrA5Ur8ZFE9HEObGgCdouRLjyPjhLUS+QEeDangEth7bXlACBQxPMlJsjBrXuQxykT+TtqVexOWQtVe9nuJQ=

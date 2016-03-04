@@ -5,10 +5,10 @@
 
 OSS_CPP_START
 
-extern const char TEST_OSS_ENDPOINT[];
-extern const char TEST_ACCESS_KEY_ID[];
-extern const char TEST_ACCESS_KEY_SECRET[];
-extern const char TEST_BUCKET_NAME[];
+extern char* TEST_OSS_ENDPOINT;
+extern char* TEST_ACCESS_KEY_ID;
+extern char* TEST_ACCESS_KEY_SECRET;
+extern char* TEST_BUCKET_NAME;
 
 OSS_CPP_END
 
