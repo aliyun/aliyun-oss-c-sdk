@@ -90,14 +90,17 @@ aos_status_t *oss_process_signed_request(const oss_request_options_t *options,
 /**
   * @brief  get object uri using third-level domain if hostname is oss domain, otherwise second-level domain
 **/
-void oss_get_object_uri(const oss_request_options_t *options, const aos_string_t *bucket, 
-        const aos_string_t *object, aos_http_request_t *req);
+void oss_get_object_uri(const oss_request_options_t *options,
+                        const aos_string_t *bucket,
+                        const aos_string_t *object,
+                        aos_http_request_t *req);
 
 /**
   * @brief   bucket uri using third-level domain if hostname is oss domain, otherwise second-level domain
 **/
-void oss_get_bucket_uri(const oss_request_options_t *options, const aos_string_t *bucket,
-    aos_http_request_t *req);
+void oss_get_bucket_uri(const oss_request_options_t *options, 
+                        const aos_string_t *bucket,
+                        aos_http_request_t *req);
 
 /**
   * @brief  write body content into oss request body from buffer
@@ -193,7 +196,7 @@ char *get_content_type_by_suffix(const char *suffix);
 /**
   * @brief  set content type for object according to  filename
 **/
-void set_content_type_for_file(const char* filename, aos_table_t *headers);
+void set_content_type(const char* filename, const char* key, aos_table_t *headers);
 
 aos_table_t* aos_table_create_if_null(const oss_request_options_t *options, 
                                       aos_table_t *table, int table_size);

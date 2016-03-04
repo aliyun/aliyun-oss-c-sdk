@@ -96,10 +96,14 @@ int run_all_tests(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    TEST_OSS_ENDPOINT = getenv("OSS_TEST_ENDPOINT");
-    TEST_ACCESS_KEY_ID = getenv("OSS_TEST_ACCESS_KEY_ID");
-    TEST_ACCESS_KEY_SECRET = getenv("OSS_TEST_ACCESS_KEY_SECRET");
-    TEST_BUCKET_NAME = getenv("OSS_TEST_BUCKET");
+    TEST_OSS_ENDPOINT = TEST_OSS_ENDPOINT != NULL ? 
+                        TEST_OSS_ENDPOINT : getenv("OSS_TEST_ENDPOINT");
+    TEST_ACCESS_KEY_ID = TEST_ACCESS_KEY_ID != NULL ? 
+                         TEST_ACCESS_KEY_ID : getenv("OSS_TEST_ACCESS_KEY_ID");
+    TEST_ACCESS_KEY_SECRET = TEST_ACCESS_KEY_SECRET != NULL ?
+                             TEST_ACCESS_KEY_SECRET : getenv("OSS_TEST_ACCESS_KEY_SECRET");
+    TEST_BUCKET_NAME = TEST_BUCKET_NAME != NULL ?
+                       TEST_BUCKET_NAME : getenv("OSS_TEST_BUCKET");
 
     int exit_code;
     if (aos_http_io_initialize(0) != AOSE_OK) {

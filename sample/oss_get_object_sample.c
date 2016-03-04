@@ -107,8 +107,7 @@ void get_object_by_signed_url()
     aos_table_t *resp_headers = NULL;
     oss_request_options_t *options = NULL;
     aos_list_t buffer;
-    aos_status_t *s = NULL;
-    aos_string_t file;
+    aos_status_t *s = NULL;    
     char *signed_url = NULL;
     int64_t expires_time;
 
@@ -173,8 +172,7 @@ void get_oss_dir_to_local_dir()
         aos_pool_t *list_object_pool = NULL;
         aos_table_t *list_object_resp_headers = NULL;
         oss_list_object_content_t *list_content = NULL;
-        oss_list_object_common_prefix_t *list_common_prefix = NULL;
-
+        
         aos_pool_create(&list_object_pool, parent_pool);
         options->pool = list_object_pool;
         s = oss_list_object(options, &bucket, params, &list_object_resp_headers);

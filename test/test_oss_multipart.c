@@ -268,14 +268,11 @@ void test_multipart_upload_from_file(CuTest *tc)
     aos_table_t *upload_part_resp_headers = NULL;
     oss_list_upload_part_params_t *params = NULL;
     aos_table_t *list_part_resp_headers = NULL;
-    aos_table_t *head_resp_headers = NULL;
     aos_string_t upload_id;
     aos_list_t complete_part_list;
     oss_list_part_content_t *part_content1 = NULL;
     oss_complete_part_content_t *complete_content1 = NULL;
     aos_table_t *complete_resp_headers = NULL;
-    char *content_type_for_complete = "video/MP2T";
-    char *actual_content_type = NULL;
     aos_string_t data;
     int part_num = 1;
     int part_num1 = 2;

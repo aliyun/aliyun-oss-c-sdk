@@ -66,7 +66,6 @@ aos_status_t *oss_put_bucket_acl(const oss_request_options_t *options,
                                  aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
-    int res;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;

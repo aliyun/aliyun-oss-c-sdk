@@ -40,7 +40,9 @@ aos_status_t *oss_put_object_from_buffer(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
-    headers = aos_table_create_if_null(options, headers, 0);
+    headers = aos_table_create_if_null(options, headers, 1);
+    set_content_type(NULL, object->data, headers);
+
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, 
@@ -68,12 +70,14 @@ aos_status_t *oss_put_object_from_file(const oss_request_options_t *options,
 
     s = aos_status_create(options->pool);
 
-    headers = aos_table_create_if_null(options, headers, 0);
+    headers = aos_table_create_if_null(options, headers, 1);
+    set_content_type(filename->data, object->data, headers);
+
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, &req, 
                             query_params, headers, &resp);
-    set_content_type_for_file(filename->data, headers);
+
     res = oss_write_request_body_from_file(options->pool, filename, req);
     if (res != AOSE_OK) {
         aos_file_error_status_set(s, res);
@@ -154,7 +158,8 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
-    headers = aos_table_create_if_null(options, headers, 0);
+    headers = aos_table_create_if_null(options, headers, 0);    
+
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_HEAD, 
@@ -204,14 +209,15 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
-    headers = aos_table_create_if_null(options, headers, 1);
+    headers = aos_table_create_if_null(options, headers, 2);
     query_params = aos_table_create_if_null(options, query_params, 0);
 
-    //init headers
+    /* init headers */
     copy_source = apr_psprintf(options->pool, "/%.*s/%.*s", 
                                source_bucket->len, source_bucket->data, 
                                source_object->len, source_object->data);
     apr_table_set(headers, OSS_CANNONICALIZED_HEADER_COPY_SOURCE, copy_source);
+    set_content_type(NULL, dest_object->data, headers);
 
     oss_init_object_request(options, dest_bucket, dest_object, HTTP_PUT, 
                             &req, query_params, headers, &resp);
@@ -235,15 +241,15 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     
-    //init query_params
+    /* init query_params */
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_APPEND, "");
     aos_table_add_int64(query_params, OSS_POSITION, position);
 
-    //init headers
+    /* init headers */
     headers = aos_table_create_if_null(options, headers, 1);
-    oss_set_multipart_content_type(headers);
-    
+    set_content_type(NULL, object->data, headers);
+
     oss_init_object_request(options, bucket, object, HTTP_POST, 
                             &req, query_params, headers, &resp);
     oss_write_request_body_from_buffer(buffer, req);
@@ -268,19 +274,19 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
-    //init query_params
+    /* init query_params */
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_APPEND, "");
     aos_table_add_int64(query_params, OSS_POSITION, position);
-
-    //init headers
+    
+    /* init headers */
     headers = aos_table_create_if_null(options, headers, 1);
-    oss_set_multipart_content_type(headers);
+    set_content_type(append_file->data, object->data, headers);
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
                             &req, query_params, headers, &resp);
-    set_content_type_for_file(append_file->data, headers);
     res = oss_write_request_body_from_file(options->pool, append_file, req);
+
     s = aos_status_create(options->pool);
     if (res != AOSE_OK) {
         aos_file_error_status_set(s, res);
@@ -304,7 +310,7 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
-    //init query_params
+    /* init query_params */
     headers = aos_table_create_if_null(options, headers, 0);
     query_params = aos_table_create_if_null(options, query_params, 0);
 

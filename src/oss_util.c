@@ -6,6 +6,8 @@
 #include "oss_auth.h"
 #include "oss_util.h"
 
+static char *default_content_type = "application/octet-stream";
+
 static oss_content_type_t file_type[] = {
     {"html", "text/html"},
     {"htm", "text/html"},
@@ -163,9 +165,9 @@ oss_request_options_t *oss_request_options_create(aos_pool_t *p)
     return options;
 }
 
-void oss_get_object_uri(const oss_request_options_t *options, 
-                        const aos_string_t *bucket, 
-                        const aos_string_t *object, 
+void oss_get_object_uri(const oss_request_options_t *options,
+                        const aos_string_t *bucket,
+                        const aos_string_t *object,
                         aos_http_request_t *req)
 {
     generate_proto(options, req);
@@ -185,7 +187,7 @@ void oss_get_object_uri(const oss_request_options_t *options,
         req->host = apr_psprintf(options->pool, "%.*s",
                 raw_endpoint.len, raw_endpoint.data);
         req->uri = object->data;
-    } else if (is_valid_ip(raw_endpoint_str)){
+    } else if (is_valid_ip(raw_endpoint_str)) {
         req->host = apr_psprintf(options->pool, "%.*s",
                 raw_endpoint.len, raw_endpoint.data);
         req->uri = apr_psprintf(options->pool, "%.*s/%.*s",
@@ -487,16 +489,10 @@ void oss_init_object_request(const oss_request_options_t *options,
                              aos_table_t *headers, 
                              aos_http_response_t **resp)
 {
-    char *content_type = NULL;
-    char *user_content_type = NULL;
     oss_init_request(options, method, req, params, headers, resp);
-    user_content_type = (char*)apr_table_get(headers, OSS_CONTENT_TYPE);
-    if (NULL == user_content_type) {
-        content_type = get_content_type(object->data);
-        if (content_type) {
-            apr_table_set(headers, OSS_CONTENT_TYPE, content_type);
-        }
-    }
+
+    //set_content_type(object->data, headers);
+
     oss_get_object_uri(options, bucket, object, *req);
 }
 
@@ -590,7 +586,7 @@ char *get_content_type_by_suffix(const char *suffix)
             return content_type->type;
         }
     }
-    return NULL;
+    return default_content_type;
 }
 
 char *get_content_type(const char *name)
@@ -604,15 +600,23 @@ char *get_content_type(const char *name)
     return content_type;
 }
 
-void set_content_type_for_file(const char* filename, aos_table_t *headers)
+void set_content_type(const char* file_name,
+                      const char* key,
+                      aos_table_t *headers)
 {
     char *user_content_type = NULL;
     char *content_type = NULL;
+    const char *mime_key = NULL;
+
+    mime_key = file_name == NULL ? key : file_name;
+
     user_content_type = (char*)apr_table_get(headers, OSS_CONTENT_TYPE);
-    if (NULL == user_content_type) {
-        content_type = get_content_type(filename);
+    if (NULL == user_content_type && mime_key != NULL) {
+        content_type = get_content_type(mime_key);
         if (content_type) {
             apr_table_set(headers, OSS_CONTENT_TYPE, content_type);
+        } else {
+            apr_table_set(headers, OSS_CONTENT_TYPE, default_content_type);
         }
     }
 }
