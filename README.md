@@ -1,6 +1,8 @@
 # Aliyun OSS SDK for C
 
+[![GitHub version](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk.svg)](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk)
 [![Build Status](https://travis-ci.org/aliyun/aliyun-oss-c-sdk.svg?branch=master)](https://travis-ci.org/aliyun/aliyun-oss-c-sdk)
+[![Coverage Status](https://coveralls.io/repos/github/aliyun/aliyun-oss-c-sdk/badge.svg?branch=travis-ci)](https://coveralls.io/github/aliyun/aliyun-oss-c-sdk?branch=travis-ci)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
 ## 关于
@@ -48,7 +50,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     ./configure --with-apr=/your/apr/install/path
     make
     make install
-```    
+```
 
 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
@@ -61,7 +63,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     ./configure
     make
     make install
-```    
+```
 
 
 注意：
@@ -74,7 +76,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
     ./configure
     make
     make install
-```    
+```
 
 注意：
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
@@ -92,7 +94,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
  - 执行cmake . 时默认会到/usr/local/下面去寻找curl，apr，apr-util，mxml的头文件和库文件。
  - 默认编译是Debug类型，可以指定以下几种编译类型： Debug, Release, RelWithDebInfo和MinSizeRel，如果要使用release类型编译，则执行cmake . -DCMAKE_BUILD_TYPE=Release
  - 如果您在安装curl，apr，apr-util，mxml时指定了安装目录，则需要在执行cmake时指定这些库的路径，比如：
-```shell 
+```shell
    cmake . -DCURL_INCLUDE_DIR=/usr/local/include/curl/ -DCURL_LIBRARY=/usr/local/lib/libcurl.a -DAPR_INCLUDE_DIR=/usr/local/include/apr-1/ -DAPR_LIBRARY=/usr/local/lib/libapr-1.a -DAPR_UTIL_INCLUDE_DIR=/usr/local/apr/include/apr-1 -DAPR_UTIL_LIBRARY=/usr/local/apr/lib/libaprutil-1.a -DMINIXML_INCLUDE_DIR=/usr/local/include -DMINIXML_LIBRARY=/usr/local/lib/libmxml.a
 ```
  - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
@@ -140,7 +142,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
             `-- lib
                 |-- liboss_c_sdk.so -> liboss_c_sdk.so.1.0.0
                 |-- liboss_c_sdk.so.1.0.0
-                `-- liboss_c_sdk_static.a  
+                `-- liboss_c_sdk_static.a
 ```
 
 ## 联系我们
