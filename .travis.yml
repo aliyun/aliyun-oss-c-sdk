@@ -1,5 +1,4 @@
 language: c
-sudo: yes
 
 compiler:
   - gcc
@@ -20,7 +19,7 @@ script:
   - ./build/Coverage/bin/oss_c_sdk_test
 
 after_success:
-  - coveralls -r ./CMakeFiles/oss_c_sdk.dir/src --gcov-options '\-lp' --verbose
+  - coveralls --include src/ --gcov-options '\-lp'
 
 env:
   global:
