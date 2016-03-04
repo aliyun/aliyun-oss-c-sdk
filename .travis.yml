@@ -20,7 +20,7 @@ script:
   - ./build/Coverage/bin/oss_c_sdk_test
 
 after_success:
-  - coveralls -r ./CMakeFiles/oss_c_sdk.dir/src --gcov-options '\-lp'
+  - coveralls -r ./CMakeFiles/oss_c_sdk.dir/src --gcov-options '\-lp' --verbose
 
 env:
   global:
