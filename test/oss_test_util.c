@@ -143,11 +143,9 @@ aos_status_t *init_test_multipart_upload(const oss_request_options_t *options,
     aos_table_t *headers;
     aos_table_t *resp_headers;
     aos_status_t *s;
-    oss_acl_e oss_acl;
 
     test_object_base();
     headers = aos_table_make(options->pool, 5);
-    oss_acl = OSS_ACL_PUBLIC_READ;
 
     s = oss_init_multipart_upload(options, &bucket, &object, headers, 
                                   upload_id, &resp_headers);
