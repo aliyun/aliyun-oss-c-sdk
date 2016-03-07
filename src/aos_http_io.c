@@ -247,7 +247,7 @@ int aos_write_http_body_file(aos_http_response_t *resp, const char *buffer, int 
     return nbytes;
 }
 
-int aos_http_io_initialize(int flags)
+int aos_http_io_initialize(const char *user_agent_info, int flags)
 {
     CURLcode ecode;
     int s;
@@ -270,11 +270,16 @@ int aos_http_io_initialize(int flags)
         return AOSE_INTERNAL_ERROR;
     }
 
+    if (!user_agent_info || !*user_agent_info) {
+        user_agent_info = "Unknown";
+    }
+
     if ((s = aos_pool_create(&aos_global_pool, NULL)) != APR_SUCCESS) {
         aos_error_log("aos_pool_create failure, code:%d %s.\n", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_INTERNAL_ERROR;
     }
-    apr_snprintf(aos_user_agent, sizeof(aos_user_agent)-1, "%s", AOS_VER);
+    apr_snprintf(aos_user_agent, sizeof(aos_user_agent)-1, "%s(Compatible %s)", 
+                 AOS_VER, user_agent_info);
 
     if ((s = apr_file_open_stderr(&aos_stderr_file, aos_global_pool)) != APR_SUCCESS) {
         aos_error_log("apr_file_open_stderr failure, code:%d %s.\n", s, apr_strerror(s, buf, sizeof(buf)));

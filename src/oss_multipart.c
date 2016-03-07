@@ -107,8 +107,9 @@ aos_status_t *oss_list_upload_part(const oss_request_options_t *options,
         return s;
     }
 
-    res = oss_list_parts_parse_from_body(options->pool, &resp->body, 
-        &params->part_list, &params->next_part_number_marker, &params->truncated);
+    res = oss_list_parts_parse_from_body(options->pool, &resp->body,
+            &params->part_list, &params->next_part_number_marker,
+            &params->truncated);
     if (res != AOSE_OK) {
         aos_xml_error_status_set(s, res);
     }
@@ -330,7 +331,7 @@ aos_status_t *oss_get_sorted_uploaded_part(oss_request_options_t *options,
         aos_pool_create(&subpool, parent_pool);
         options->pool = subpool;
         s = oss_list_upload_part(options, bucket, object,
-            upload_id, params, &list_part_resp_headers);
+                upload_id, params, &list_part_resp_headers);
         if (!aos_status_is_ok(s)) {
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);
@@ -347,9 +348,13 @@ aos_status_t *oss_get_sorted_uploaded_part(oss_request_options_t *options,
             part_arr[part_index++] = upload_part;
             uploaded_part_count++;
         }
-        aos_list_init(&params->part_list);
-        aos_str_set(&params->part_number_marker, params->next_part_number_marker.data);
 
+        aos_list_init(&params->part_list);
+        if (params->next_part_number_marker.data != NULL) {
+            aos_str_set(&params->part_number_marker, 
+                        params->next_part_number_marker.data);
+        }
+        
         //sort multipart upload part content
         qsort(part_arr, uploaded_part_count, sizeof(part_arr[0]), part_sort_cmp);
 
@@ -417,7 +422,7 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
         }
     } else {
         s = oss_get_sorted_uploaded_part(options, bucket, object, upload_id, 
-            &complete_part_list, &part_count);
+                &complete_part_list, &part_count);
         if (!aos_status_is_ok(s)) {
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);

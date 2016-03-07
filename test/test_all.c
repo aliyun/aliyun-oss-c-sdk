@@ -106,11 +106,11 @@ int main(int argc, char *argv[])
                        TEST_BUCKET_NAME : getenv("OSS_TEST_BUCKET");
 
     int exit_code;
-    if (aos_http_io_initialize(0) != AOSE_OK) {
+    if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {
         exit(1);
     }
 
-    aos_log_level = AOS_LOG_OFF;
+    aos_log_set_level(AOS_LOG_OFF);
     exit_code = run_all_tests(argc, argv);
 
     //aos_http_io_deinitialize last

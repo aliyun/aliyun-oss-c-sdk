@@ -12,6 +12,7 @@
 #include "oss_api.h"
 #include "oss_config.h"
 #include "oss_test_util.h"
+#include "oss_multipart.c"
 
 void test_multipart_setup(CuTest *tc)
 {
@@ -43,6 +44,9 @@ void test_multipart_cleanup(CuTest *tc)
     char *object_name1 = "oss_test_multipart_upload_from_file";
     char *object_name2 = "oss_test_upload_part_copy_dest_object";
     char *object_name3 = "oss_test_upload_part_copy_source_object";
+    char *object_name4 = "oss_test_list_upload_part_with_empty";
+    char *object_name5 = "test_oss_get_sorted_uploaded_part";
+    char *object_name6 = "test_oss_get_sorted_uploaded_part_with_empty";
     aos_table_t *resp_headers = NULL;
 
     aos_pool_create(&p, NULL);
@@ -54,6 +58,9 @@ void test_multipart_cleanup(CuTest *tc)
     delete_test_object(options, TEST_BUCKET_NAME, object_name1);
     delete_test_object(options, TEST_BUCKET_NAME, object_name2);
     delete_test_object(options, TEST_BUCKET_NAME, object_name3);
+    delete_test_object(options, TEST_BUCKET_NAME, object_name4);
+    delete_test_object(options, TEST_BUCKET_NAME, object_name5);
+    delete_test_object(options, TEST_BUCKET_NAME, object_name6);
 
     //delete test bucket
     aos_str_set(&bucket, TEST_BUCKET_NAME);
@@ -502,6 +509,245 @@ void test_upload_file(CuTest *tc)
     printf("test_upload_file ok\n");
 }
 
+void test_upload_file_from_recover(CuTest *tc) 
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "oss_test_multipart_upload_from_file";
+    aos_string_t object; 
+    int is_cname = 0; 
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
+    int part_size = 100*1024;
+    aos_string_t upload_id;
+    aos_string_t filepath;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+
+    //init mulitipart
+    s = init_test_multipart_upload(options, TEST_BUCKET_NAME, 
+                                   object_name, &upload_id);
+    CuAssertIntEquals(tc, 200, s->code);
+    
+    aos_str_set(&filepath, __FILE__);
+    s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
+                        part_size, NULL);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_upload_file_from_recover ok\n");
+}
+
+void test_list_upload_part_with_empty(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "oss_test_list_upload_part_with_empty";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+    aos_table_t *headers = NULL;
+    aos_table_t *upload_part_resp_headers = NULL;
+    oss_list_upload_part_params_t *params = NULL;
+    aos_table_t *list_part_resp_headers = NULL;
+    aos_string_t upload_id;
+    aos_list_t complete_part_list;
+    oss_list_part_content_t *part_content1 = NULL;
+    oss_list_part_content_t *part_content2 = NULL;
+    oss_complete_part_content_t *complete_content1 = NULL;
+    oss_complete_part_content_t *complete_content2 = NULL;
+    aos_table_t *complete_resp_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+    int part_num = 1;
+    int part_num1 = 2;
+    char *expect_part_num_marker = "1";
+    char *content_type_for_complete = "video/MP2T";
+    char *actual_content_type = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+
+    headers = aos_table_make(options->pool, 2);
+
+    //init mulitipart
+    s = init_test_multipart_upload(options, TEST_BUCKET_NAME, object_name, &upload_id);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    //list part
+    params = oss_create_list_upload_part_params(p);
+    params->max_ret = 1;
+    aos_list_init(&complete_part_list);
+
+    s = oss_list_upload_part(options, &bucket, &object, &upload_id, 
+                             params, &list_part_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertStrEquals(tc, NULL, params->next_part_number_marker.data);
+    CuAssertPtrNotNull(tc, list_part_resp_headers);
+
+    //complete multipart
+    apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
+    s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
+            &complete_part_list, headers, &complete_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, complete_resp_headers);
+
+    delete_test_object(options, TEST_BUCKET_NAME, object_name);
+
+    aos_pool_destroy(p);
+
+    printf("test_list_upload_part_with_empty ok\n");
+}
+
+void test_oss_get_sorted_uploaded_part(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "test_oss_get_sorted_uploaded_part";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+    aos_table_t *headers = NULL;
+    aos_table_t *upload_part_resp_headers = NULL;
+    oss_list_upload_part_params_t *params = NULL;
+    aos_table_t *list_part_resp_headers = NULL;
+    aos_string_t upload_id;
+    aos_list_t complete_part_list;
+    oss_list_part_content_t *part_content1 = NULL;
+    oss_list_part_content_t *part_content2 = NULL;
+    oss_complete_part_content_t *complete_content1 = NULL;
+    oss_complete_part_content_t *complete_content2 = NULL;
+    aos_table_t *complete_resp_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+    int part_num = 1;
+    int part_num1 = 2;
+    int part_count = 0;
+    char *expect_part_num_marker = "1";
+    char *content_type_for_complete = "video/MP2T";
+    char *actual_content_type = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+
+    //init mulitipart
+    s = init_test_multipart_upload(options, TEST_BUCKET_NAME, 
+                                   object_name, &upload_id);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    //upload part
+    aos_list_init(&buffer);
+    make_random_body(p, 200, &buffer);
+
+    s = oss_upload_part_from_buffer(options, &bucket, &object, &upload_id,
+        part_num, &buffer, &upload_part_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, upload_part_resp_headers);
+
+    aos_list_init(&buffer);
+    make_random_body(p, 200, &buffer);
+    s = oss_upload_part_from_buffer(options, &bucket, &object, &upload_id,
+        part_num1, &buffer, &upload_part_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, upload_part_resp_headers);
+
+    //get sorted uploaded part
+    aos_list_init(&complete_part_list);
+
+    s = oss_get_sorted_uploaded_part(options, &bucket, &object, 
+            &upload_id, &complete_part_list, &part_count);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 2, part_count);
+
+    //complete multipart
+    headers = aos_table_make(options->pool, 1);
+    apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
+    s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
+            &complete_part_list, headers, &complete_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, complete_resp_headers);
+
+    delete_test_object(options, TEST_BUCKET_NAME, object_name);
+    aos_pool_destroy(p);
+
+    printf("test_oss_get_sorted_uploaded_part ok\n");
+}
+
+void test_oss_get_sorted_uploaded_part_with_empty(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "test_oss_get_sorted_uploaded_part_with_empty";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+    aos_table_t *headers = NULL;
+    aos_table_t *upload_part_resp_headers = NULL;
+    oss_list_upload_part_params_t *params = NULL;
+    aos_table_t *list_part_resp_headers = NULL;
+    aos_string_t upload_id;
+    aos_list_t complete_part_list;
+    oss_list_part_content_t *part_content1 = NULL;
+    oss_list_part_content_t *part_content2 = NULL;
+    oss_complete_part_content_t *complete_content1 = NULL;
+    oss_complete_part_content_t *complete_content2 = NULL;
+    aos_table_t *complete_resp_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+    int part_num = 1;
+    int part_num1 = 2;
+    int part_count = 0;
+    char *expect_part_num_marker = "1";
+    char *content_type_for_complete = "video/MP2T";
+    char *actual_content_type = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+
+    headers = aos_table_make(options->pool, 2);
+
+    //init mulitipart
+    s = init_test_multipart_upload(options, TEST_BUCKET_NAME, 
+                                   object_name, &upload_id);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    //get sorted uploaded part
+    aos_list_init(&complete_part_list);
+
+    s = oss_get_sorted_uploaded_part(options, &bucket, &object, &upload_id,
+            &complete_part_list, &part_count);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, part_count);
+
+    //abort multipart
+    s = abort_test_multipart_upload(options, TEST_BUCKET_NAME,
+                                    object_name, &upload_id);
+    CuAssertIntEquals(tc, 204, s->code);
+
+    delete_test_object(options, TEST_BUCKET_NAME, object_name);
+    aos_pool_destroy(p);
+
+    printf("test_oss_get_sorted_uploaded_part_with_empty ok\n");
+}
+
 CuSuite *test_oss_multipart()
 {
     CuSuite* suite = CuSuiteNew();
@@ -512,7 +758,11 @@ CuSuite *test_oss_multipart()
     SUITE_ADD_TEST(suite, test_multipart_upload);
     SUITE_ADD_TEST(suite, test_multipart_upload_from_file);
     SUITE_ADD_TEST(suite, test_upload_file);
+    SUITE_ADD_TEST(suite, test_upload_file_from_recover);
     SUITE_ADD_TEST(suite, test_upload_part_copy);
+    SUITE_ADD_TEST(suite, test_list_upload_part_with_empty);
+    SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part);
+    SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part_with_empty);
     SUITE_ADD_TEST(suite, test_multipart_cleanup);
 
     return suite;
