@@ -566,14 +566,19 @@ aos_status_t *oss_process_signed_request(const oss_request_options_t *options,
 void oss_get_part_size(int64_t filesize, int64_t *part_size)
 {
     if (filesize > (*part_size) * OSS_MAX_PART_NUM) {
-        *part_size = (filesize + OSS_MAX_PART_NUM - filesize % OSS_MAX_PART_NUM) / OSS_MAX_PART_NUM;
-        aos_warn_log("Part number larger than max limit, part size Changed to:%" APR_INT64_T_FMT "\n",*part_size);
+        *part_size = (filesize + OSS_MAX_PART_NUM - 
+                      filesize % OSS_MAX_PART_NUM) / OSS_MAX_PART_NUM;
+
+        aos_warn_log("Part number larger than max limit, "
+                     "part size Changed to:%" APR_INT64_T_FMT "\n",
+                     *part_size);
     } 
 }
 
 int part_sort_cmp(const void *a, const void *b)
 {
-    return (((oss_upload_part_t*)a)->part_num - ((oss_upload_part_t*)b)->part_num > 0 ? 1 : -1);
+    return (((oss_upload_part_t*)a)->part_num -
+            ((oss_upload_part_t*)b)->part_num > 0 ? 1 : -1);
 }
 
 char *get_content_type_by_suffix(const char *suffix)
