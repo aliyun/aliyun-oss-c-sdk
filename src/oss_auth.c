@@ -245,10 +245,11 @@ int oss_get_signed_headers(aos_pool_t *p,
 {
     int res;
     aos_string_t signstr;
+
+    res = oss_get_string_to_sign(p, req->method, canon_res, 
+                                 req->headers, req->query_params, &signstr);
     
-    if ((res = oss_get_string_to_sign(p, req->method, canon_res, 
-                            req->headers, req->query_params, &signstr))
-        != AOSE_OK) {
+    if (res != AOSE_OK) {
         return res;
     }
     

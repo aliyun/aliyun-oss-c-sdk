@@ -34,7 +34,6 @@ void test_object_cleanup(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     aos_string_t bucket;
-    aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     char *object_name1 = "oss_test_put_object.ts";
     char *object_name2 = "oss_test_put_object_from_file.jpg";
@@ -64,7 +63,7 @@ void test_object_cleanup(CuTest *tc)
 
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    s = oss_delete_bucket(options, &bucket, &resp_headers);
+    oss_delete_bucket(options, &bucket, &resp_headers);
 
     aos_pool_destroy(p);
 }
@@ -468,6 +467,8 @@ void test_copy_object(CuTest *tc)
     aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
+    aos_table_t *head_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -480,9 +481,22 @@ void test_copy_object(CuTest *tc)
 
     /* test copy object */
     s = oss_copy_object(options, &source_bucket, &source_object, 
-        &dest_bucket, &dest_object, headers, &resp_headers);
+                        &dest_bucket, &dest_object, headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    /* head object */
+    sleep(2);
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &dest_bucket, &dest_object,
+                        head_headers, &head_resp_headers);
+
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
 
     aos_pool_destroy(p);
 
@@ -510,7 +524,6 @@ void test_object_by_url(CuTest *tc)
     char *filename_download = TEST_DIR"/data/oss_test_object_by_url";
     aos_string_t file;
     int64_t effective_time;
-    int64_t expired_time;
     char *url_str = NULL;
     aos_buf_t *content = NULL;
    
@@ -526,7 +539,6 @@ void test_object_by_url(CuTest *tc)
 
     now = apr_time_now();
     effective_time = now / 1000000 + two_minute;
-    expired_time = now / 1000000 - two_minute;
 
     /* test effective url for put_object_from_buffer */
     req->method = HTTP_PUT;
@@ -673,6 +685,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
     SUITE_ADD_TEST(suite, test_get_object_to_file);
     SUITE_ADD_TEST(suite, test_head_object);
+    SUITE_ADD_TEST(suite, test_copy_object);
     SUITE_ADD_TEST(suite, test_object_by_url);
     SUITE_ADD_TEST(suite, test_delete_object);
     SUITE_ADD_TEST(suite, test_append_object_from_buffer);
