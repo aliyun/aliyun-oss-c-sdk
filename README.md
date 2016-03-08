@@ -2,7 +2,7 @@
 
 [![GitHub version](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk.svg)](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk)
 [![Build Status](https://travis-ci.org/aliyun/aliyun-oss-c-sdk.svg?branch=master)](https://travis-ci.org/aliyun/aliyun-oss-c-sdk)
-[![Coverage Status](https://coveralls.io/repos/github/aliyun/aliyun-oss-c-sdk/badge.svg?branch=travis-ci)](https://coveralls.io/github/aliyun/aliyun-oss-c-sdk?branch=travis-ci)
+[![Coverage Status](https://coveralls.io/repos/github/aliyun/aliyun-oss-c-sdk/badge.svg?branch=master)](https://coveralls.io/github/aliyun/aliyun-oss-c-sdk?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
 ## 关于
