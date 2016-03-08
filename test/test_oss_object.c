@@ -426,6 +426,39 @@ void test_head_object(CuTest *tc)
     printf("test_head_object ok\n");
 }
 
+void test_head_object_with_not_exist(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "not_exist.object";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    char *user_meta = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    headers = aos_table_make(p, 0);
+
+    /* test head object */
+    s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+    CuAssertStrEquals(tc, "UnknownError", s->error_code);
+    CuAssertTrue(tc, NULL == s->error_msg);
+    CuAssertTrue(tc, 0 != strlen(s->req_id));
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("test_head_object ok\n");
+}
+
 void test_delete_object(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -685,6 +718,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
     SUITE_ADD_TEST(suite, test_get_object_to_file);
     SUITE_ADD_TEST(suite, test_head_object);
+    SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
     SUITE_ADD_TEST(suite, test_copy_object);
     SUITE_ADD_TEST(suite, test_object_by_url);
     SUITE_ADD_TEST(suite, test_delete_object);

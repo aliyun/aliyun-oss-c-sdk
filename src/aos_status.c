@@ -5,7 +5,7 @@
 const char AOS_XML_PARSE_ERROR_CODE[] = "ParseXmlError";
 const char AOS_OPEN_FILE_ERROR_CODE[] = "OpenFileFail";
 const char AOS_HTTP_IO_ERROR_CODE[] = "HttpIoError";
-const char AOS_UNKNOWN_ERROR_CODE[] = "UnkonwnError";
+const char AOS_UNKNOWN_ERROR_CODE[] = "UnknownError";
 const char AOS_CLIENT_ERROR_CODE[] = "ClientError";
 const char AOS_UTF8_ENCODE_ERROR_CODE[] = "Utf8EncodeFail";
 
