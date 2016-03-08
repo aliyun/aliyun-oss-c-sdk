@@ -44,7 +44,7 @@ char *get_xmlnode_value(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_pa
     char *node_content;
 
     node = mxmlFindElement(xml_node, xml_node, xml_path, NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
+    if (NULL != node && node->child != NULL) {
         node_content = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)node_content);
     }
@@ -293,7 +293,8 @@ int oss_list_parts_parse_from_body(aos_pool_t *p, aos_list_t *bc,
 
     res = get_xmldoc(bc, &root);
     if (res == AOSE_OK) {
-        next_partnumber_marker = get_xmlnode_value(p, root, next_partnumber_marker_xml_path);
+        next_partnumber_marker = get_xmlnode_value(p, root,
+                next_partnumber_marker_xml_path);
         if (next_partnumber_marker) {
             aos_str_set(partnumber_marker, next_partnumber_marker);
         }

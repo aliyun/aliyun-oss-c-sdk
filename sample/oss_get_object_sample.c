@@ -139,8 +139,8 @@ void get_object_by_signed_url()
     printf("signed get url : %s\n", signed_url);
 
     // put object by signed url
-    s = oss_get_object_to_buffer_by_url(options, &url, headers, 
-            &buffer, &resp_headers);
+    s = oss_get_object_to_buffer_by_url(options, &url, 
+            &buffer, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("get object by signed url succeeded\n");
@@ -229,7 +229,7 @@ void get_oss_dir_to_local_dir()
 
 int main(int argc, char *argv[])
 {
-    if (aos_http_io_initialize(0) != AOSE_OK) {
+    if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {
         exit(1);
     }
     

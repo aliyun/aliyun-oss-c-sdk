@@ -12,6 +12,7 @@ extern CuSuite *test_oss_object();
 extern CuSuite *test_oss_multipart();
 extern CuSuite *test_oss_util();
 extern CuSuite *test_oss_xml();
+extern CuSuite *test_aos();
 
 static const struct testlist {
     const char *testname;
@@ -20,6 +21,7 @@ static const struct testlist {
     {"test_oss_bucket", test_oss_bucket},
     {"test_oss_object", test_oss_object},
     {"test_oss_multipart", test_oss_multipart},
+    {"test_aos", test_aos},
     {"LastTest", NULL}
 };
 
@@ -106,11 +108,11 @@ int main(int argc, char *argv[])
                        TEST_BUCKET_NAME : getenv("OSS_TEST_BUCKET");
 
     int exit_code;
-    if (aos_http_io_initialize(0) != AOSE_OK) {
+    if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {
         exit(1);
     }
 
-    aos_log_level = AOS_LOG_OFF;
+    aos_log_set_level(AOS_LOG_OFF);
     exit_code = run_all_tests(argc, argv);
 
     //aos_http_io_deinitialize last

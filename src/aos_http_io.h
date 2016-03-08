@@ -17,7 +17,7 @@ static inline const char *aos_http_controller_get_reason(aos_http_controller_t *
 CURL *aos_request_get();
 void request_release(CURL *request);
 
-int aos_http_io_initialize(int flag);
+int aos_http_io_initialize(const char *user_agent_info, int flag);
 void aos_http_io_deinitialize();
 
 int aos_http_send_request(aos_http_controller_t *ctl, aos_http_request_t *req, aos_http_response_t *resp);

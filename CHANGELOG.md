@@ -1,17 +1,31 @@
 # ChangeLog - Aliyun OSS SDK for C
 
-## 版本号：2.0.0 日期：2016-02-22
+## 版本号：2.0.0 日期：2016-03-08
 ### 变更内容
  - complete multipart接口支持覆盖原有head
- - 新增signed url相关示例
  - 重构示例程序和组织方式
- - 新增目录相关示例
  - 开放params参数，允许用户自定义设置
  - 允许params和headers参数为空，简化使用
  - 支持https
  - 支持ip
+ - 新增部分测试
+ - 新增oss_put_bucket_acl接口
+ - 新增目录相关示例
+ - 新增signed url相关示例
+ - 完善接口注释
+ - 删除无用的port配置参数
+ - 调整oss_get_object_to_buffer_by_url和oss_init_multipart_upload接口参数顺序
+ - 优化配置参数名称，使其与官方网站保持一致
  - 解决endpoint不能含有http等前缀的问题
- - 修改配置参数名称，使其与官方网站保持一致
+ - 解决用户无法设置content-type的问题
+ - 解决无法自动根据file name和key设置content-type的问题
+ - 解决list upload parts为空时coredump的问题
+ - 解决oss_upload_file接口在断点续传时可能会coredump的问题
+ - 解决部分单词拼写错误
+ - 解决所有警告
+ - 解决部分头文件宏保护无效的问题
+ - 解决oss_head_object_by_url接口不生效的问题
+
 
 ## 版本号：1.0.0 日期：2015-12-16
 ### 变更内容
