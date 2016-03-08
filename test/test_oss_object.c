@@ -594,7 +594,7 @@ void test_object_by_url(CuTest *tc)
     req->method = HTTP_GET;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, object_name, effective_time, req);
     aos_str_set(&url, url_str);
-    s = oss_get_object_to_buffer_by_url(options, &url, headers, &buffer, &resp_headers);
+    s = oss_get_object_to_buffer_by_url(options, &url, &buffer, headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
 
     /* test effective url for get_object_to_file */

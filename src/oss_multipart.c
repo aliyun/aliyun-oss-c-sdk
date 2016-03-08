@@ -11,8 +11,8 @@
 aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options, 
                                         const aos_string_t *bucket, 
                                         const aos_string_t *object, 
-                                        aos_table_t *headers, 
                                         aos_string_t *upload_id, 
+                                        aos_table_t *headers,
                                         aos_table_t **resp_headers)
 {
     int res = AOSE_OK;
@@ -413,7 +413,7 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
 
         init_multipart_headers = aos_table_make(subpool, 0);
         s = oss_init_multipart_upload(options, bucket, object, 
-            init_multipart_headers, upload_id, &init_multipart_resp_headers);
+                upload_id, init_multipart_headers, &init_multipart_resp_headers);
         if (!aos_status_is_ok(s)) {
             ret = aos_status_dup(parent_pool, s);
             aos_pool_destroy(subpool);

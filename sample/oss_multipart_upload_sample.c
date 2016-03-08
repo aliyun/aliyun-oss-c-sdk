@@ -36,8 +36,8 @@ void multipart_upload_file_from_buffer()
     aos_str_set(&object, OBJECT_NAME);
     
     //init mulitipart
-    s = oss_init_multipart_upload(options, &bucket, &object, headers, 
-                                  &upload_id, &resp_headers);
+    s = oss_init_multipart_upload(options, &bucket, &object, 
+                                  &upload_id, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 
@@ -134,7 +134,7 @@ void multipart_upload_file_from_file()
     
     //init mulitipart
     s = oss_init_multipart_upload(options, &bucket, &object, 
-                                  headers, &upload_id, &resp_headers);
+                                  &upload_id, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 
@@ -224,7 +224,7 @@ void abort_multipart_upload()
     aos_str_set(&object, OBJECT_NAME);
     
     s = oss_init_multipart_upload(options, &bucket, &object, 
-                                  headers, &upload_id, &resp_headers);
+                                  &upload_id, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 

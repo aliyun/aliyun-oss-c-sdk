@@ -358,8 +358,8 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
 
 aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *options,
                                               const aos_string_t *signed_url, 
-                                              aos_table_t *headers, 
                                               aos_list_t *buffer,
+                                              aos_table_t *headers,
                                               aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;

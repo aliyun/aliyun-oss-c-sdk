@@ -147,8 +147,8 @@ aos_status_t *init_test_multipart_upload(const oss_request_options_t *options,
     test_object_base();
     headers = aos_table_make(options->pool, 5);
 
-    s = oss_init_multipart_upload(options, &bucket, &object, headers, 
-                                  upload_id, &resp_headers);
+    s = oss_init_multipart_upload(options, &bucket, &object, 
+                                  upload_id, headers, &resp_headers);
 
     return s;
 }

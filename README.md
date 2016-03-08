@@ -9,7 +9,7 @@
 阿里云对象存储（Object Storage Service，简称OSS），是阿里云对外提供的海量、安全、低成本、高可靠的云存储服务。用户可以通过调用API，在任何应用、任何时间、任何地点上传和下载数据，也可以通过用户Web控制台对数据进行简单的管理。OSS适合存放任意文件类型，适合各种网站、开发企业及开发者使用。OSS C SDK提供了一系列接口方便用户使用OSS。
 
 ## 版本
- - 当前版本：1.0.0
+ - 当前版本：2.0.0
 
 ## 安装方法
 ### 环境依赖
@@ -98,52 +98,6 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
    cmake . -DCURL_INCLUDE_DIR=/usr/local/include/curl/ -DCURL_LIBRARY=/usr/local/lib/libcurl.a -DAPR_INCLUDE_DIR=/usr/local/include/apr-1/ -DAPR_LIBRARY=/usr/local/lib/libapr-1.a -DAPR_UTIL_INCLUDE_DIR=/usr/local/apr/include/apr-1 -DAPR_UTIL_LIBRARY=/usr/local/apr/lib/libaprutil-1.a -DMINIXML_INCLUDE_DIR=/usr/local/include -DMINIXML_LIBRARY=/usr/local/lib/libmxml.a
 ```
  - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
-
-  OSS C SDK编译后生成的build路径如下所示：
-
-```shell
-    build
-    `-- Release
-        |-- bin
-        |   |-- oss_append_get_head_delete_object
-        |   |-- oss_c_sdk_test
-        |   |-- oss_init_abort_multipart
-        |   |-- oss_init_complete_multipart
-        |   |-- oss_init_complete_multipart_from_file
-        |   |-- oss_put_get_delete_object_from_file
-        |   `-- oss_put_get_head_delete_object
-        `-- lib
-            |-- liboss_c_sdk.so -> liboss_c_sdk.so.1.0.0
-            |-- liboss_c_sdk.so.1.0.0
-            `-- liboss_c_sdk_static.a
- ```
-
-  OSS C SDK安装后的目录结构如下所示：
-```shell
-    `-- usr
-        `-- local
-            |-- include
-            |   `-- oss_c_sdk
-            |       |-- aos_buf.h
-            |       |-- aos_define.h
-            |       |-- aos_fstack.h
-            |       |-- aos_http_io.h
-            |       |-- aos_list.h
-            |       |-- aos_log.h
-            |       |-- aos_status.h
-            |       |-- aos_string.h
-            |       |-- aos_transport.h
-            |       |-- aos_util.h
-            |       |-- oss_api.h
-            |       |-- oss_auth.h
-            |       |-- oss_define.h
-            |       |-- oss_util.h
-            |       `-- oss_xml.h
-            `-- lib
-                |-- liboss_c_sdk.so -> liboss_c_sdk.so.1.0.0
-                |-- liboss_c_sdk.so.1.0.0
-                `-- liboss_c_sdk_static.a
-```
 
 ## 联系我们
 - 阿里云OSS官方网站 [http://oss.aliyun.com](http://oss.aliyun.com)

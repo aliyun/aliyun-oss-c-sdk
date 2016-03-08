@@ -139,8 +139,8 @@ void get_object_by_signed_url()
     printf("signed get url : %s\n", signed_url);
 
     // put object by signed url
-    s = oss_get_object_to_buffer_by_url(options, &url, headers, 
-            &buffer, &resp_headers);
+    s = oss_get_object_to_buffer_by_url(options, &url, 
+            &buffer, headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("get object by signed url succeeded\n");
