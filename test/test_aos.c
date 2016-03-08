@@ -16,11 +16,15 @@
 void test_get_xml_doc_with_empty_aos_list(CuTest *tc)
 {
     int ret;
+    mxml_node_t *xml_node;
     aos_list_t bc;
     aos_list_init(&bc);
+
     
-    ret = get_xmldoc(&bc, NULL);
+    ret = get_xmldoc(&bc, &xml_node);
     CuAssertIntEquals(tc, AOSE_XML_PARSE_ERROR, ret);
+
+    printf("test_get_xml_doc_with_empty_aos_list ok\n");
 }
 
 void test_get_xml_doc_with_parse_failed(CuTest *tc)
@@ -38,6 +42,8 @@ void test_get_xml_doc_with_parse_failed(CuTest *tc)
     
     ret = get_xmldoc(&head, &xml_node);
     CuAssertIntEquals(tc, AOSE_XML_PARSE_ERROR, ret);
+
+    printf("test_get_xml_doc_with_parse_failed ok\n");
 }
 
 /*
@@ -53,6 +59,8 @@ void test_aos_list_movelist_with_empty_list(CuTest *tc) {
     aos_list_movelist(&list, &new_list);
     CuAssertTrue(tc, new_list.prev == &new_list);
     CuAssertTrue(tc, new_list.next == &new_list);
+
+    printf("test_aos_list_movelist_with_empty_list ok\n");
 }
 
 /*
@@ -65,6 +73,8 @@ void test_starts_with_failed(CuTest *tc) {
     
     ret = starts_with(&str, "xixi");
     CuAssertIntEquals(tc, 0, ret);
+
+    printf("test_starts_with_failed ok\n");
 }
 
 void test_is_valid_ip(CuTest *tc) {
@@ -72,6 +82,8 @@ void test_is_valid_ip(CuTest *tc) {
 
     ret = is_valid_ip("140.205.63.8");
     CuAssertIntEquals(tc, 1, ret);
+
+    printf("test_is_valid_ip ok\n");
 }
 
 void test_oss_request_options_create_with_null_pool(CuTest *tc) {
@@ -80,6 +92,8 @@ void test_oss_request_options_create_with_null_pool(CuTest *tc) {
     CuAssertTrue(tc, NULL != option);
 
     aos_pool_destroy(option->pool);
+
+    printf("test_oss_request_options_create_with_null_pool ok\n");
 }
 
 void test_oss_get_part_size(CuTest *tc) {
@@ -88,6 +102,8 @@ void test_oss_get_part_size(CuTest *tc) {
 
     oss_get_part_size(file_size, &part_size);
     CuAssertIntEquals(tc, 5, part_size);
+
+    printf("test_oss_get_part_size ok\n");
 }
 
 void test_oss_get_object_uri_with_cname(CuTest *tc) {
@@ -112,6 +128,8 @@ void test_oss_get_object_uri_with_cname(CuTest *tc) {
     CuAssertStrEquals(tc, "img.abc.com", req.host);
     
     aos_pool_destroy(p);
+
+    printf("test_oss_get_object_uri_with_cname ok\n");
 }
 
 void test_oss_get_object_uri_with_ip(CuTest *tc) {
@@ -136,6 +154,8 @@ void test_oss_get_object_uri_with_ip(CuTest *tc) {
     CuAssertStrEquals(tc, "140.205.63.8", req.host);
     
     aos_pool_destroy(p);
+
+    printf("test_oss_get_object_uri_with_ip ok\n");
 }
 
 void test_oss_get_bucket_uri_with_ip(CuTest *tc) {
@@ -159,6 +179,8 @@ void test_oss_get_bucket_uri_with_ip(CuTest *tc) {
     CuAssertStrEquals(tc, "bucket-1", req.resource);
     
     aos_pool_destroy(p);
+
+    printf("test_oss_get_bucket_uri_with_ip ok\n");
 }
 
 void test_oss_get_bucket_uri_with_cname(CuTest *tc) {
@@ -182,6 +204,8 @@ void test_oss_get_bucket_uri_with_cname(CuTest *tc) {
     CuAssertStrEquals(tc, "bucket-1/", req.resource);
     
     aos_pool_destroy(p);
+
+    printf("test_oss_get_bucket_uri_with_cname ok\n");
 }
 
 void test_aos_log_format_default(CuTest *tc) {
@@ -189,6 +213,8 @@ void test_aos_log_format_default(CuTest *tc) {
      * check is coredump
      */
     aos_log_format_default(AOS_LOG_INFO, "/tmp/a", 10, "fun1", "%d-%d", 1, 2);
+
+    printf("test_aos_log_format_default ok\n");
 }
 
 void test_aos_log_print_default_with_null_file(CuTest *tc) {
@@ -197,6 +223,8 @@ void test_aos_log_print_default_with_null_file(CuTest *tc) {
      */
     aos_stderr_file = NULL;
     aos_log_print_default("abc", 3);
+
+    printf("test_aos_log_print_default_with_null_file ok\n");
 }
 
 /*
@@ -229,6 +257,8 @@ void test_aos_curl_code_to_status(CuTest *tc) {
 
     code = aos_curl_code_to_status(CURLE_FTP_WEIRD_PASV_REPLY);
     CuAssertIntEquals(tc, AOSE_INTERNAL_ERROR, code);
+
+    printf("test_aos_curl_code_to_status ok\n");
 }
 
 /*
@@ -241,6 +271,8 @@ void test_aos_unquote_str(CuTest *tc) {
 
     CuAssertStrnEquals(tc, "abc", strlen("abc"), str.data);
     CuAssertIntEquals(tc, 3, str.len);
+
+    printf("test_aos_unquote_str ok\n");
 }
 
 void test_aos_ends_with(CuTest *tc) {
@@ -260,6 +292,8 @@ void test_aos_ends_with(CuTest *tc) {
 
     ret = aos_ends_with(&str, NULL);
     CuAssertIntEquals(tc, 0, ret);
+
+    printf("test_aos_ends_with ok\n");
 }
 
 CuSuite *test_aos()
