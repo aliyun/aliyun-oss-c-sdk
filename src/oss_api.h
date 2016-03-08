@@ -259,13 +259,6 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
                               aos_table_t *headers, 
                               aos_table_t **resp_headers);
 
-/**
-  * @brief  oss append object from buffer
-  * @param[in]  position  the start postition append after object
-  * @param[in]  buffer  the buffer containing appending content  
-  * @return AOSE_OK success, other failure
-**/
-
 /*
  * @brief  append oss object from buffer
  * @param[in]   options             the oss request options
@@ -303,13 +296,6 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
                                           const aos_string_t *append_file, 
                                           aos_table_t *headers, 
                                           aos_table_t **resp_headers);
-
-/**
-  * @brief  gen signed url for oss object api
-  * @param[in]  options  the request options including config item and http controllter
-  * @param[in]  expires  the expire time in Unix timestamp format
-  * @return the signed url 
-**/
 
 /*
  * @brief  gen signed url for oss object api
@@ -362,27 +348,31 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
  * @param[in]   signed_url          the signed url for put object
  * @param[in]   buffer              the buffer containing object content
  * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
 aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *options,
                                               const aos_string_t *signed_url, 
-                                              aos_list_t *buffer, 
                                               aos_table_t *headers,
+                                              aos_table_t *params,
+                                              aos_list_t *buffer,
                                               aos_table_t **resp_headers);
 
 /*
  * @brief  oss get object to file using signed url
  * @param[in]   options             the oss request options
  * @param[in]   signed_url          the signed url for put object
- * @param[in]   filename            the filename containing object content
  * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[in]   filename            the filename containing object content
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
 aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options,
-                                            const aos_string_t *signed_url, 
+                                            const aos_string_t *signed_url,
                                             aos_table_t *headers, 
+                                            aos_table_t *params,
                                             aos_string_t *filename,
                                             aos_table_t **resp_headers);
 

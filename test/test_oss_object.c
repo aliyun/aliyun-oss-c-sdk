@@ -331,7 +331,7 @@ void test_get_object_to_buffer_with_range(CuTest *tc)
 
     /* test get object to buffer */
     s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
-                                 params,&buffer, &resp_headers);
+                                 params, &buffer, &resp_headers);
     CuAssertIntEquals(tc, 206, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -541,6 +541,7 @@ void test_object_by_url(CuTest *tc)
     aos_pool_t *p = NULL;
     oss_request_options_t *options = NULL;
     aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_http_request_t *req = NULL;
     aos_list_t buffer;
@@ -575,32 +576,38 @@ void test_object_by_url(CuTest *tc)
 
     /* test effective url for put_object_from_buffer */
     req->method = HTTP_PUT;
-    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, object_name, effective_time, req);
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
+                                  object_name, effective_time, req);
     aos_str_set(&url, url_str);
     aos_list_init(&buffer);
     content = aos_buf_pack(p, str, strlen(str));
     aos_list_add_tail(&content->node, &buffer);
-    s = oss_put_object_from_buffer_by_url(options, &url, &buffer, headers, &resp_headers);
+    s = oss_put_object_from_buffer_by_url(options, &url, 
+            &buffer, headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test effective url for put_object_from_file */
     resp_headers = NULL;
-    s = oss_put_object_from_file_by_url(options, &url, &file, headers, &resp_headers);
+    s = oss_put_object_from_file_by_url(options, &url, &file, 
+            headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test effective url for get_object_to_buffer */
     req->method = HTTP_GET;
-    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, object_name, effective_time, req);
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
+                                  object_name, effective_time, req);
     aos_str_set(&url, url_str);
-    s = oss_get_object_to_buffer_by_url(options, &url, &buffer, headers, &resp_headers);
+    s = oss_get_object_to_buffer_by_url(options, &url, headers, params,
+            &buffer, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
 
     /* test effective url for get_object_to_file */
     resp_headers = NULL;
     aos_str_set(&file, filename_download);
-    s = oss_get_object_to_file_by_url(options, &url, headers, &file, &resp_headers);
+    s = oss_get_object_to_file_by_url(options, &url, headers, 
+            headers, &file, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertIntEquals(tc, get_file_size(filename), get_file_size(filename_download));
     CuAssertPtrNotNull(tc, resp_headers);
@@ -608,7 +615,8 @@ void test_object_by_url(CuTest *tc)
     /* test effective url for head_object */
     resp_headers = NULL;
     req->method = HTTP_HEAD;
-    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, object_name, effective_time, req);
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
+                                  object_name, effective_time, req);
     aos_str_set(&url, url_str);
     s = oss_head_object_by_url(options, &url, headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);

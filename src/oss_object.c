@@ -358,20 +358,20 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
 
 aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *options,
                                               const aos_string_t *signed_url, 
-                                              aos_list_t *buffer,
                                               aos_table_t *headers,
+                                              aos_table_t *params,
+                                              aos_list_t *buffer,
                                               aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
-    aos_table_t *query_params = NULL;
 
     headers = aos_table_create_if_null(options, headers, 0);
-    query_params = aos_table_create_if_null(options, query_params, 0);
-
+    params = aos_table_create_if_null(options, params, 0);
+    
     oss_init_signed_url_request(options, signed_url, HTTP_GET, 
-                                &req, query_params, headers, &resp);
+                                &req, params, headers, &resp);
 
     s = oss_process_signed_request(options, req, resp);
     oss_init_read_response_body_to_buffer(buffer, resp);
@@ -383,22 +383,22 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
 aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options,
                                             const aos_string_t *signed_url, 
                                             aos_table_t *headers, 
+                                            aos_table_t *params,
                                             aos_string_t *filename,
                                             aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
-    aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
     s = aos_status_create(options->pool);
 
     headers = aos_table_create_if_null(options, headers, 0);
-    query_params = aos_table_create_if_null(options, query_params, 0);
+    params = aos_table_create_if_null(options, params, 0);
  
     oss_init_signed_url_request(options, signed_url, HTTP_GET, 
-                                &req, query_params, headers, &resp);
+                                &req, params, headers, &resp);
 
     res = oss_init_read_response_body_to_file(options->pool, filename, resp);
     if (res != AOSE_OK) {
