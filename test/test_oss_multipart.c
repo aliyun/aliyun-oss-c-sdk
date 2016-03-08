@@ -480,7 +480,7 @@ void test_upload_part_copy(CuTest *tc)
     printf("test_upload_part_copy ok\n");
 }
 
-void test_upload_file(CuTest *tc) 
+void test_upload_file_failed_without_uploadid(CuTest *tc) 
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
@@ -490,6 +490,35 @@ void test_upload_file(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
     int part_size = 100*1024;
+    aos_string_t upload_id;
+    aos_string_t filepath;
+    
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, "invalid_bucket");
+    aos_str_set(&object, object_name);
+    aos_str_null(&upload_id);
+    aos_str_set(&filepath, __FILE__);
+    s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
+                        part_size, NULL);
+    CuAssertIntEquals(tc, 404, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_upload_file_failed_without_uploadid ok\n");
+}
+
+void test_upload_file(CuTest *tc) 
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "oss_test_multipart_upload_from_file";
+    aos_string_t object; 
+    int is_cname = 0; 
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
+    int part_size = 100 * 1024;
     aos_string_t upload_id;
     aos_string_t filepath;
     
@@ -508,6 +537,7 @@ void test_upload_file(CuTest *tc)
 
     printf("test_upload_file ok\n");
 }
+
 
 void test_upload_file_from_recover(CuTest *tc) 
 {
@@ -537,6 +567,46 @@ void test_upload_file_from_recover(CuTest *tc)
     s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
                         part_size, NULL);
     CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_upload_file_from_recover ok\n");
+}
+
+void test_upload_file_from_recover_failed(CuTest *tc) 
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "oss_test_multipart_upload_from_file";
+    aos_string_t object; 
+    int is_cname = 0; 
+    oss_request_options_t *options = NULL;
+    aos_status_t *s = NULL;
+    int part_size = 100*1024;
+    aos_string_t upload_id;
+    aos_string_t filepath;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+
+    //init mulitipart
+    s = init_test_multipart_upload(options, TEST_BUCKET_NAME, 
+                                   object_name, &upload_id);
+    CuAssertIntEquals(tc, 200, s->code);
+    
+    aos_str_set(&filepath, __FILE__);
+    aos_str_set(&bucket, "invalid_bucket");
+    s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
+                        part_size, NULL);
+    CuAssertIntEquals(tc, 404, s->code);
+
+    //abort multipart
+    s = abort_test_multipart_upload(options, TEST_BUCKET_NAME,
+                                    object_name, &upload_id);
+    CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
 
@@ -723,7 +793,9 @@ CuSuite *test_oss_multipart()
     SUITE_ADD_TEST(suite, test_multipart_upload);
     SUITE_ADD_TEST(suite, test_multipart_upload_from_file);
     SUITE_ADD_TEST(suite, test_upload_file);
+    SUITE_ADD_TEST(suite, test_upload_file_failed_without_uploadid);
     SUITE_ADD_TEST(suite, test_upload_file_from_recover);
+    SUITE_ADD_TEST(suite, test_upload_file_from_recover_failed);
     SUITE_ADD_TEST(suite, test_upload_part_copy);
     SUITE_ADD_TEST(suite, test_list_upload_part_with_empty);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part);

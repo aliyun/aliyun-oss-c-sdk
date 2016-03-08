@@ -277,6 +277,87 @@ void test_aos_ends_with(CuTest *tc) {
     printf("test_aos_ends_with ok\n");
 }
 
+/*
+ * aos_util.h
+ */
+
+void test_aos_url_encode_failed(CuTest *tc) {
+    int ret;
+    char *dest;
+    dest = (char*)malloc(20);
+    
+    ret = aos_url_encode(dest, "abc.xx.com", 1);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, ret);
+
+    free(dest);
+
+    printf("test_aos_url_encode_failed ok\n");
+}
+
+void test_aos_url_encode_with_blank_char(CuTest *tc) {
+    int ret;
+    char *source;
+    char *dest;
+    source = "abc.xx.com/a b";
+    dest = (char*)malloc(20);
+    
+    ret = aos_url_encode(dest, source, strlen(source));
+    CuAssertIntEquals(tc, AOSE_OK, ret);
+    CuAssertStrEquals(tc, "abc.xx.com/a%20b", dest);
+
+    free(dest);
+
+    printf("test_aos_url_encode_with_blank_char ok\n");
+}
+
+void test_aos_url_decode_with_percent(CuTest *tc) {
+    int ret;
+    char *in;
+    char *out;
+
+    in = "abc.xx.com/a%20b";
+    out = (char*)malloc(20);
+    
+    ret = aos_url_decode(in, out);
+    CuAssertIntEquals(tc, 0, ret);
+
+    free(out);
+    
+    printf("test_aos_url_decode_with_percent ok\n");
+}
+
+void test_aos_url_decode_with_add(CuTest *tc) {
+    int ret;
+    char *in;
+    char *out;
+
+    in = "abc.xx.com/a+b";
+    out = (char*)malloc(20);
+    
+    ret = aos_url_decode(in, out);
+    CuAssertIntEquals(tc, 0, ret);
+
+    free(out);
+
+    printf("test_aos_url_decode_with_add ok\n");
+}
+
+void test_aos_url_decode_failed(CuTest *tc) {
+    int ret;
+    char *in;
+    char *out;
+
+    in = "abc.xx.com/a%xb";
+    out = (char*)malloc(20);
+    
+    ret = aos_url_decode(in, out);
+    CuAssertIntEquals(tc, -1, ret);
+
+    free(out);
+    
+    printf("test_aos_url_decode_failed ok\n");
+}
+
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();   
@@ -296,6 +377,11 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_aos_curl_code_to_status);
     SUITE_ADD_TEST(suite, test_aos_unquote_str);
     SUITE_ADD_TEST(suite, test_aos_ends_with);
+    SUITE_ADD_TEST(suite, test_aos_url_encode_failed);
+    SUITE_ADD_TEST(suite, test_aos_url_encode_with_blank_char);
+    SUITE_ADD_TEST(suite, test_aos_url_decode_with_percent);
+    SUITE_ADD_TEST(suite, test_aos_url_decode_with_add);
+    SUITE_ADD_TEST(suite, test_aos_url_decode_failed);
     
     return suite;
 }
