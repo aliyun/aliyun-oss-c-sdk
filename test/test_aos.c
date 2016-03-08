@@ -27,25 +27,6 @@ void test_get_xml_doc_with_empty_aos_list(CuTest *tc)
     printf("test_get_xml_doc_with_empty_aos_list ok\n");
 }
 
-void test_get_xml_doc_with_parse_failed(CuTest *tc)
-{
-    int ret;
-    mxml_node_t *xml_node;
-
-    aos_list_t head;
-    aos_list_init(&head);
-
-    aos_list_t node;
-    aos_list_init(&node);
-
-    aos_list_add_tail(&node, &head);
-    
-    ret = get_xmldoc(&head, &xml_node);
-    CuAssertIntEquals(tc, AOSE_XML_PARSE_ERROR, ret);
-
-    printf("test_get_xml_doc_with_parse_failed ok\n");
-}
-
 /*
  * aos_list.h
  */
@@ -301,7 +282,6 @@ CuSuite *test_aos()
     CuSuite* suite = CuSuiteNew();   
 
     SUITE_ADD_TEST(suite, test_get_xml_doc_with_empty_aos_list);
-    SUITE_ADD_TEST(suite, test_get_xml_doc_with_parse_failed);
     SUITE_ADD_TEST(suite, test_aos_list_movelist_with_empty_list);
     SUITE_ADD_TEST(suite, test_starts_with_failed);
     SUITE_ADD_TEST(suite, test_is_valid_ip);
