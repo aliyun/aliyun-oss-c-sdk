@@ -100,7 +100,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
  - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
 
 ## 联系我们
-- 阿里云OSS官方网站 [http://oss.aliyun.com](http://oss.aliyun.com)
-- 阿里云OSS官方论坛 [http://bbs.aliyun.com](http://bbs.aliyun.com)
-- 阿里云OSS官方文档中心 [http://www.aliyun.com/product/oss#Docs](http://www.aliyun.com/product/oss#Docs)
-- 阿里云官方技术支持 登录OSS控制台[https://home.console.aliyun.com]("交工单"https://home.console.aliyun.com)->点击"工单>系统"
+- [阿里云OSS官方网站](http://oss.aliyun.com)
+- [阿里云OSS官方论坛](http://bbs.aliyun.com)
+- [阿里云OSS官方文档中心](http://www.aliyun.com/product/oss#Docs)
+- 阿里云官方技术支持：[提交工单](https://workorder.console.aliyun.com/#/ticket/createIndex)
