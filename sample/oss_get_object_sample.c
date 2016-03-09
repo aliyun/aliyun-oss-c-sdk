@@ -104,6 +104,7 @@ void get_object_by_signed_url()
     int is_cname = 0;
     aos_http_request_t *request = NULL;
     aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     oss_request_options_t *options = NULL;
     aos_list_t buffer;
@@ -140,7 +141,7 @@ void get_object_by_signed_url()
 
     // put object by signed url
     s = oss_get_object_to_buffer_by_url(options, &url, 
-            &buffer, headers, &resp_headers);
+            headers, params, &buffer, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("get object by signed url succeeded\n");

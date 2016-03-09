@@ -14,7 +14,7 @@
  - 新增signed url相关示例
  - 完善接口注释
  - 删除无用的port配置参数
- - 调整oss_get_object_to_buffer_by_url和oss_init_multipart_upload接口参数顺序
+ - 调整oss_init_multipart_upload接口参数顺序
  - 优化配置参数名称，使其与官方网站保持一致
  - 解决endpoint不能含有http等前缀的问题
  - 解决用户无法设置content-type的问题
