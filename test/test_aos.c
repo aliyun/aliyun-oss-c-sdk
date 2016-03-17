@@ -7,6 +7,7 @@
 #include "aos_string.h"
 #include "aos_status.h"
 #include "oss_auth.h"
+#include "oss_xml.h"
 #include "oss_util.c"
 #include "aos_transport.c"
 

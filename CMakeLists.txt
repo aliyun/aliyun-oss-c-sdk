@@ -5,7 +5,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 set(CMAKE_VERSION 2.0.0)
 
 # default C / CXX flags
-set(CMAKE_C_FLAGS " -g -ggdb -O0 -Werror -fpic -fPIC -D_LARGEFILE64_SOURC")
+set(CMAKE_C_FLAGS " -g -ggdb -O0 -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
 set(CMAKE_CXX_FLAGS " -g -ggdb -O0 -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
 
 set(CMAKE_C_FLAGS_DEBUG " -g -ggdb -O0 -Werror -fpic -fPIC -D_LARGEFILE64_SOURCE")
