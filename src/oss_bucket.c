@@ -295,7 +295,7 @@ aos_status_t *oss_delete_objects(const oss_request_options_t *options,
     //add Content-MD5
     body_len = aos_buf_list_len(&body);
     buf = aos_buf_list_content(options->pool, &body);
-    md5 = aos_md5(options->pool, buf, body_len);
+    md5 = aos_md5(options->pool, buf, (apr_size_t)body_len);
     b64_value = aos_pcalloc(options->pool, b64_buf_len);
     b64_len = aos_base64_encode(md5, 20, b64_value);
     b64_value[b64_len] = '\0';

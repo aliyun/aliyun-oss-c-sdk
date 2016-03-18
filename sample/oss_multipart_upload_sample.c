@@ -15,6 +15,7 @@ void multipart_upload_file_from_buffer()
     aos_string_t object;
     int is_cname = 0;
     aos_table_t *headers = NULL;
+    aos_table_t *complete_headers = NULL;
     aos_table_t *resp_headers = NULL;
     oss_request_options_t *options = NULL;
     aos_string_t upload_id;
@@ -31,6 +32,7 @@ void multipart_upload_file_from_buffer()
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
+    complete_headers = aos_table_make(p, 1);
     resp_headers = aos_table_make(options->pool, 5); 
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
@@ -91,9 +93,9 @@ void multipart_upload_file_from_buffer()
     }
 
     //complete multipart
-    apr_table_add(headers, OSS_CONTENT_TYPE, "video/MP2T");
+    apr_table_add(complete_headers, OSS_CONTENT_TYPE, "video/MP2T");
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-            &complete_part_list, headers, &resp_headers);
+            &complete_part_list, complete_headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Complete multipart upload succeeded, upload_id:%.*s\n", 
@@ -112,6 +114,7 @@ void multipart_upload_file_from_file()
     aos_string_t object;
     int is_cname = 0;
     aos_table_t *headers = NULL;
+    aos_table_t *complete_headers = NULL;
     aos_table_t *resp_headers = NULL;
     oss_request_options_t *options = NULL;
     aos_string_t upload_id;
@@ -192,7 +195,7 @@ void multipart_upload_file_from_file()
 
     //complete multipart
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
-            &complete_part_list, headers, &resp_headers);
+            &complete_part_list, complete_headers, &resp_headers);
 
     if (NULL != s && 2 == s->code / 100) {
         printf("Complete multipart upload from file succeeded, upload_id:%.*s\n", 
