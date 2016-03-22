@@ -57,7 +57,7 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
     char **meta_headers;
     const char *value;
     aos_string_t tmp_str;
-    char tmpbuf[AOS_MAX_QUERY_ARG_LEN+1];
+    char tmpbuf[AOS_MAX_HEADER_LEN + 1];
 
     if (apr_is_empty_table(headers)) {
         return AOSE_OK;
@@ -86,7 +86,7 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
         aos_strip_space(&tmp_str);
         len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%s:%.*s", 
                            meta_headers[i], tmp_str.len, tmp_str.data);
-        if (len >= AOS_MAX_HEADER_LEN) {
+        if (len > AOS_MAX_HEADER_LEN) {
             aos_error_log("user meta header too many, %s.", tmpbuf);
             return AOSE_INVALID_ARGUMENT;
         }

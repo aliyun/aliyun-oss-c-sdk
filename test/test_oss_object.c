@@ -42,8 +42,9 @@ void test_object_cleanup(CuTest *tc)
     char *object_name5 = "oss_test_append_object_from_file";
     char *object_name6 = "oss_test_copy_object";
     char *object_name7 = "video_1.ts";
-    char *object_name8 = "oss_test_put_object_from_file2.txt";
-    char *object_name9 = "put_object_from_buffer_with_default_content_type";
+    char *object_name8 = "video_2.ts";
+    char *object_name9 = "oss_test_put_object_from_file2.txt";
+    char *object_name10 = "put_object_from_buffer_with_default_content_type";
     aos_table_t *resp_headers = NULL;
 
     aos_pool_create(&p, NULL);
@@ -60,6 +61,7 @@ void test_object_cleanup(CuTest *tc)
     delete_test_object(options, TEST_BUCKET_NAME, object_name7);
     delete_test_object(options, TEST_BUCKET_NAME, object_name8);
     delete_test_object(options, TEST_BUCKET_NAME, object_name9);
+    delete_test_object(options, TEST_BUCKET_NAME, object_name10);
 
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
@@ -198,6 +200,46 @@ void test_put_object_from_file(CuTest *tc)
     CuAssertStrEquals(tc, "application/octet-stream", content_type);
 
     printf("test_put_object_from_file ok\n");
+}
+
+void test_put_object_with_large_length_header(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "video_2.ts";
+    char *filename = __FILE__;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i = 0;
+    int header_length = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *head_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+    char *content_type = NULL;
+    char *user_meta = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    header_length = 1024 * 3;
+    user_meta = (char*)calloc(header_length, 1);
+    for (; i < header_length - 1; i++) {
+        user_meta[i] = 'a';
+    }
+    user_meta[header_length - 1] = '\0';
+    headers = aos_table_make(p, 2);
+    apr_table_set(headers, "x-oss-meta-user-meta", user_meta);
+    s = create_test_object_from_file(options, TEST_BUCKET_NAME, 
+            object_name, filename, headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, headers);
+
+    aos_pool_destroy(p);
+
+    printf("test_put_object_with_large_length_header_back_bound ok\n");
 }
 
 void test_put_object_from_file_with_content_type(CuTest *tc)
@@ -724,6 +766,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_range);
     SUITE_ADD_TEST(suite, test_put_object_from_file_with_content_type);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
+    SUITE_ADD_TEST(suite, test_put_object_with_large_length_header);
     SUITE_ADD_TEST(suite, test_get_object_to_file);
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
