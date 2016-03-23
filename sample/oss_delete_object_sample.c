@@ -26,7 +26,7 @@ void delete_object()
 
     s = oss_delete_object(options, &bucket, &object, &resp_headers);
 
-    if (NULL != s && 204 == s->code) {
+    if (aos_status_is_ok(s)) {
         printf("delete object succeed\n");
     } else {
         printf("delete object failed\n");

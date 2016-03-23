@@ -28,7 +28,7 @@ void head_object()
 
     s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
     
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("head object succeeded\n");
     } else {
         printf("head object failed\n");

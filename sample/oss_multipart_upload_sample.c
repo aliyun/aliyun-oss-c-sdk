@@ -33,7 +33,6 @@ void multipart_upload_file_from_buffer()
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
     complete_headers = aos_table_make(p, 1);
-    resp_headers = aos_table_make(options->pool, 5); 
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
     
@@ -41,7 +40,7 @@ void multipart_upload_file_from_buffer()
     s = oss_init_multipart_upload(options, &bucket, &object, 
                                   &upload_id, headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 
                upload_id.len, upload_id.data);
     } else {
@@ -54,7 +53,7 @@ void multipart_upload_file_from_buffer()
     s = oss_upload_part_from_buffer(options, &bucket, &object, &upload_id,
                                     part_num1, &buffer, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Upload multipart part succeeded\n");
     } else {
         printf("Upload multipart part failed\n");
@@ -65,7 +64,7 @@ void multipart_upload_file_from_buffer()
     s = oss_upload_part_from_buffer(options, &bucket, &object, &upload_id,
         part_num2, &buffer, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Upload multipart part succeeded\n");
     } else {
         printf("Upload multipart part failed\n");
@@ -78,7 +77,7 @@ void multipart_upload_file_from_buffer()
     s = oss_list_upload_part(options, &bucket, &object, &upload_id, 
                              params, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("List multipart succeeded\n");
     } else {
         printf("List multipart failed\n");
@@ -97,7 +96,7 @@ void multipart_upload_file_from_buffer()
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
             &complete_part_list, complete_headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Complete multipart upload succeeded, upload_id:%.*s\n", 
                upload_id.len, upload_id.data);
     } else {
@@ -124,8 +123,9 @@ void multipart_upload_file_from_file()
     aos_list_t complete_part_list;
     oss_list_part_content_t *part_content = NULL;
     oss_complete_part_content_t *complete_part_content = NULL;
-    int part_num1 = 1;
-    int part_num2 = 2;
+    int part_num = 1;
+    int64_t pos = 0;
+    int64_t file_length = 0;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -139,7 +139,7 @@ void multipart_upload_file_from_file()
     s = oss_init_multipart_upload(options, &bucket, &object, 
                                   &upload_id, headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 
                upload_id.len, upload_id.data);
     } else {
@@ -148,28 +148,21 @@ void multipart_upload_file_from_file()
     }
 
     //upload part from file
-    upload_file = oss_create_upload_file(p);
-    aos_str_set(&upload_file->filename, MULTIPART_UPLOAD_FILE_PATH);
-    upload_file->file_pos = 0;
-    upload_file->file_last = 200 * 1024; //200k
-    s = oss_upload_part_from_file(options, &bucket, &object, &upload_id,
-        part_num1, upload_file, &resp_headers);    
+    file_length = get_file_size(MULTIPART_UPLOAD_FILE_PATH);
+    while(pos < file_length) {
+        upload_file = oss_create_upload_file(p);
+        aos_str_set(&upload_file->filename, MULTIPART_UPLOAD_FILE_PATH);
+        upload_file->file_pos = pos;
+        pos += 100 * 1024;
+        upload_file->file_last = pos < file_length ? pos : file_length; //200k
+        s = oss_upload_part_from_file(options, &bucket, &object, &upload_id,
+                part_num++, upload_file, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
-        printf("Multipart upload from file succeeded\n");
-    } else {
-        printf("Multipart upload from file failed\n");
-    }
-
-    upload_file->file_pos = 200 *1024;//remain content start pos
-    upload_file->file_last = get_file_size(MULTIPART_UPLOAD_FILE_PATH);
-    s = oss_upload_part_from_file(options, &bucket, &object, &upload_id,
-        part_num2, upload_file, &resp_headers);
-
-    if (NULL != s && 2 == s->code / 100) {
-        printf("Multipart upload from file succeeded\n");
-    } else {
-        printf("Multipart upload from file failed\n");
+        if (aos_status_is_ok(s)) {
+            printf("Multipart upload part from file succeeded\n");
+        } else {
+            printf("Multipart upload part from file failed\n");
+        }
     }
 
     //list part
@@ -179,7 +172,7 @@ void multipart_upload_file_from_file()
     s = oss_list_upload_part(options, &bucket, &object, &upload_id, 
                              params, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("List multipart succeeded\n");
     } else {
         printf("List multipart failed\n");
@@ -197,7 +190,7 @@ void multipart_upload_file_from_file()
     s = oss_complete_multipart_upload(options, &bucket, &object, &upload_id,
             &complete_part_list, complete_headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Complete multipart upload from file succeeded, upload_id:%.*s\n", 
                upload_id.len, upload_id.data);
     } else {
@@ -229,7 +222,7 @@ void abort_multipart_upload()
     s = oss_init_multipart_upload(options, &bucket, &object, 
                                   &upload_id, headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Init multipart upload succeeded, upload_id:%.*s\n", 
                upload_id.len, upload_id.data);
     } else {
@@ -239,7 +232,7 @@ void abort_multipart_upload()
     s = oss_abort_multipart_upload(options, &bucket, &object, &upload_id, 
                                    &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("Abort multipart upload succeeded, upload_id::%.*s\n", 
                upload_id.len, upload_id.data);
     } else {
