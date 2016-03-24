@@ -131,7 +131,6 @@ void multipart_upload_file_from_file()
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
-    resp_headers = aos_table_make(options->pool, 5); 
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
     

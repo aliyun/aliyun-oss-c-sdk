@@ -57,9 +57,14 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
     char **meta_headers;
     const char *value;
     aos_string_t tmp_str;
-    char tmpbuf[AOS_MAX_HEADER_LEN + 1];
+    char *tmpbuf = (char*)malloc(AOS_MAX_HEADER_LEN + 1);
+    if (NULL == tmpbuf) {
+        aos_error_log("malloc %d memory failed.", AOS_MAX_HEADER_LEN + 1);
+        return AOSE_OVER_MEMORY;
+    }
 
     if (apr_is_empty_table(headers)) {
+        free(tmpbuf);
         return AOSE_OK;
     }
 
@@ -75,6 +80,7 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
         }
     }
     if (meta_count == 0) {
+        free(tmpbuf);
         return AOSE_OK;
     }
     aos_gnome_sort((const char **)meta_headers, meta_count);
@@ -84,9 +90,10 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
         value = apr_table_get(headers, meta_headers[i]);
         aos_str_set(&tmp_str, value);
         aos_strip_space(&tmp_str);
-        len = apr_snprintf(tmpbuf, sizeof(tmpbuf), "%s:%.*s", 
+        len = apr_snprintf(tmpbuf, AOS_MAX_HEADER_LEN + 1, "%s:%.*s", 
                            meta_headers[i], tmp_str.len, tmp_str.data);
         if (len > AOS_MAX_HEADER_LEN) {
+            free(tmpbuf);
             aos_error_log("user meta header too many, %s.", tmpbuf);
             return AOSE_INVALID_ARGUMENT;
         }
@@ -96,6 +103,7 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
         aos_buf_append_string(p, signbuf, "\n", sizeof("\n")-1);
     }
 
+    free(tmpbuf);
     return AOSE_OK;
 }
 

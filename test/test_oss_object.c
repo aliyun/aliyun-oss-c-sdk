@@ -224,7 +224,7 @@ void test_put_object_with_large_length_header(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
 
-    header_length = 1024 * 3;
+    header_length = 1024 * 5;
     user_meta = (char*)calloc(header_length, 1);
     for (; i < header_length - 1; i++) {
         user_meta[i] = 'a';
@@ -237,6 +237,7 @@ void test_put_object_with_large_length_header(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, headers);
 
+    free(user_meta);
     aos_pool_destroy(p);
 
     printf("test_put_object_with_large_length_header_back_bound ok\n");

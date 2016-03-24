@@ -94,7 +94,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define AOS_INIT_WINSOCK 1
 #define AOS_MD5_STRING_LEN 32
 #define AOS_MAX_URI_LEN 2048
-#define AOS_MAX_HEADER_LEN 4096
+#define AOS_MAX_HEADER_LEN 8192
 #define AOS_MAX_QUERY_ARG_LEN 1024
 #define AOS_MAX_GMT_TIME_LEN 128
 
