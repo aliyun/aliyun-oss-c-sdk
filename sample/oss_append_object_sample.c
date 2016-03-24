@@ -24,6 +24,7 @@ void append_object_from_buffer()
     aos_list_t buffer;
     aos_buf_t *content = NULL;
     char *next_append_position = NULL;
+    char *object_type = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -32,20 +33,28 @@ void append_object_from_buffer()
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
     s = oss_head_object(options, &bucket, &object, headers1, &resp_headers);
-    if (NULL != s && s->code == 200) {
-        next_append_position = (char*)(apr_table_get(resp_headers, 
-                        "x-oss-next-append-position"));
+    if (aos_status_is_ok(s)) {
+        object_type = (char*)(apr_table_get(resp_headers, OSS_OBJECT_TYPE));
+        if (0 != strncmp(OSS_OBJECT_TYPE_APPENDABLE, object_type, 
+                         strlen(OSS_OBJECT_TYPE_APPENDABLE))) 
+        {
+            printf("object[%s]'s type[%s] is not Appendable\n", OBJECT_NAME, object_type);
+            aos_pool_destroy(p);
+            return;
+        }
+
+        next_append_position = (char*)(apr_table_get(resp_headers, OSS_NEXT_APPEND_POSITION));
         position = atoi(next_append_position);
     }
-
+        
     headers2 = aos_table_make(p, 0);
     aos_list_init(&buffer);
     content = aos_buf_pack(p, str, strlen(str));
     aos_list_add_tail(&content->node, &buffer);
     s = oss_append_object_from_buffer(options, &bucket, &object, 
             position, &buffer, headers2, &resp_headers);
-    
-    if (NULL != s && 2 == s->code / 100)
+
+    if (aos_status_is_ok(s))
     {
         printf("append object from buffer succeeded\n");
     } else {
@@ -70,6 +79,7 @@ void append_object_from_file()
     aos_string_t file;
     int64_t position = 0;
     char *next_append_position = NULL;
+    char *object_type = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -81,16 +91,24 @@ void append_object_from_file()
     aos_str_set(&file, filename);
 
     s = oss_head_object(options, &bucket, &object, headers1, &resp_headers);
-    if(NULL != s && 2 == s->code / 100) {
-        next_append_position = (char*)(apr_table_get(resp_headers, 
-                        "x-oss-next-append-position"));
+    if(aos_status_is_ok(s)) {
+        object_type = (char*)(apr_table_get(resp_headers, OSS_OBJECT_TYPE));
+        if (0 != strncmp(OSS_OBJECT_TYPE_APPENDABLE, object_type, 
+                         strlen(OSS_OBJECT_TYPE_APPENDABLE))) 
+        {
+            printf("object[%s]'s type[%s] is not Appendable\n", OBJECT_NAME, object_type);
+            aos_pool_destroy(p);
+            return;
+        }
+        
+        next_append_position = (char*)(apr_table_get(resp_headers, OSS_NEXT_APPEND_POSITION));
         position = atoi(next_append_position);
     }
 
     s = oss_append_object_from_file(options, &bucket, &object, 
                                     position, &file, headers2, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("append object from file succeeded\n");
     } else {
         printf("append object from file failed\n");

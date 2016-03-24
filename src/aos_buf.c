@@ -59,11 +59,11 @@ char *aos_buf_list_content(aos_pool_t *p, aos_list_t *list)
     aos_buf_t *content;
 
     body_len = aos_buf_list_len(list);
-    buf = aos_pcalloc(p, body_len + 1);
+    buf = aos_pcalloc(p, (size_t)(body_len + 1));
     buf[body_len] = '\0';
     aos_list_for_each_entry(content, list, node) {
         size = aos_buf_size(content);
-        memcpy(buf + pos, content->pos, size);
+        memcpy(buf + pos, content->pos, (size_t)(size));
         pos += size;
     }
     return buf;

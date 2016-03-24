@@ -37,7 +37,7 @@ void put_object_from_buffer()
     s = oss_put_object_from_buffer(options, &bucket, &object, 
 				   &buffer, headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("put object from buffer succeeded\n");
     } else {
 	printf("put object from buffer failed\n");      
@@ -71,7 +71,7 @@ void put_object_from_file()
     s = oss_put_object_from_file(options, &bucket, &object, &file, 
                                  headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("put object from file succeeded\n");
     } else {
 	printf("put object from file failed\n");
@@ -128,7 +128,7 @@ void put_object_by_signed_url()
     s = oss_put_object_from_file_by_url(options, &url, &file, 
                                         headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("put object by signed url succeeded\n");
     } else {
 	printf("put object by signed url failed\n");
@@ -160,7 +160,7 @@ void create_dir()
     s = oss_put_object_from_buffer(options, &bucket, &object, &buffer,
                                    headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("create dir succeeded\n");
     } else {
 	printf("create dir failed\n");
@@ -198,7 +198,7 @@ void put_object_to_dir()
     s = oss_put_object_from_file(options, &bucket, &object, &file, 
                                  headers, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("put object to dir succeeded\n");
     } else {
 	printf("put object to dir failed\n");

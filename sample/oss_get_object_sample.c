@@ -36,7 +36,7 @@ void get_object_to_buffer()
     s = oss_get_object_to_buffer(options, &bucket, &object, 
                                  headers, params, &buffer, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("get object to buffer succeeded\n");
     }
     else {
@@ -86,7 +86,7 @@ void get_object_to_local_file()
     s = oss_get_object_to_file(options, &bucket, &object, headers, 
                                params, &file, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("get object to local file succeeded\n");
     } else {
         printf("get object to local file failed\n");
@@ -143,7 +143,7 @@ void get_object_by_signed_url()
     s = oss_get_object_to_buffer_by_url(options, &url, 
             headers, params, &buffer, &resp_headers);
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("get object by signed url succeeded\n");
     } else {
 	printf("get object by signed url failed\n");
@@ -220,7 +220,7 @@ void get_oss_dir_to_local_dir()
         aos_pool_destroy(list_object_pool);
     }
 
-    if (NULL != s && 2 == s->code / 100) {
+    if (aos_status_is_ok(s)) {
         printf("get dir succeeded\n");
     } else {
 	printf("get dir failed\n");

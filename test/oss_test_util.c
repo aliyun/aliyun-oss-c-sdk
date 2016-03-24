@@ -109,7 +109,7 @@ aos_status_t *create_test_object_from_file(const oss_request_options_t *options,
     aos_string_t object;
     aos_string_t file;
     aos_table_t *resp_headers;
-    aos_status_t * s;
+    aos_status_t *s;
 
     test_object_base();
     aos_str_set(&file, filename);

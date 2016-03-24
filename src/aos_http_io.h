@@ -7,7 +7,7 @@ AOS_CPP_START
 
 aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner);
 
-// http io error message
+/* http io error message */
 static inline const char *aos_http_controller_get_reason(aos_http_controller_t *ctl)
 {
     aos_http_controller_ex_t *ctle = (aos_http_controller_ex_t *)ctl;
