@@ -207,17 +207,12 @@ void test_put_object_with_large_length_header(CuTest *tc)
     aos_pool_t *p = NULL;
     char *object_name = "video_2.ts";
     char *filename = __FILE__;
-    aos_string_t bucket;
-    aos_string_t object;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     int is_cname = 0;
     int i = 0;
     int header_length = 0;
     aos_table_t *headers = NULL;
-    aos_table_t *head_headers = NULL;
-    aos_table_t *head_resp_headers = NULL;
-    char *content_type = NULL;
     char *user_meta = NULL;
 
     aos_pool_create(&p, NULL);
@@ -480,7 +475,6 @@ void test_head_object_with_not_exist(CuTest *tc)
     aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    char *user_meta = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

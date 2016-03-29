@@ -93,8 +93,9 @@ static int oss_get_canonicalized_headers(aos_pool_t *p,
         len = apr_snprintf(tmpbuf, AOS_MAX_HEADER_LEN + 1, "%s:%.*s", 
                            meta_headers[i], tmp_str.len, tmp_str.data);
         if (len > AOS_MAX_HEADER_LEN) {
-            aos_error_log("user meta header too many, %s.", tmpbuf);
             free(tmpbuf);
+            aos_error_log("user meta header too many, %d > %d.", 
+                          len, AOS_MAX_HEADER_LEN);
             return AOSE_INVALID_ARGUMENT;
         }
         tmp_str.data = tmpbuf;
