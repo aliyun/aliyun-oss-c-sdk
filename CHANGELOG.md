@@ -1,5 +1,11 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：2.1.0 日期：2016-03-28
+### 变更内容
+ - 完善示例程序
+ - header长度由限制为1K升级为最长8K
+ - 解决部分单词拼写错误
+
 ## 版本号：2.0.0 日期：2016-03-08
 ### 变更内容
  - complete multipart接口支持覆盖原有head
