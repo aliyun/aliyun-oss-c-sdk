@@ -271,7 +271,6 @@ void test_multipart_upload_from_file(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
     oss_upload_file_t *upload_file = NULL;
-    aos_table_t *headers = NULL;
     aos_table_t *upload_part_resp_headers = NULL;
     oss_list_upload_part_params_t *params = NULL;
     aos_table_t *list_part_resp_headers = NULL;
@@ -289,8 +288,6 @@ void test_multipart_upload_from_file(CuTest *tc)
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
-
-    headers = aos_table_make(options->pool, 1);
 
     // create multipart upload local file    
     make_rand_string(p, 10 * 1024 * 1024, &data);
@@ -746,7 +743,6 @@ void test_oss_get_sorted_uploaded_part_with_empty(CuTest *tc)
     int is_cname = 0;
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
-    aos_table_t *headers = NULL;
     aos_string_t upload_id;
     aos_list_t complete_part_list;
     int part_count = 0;
@@ -756,8 +752,6 @@ void test_oss_get_sorted_uploaded_part_with_empty(CuTest *tc)
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
-
-    headers = aos_table_make(options->pool, 2);
 
     //init mulitipart
     s = init_test_multipart_upload(options, TEST_BUCKET_NAME, 
