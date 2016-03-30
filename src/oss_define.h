@@ -28,6 +28,7 @@ extern const char OSS_CANNONICALIZED_HEADER_DATE[];
 extern const char OSS_CANNONICALIZED_HEADER_COPY_SOURCE[];
 extern const char OSS_CONTENT_MD5[];
 extern const char OSS_CONTENT_TYPE[];
+extern const char OSS_CONTENT_LENGTH[];
 extern const char OSS_DATE[];
 extern const char OSS_AUTHORIZATION[];
 extern const char OSS_ACCESSKEYID[];

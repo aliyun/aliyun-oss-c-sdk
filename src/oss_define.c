@@ -6,6 +6,7 @@ const char OSS_CANNONICALIZED_HEADER_ACL[] = "x-oss-acl";
 const char OSS_CANNONICALIZED_HEADER_COPY_SOURCE[] = "x-oss-copy-source";
 const char OSS_CONTENT_MD5[] = "Content-MD5";
 const char OSS_CONTENT_TYPE[] = "Content-Type";
+const char OSS_CONTENT_LENGTH[] = "Content-Length";
 const char OSS_DATE[] = "Date";
 const char OSS_AUTHORIZATION[] = "Authorization";
 const char OSS_ACCESSKEYID[] = "OSSAccessKeyId";

@@ -18,6 +18,9 @@ void head_object()
     aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
+    char *content_length_str = NULL;
+    char *object_type = NULL;
+    int64_t content_length = 0;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -29,7 +32,15 @@ void head_object()
     s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
     
     if (aos_status_is_ok(s)) {
-        printf("head object succeeded\n");
+        content_length_str = (char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH);
+        if (content_length_str != NULL) {
+            content_length = atoll(content_length_str);
+        }
+
+        object_type = (char*)apr_table_get(resp_headers, OSS_OBJECT_TYPE);
+        
+        printf("head object succeeded, object type:%s, content_length:%ld\n", 
+               object_type, content_length);
     } else {
         printf("head object failed\n");
     }
