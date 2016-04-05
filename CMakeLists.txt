@@ -34,7 +34,7 @@ FIND_PROGRAM(APU_CONFIG_BIN NAMES apu-config apu-1-config PATHS /usr/bin /usr/lo
 IF (APR_CONFIG_BIN)
     EXECUTE_PROCESS(
         COMMAND ${APR_CONFIG_BIN} --includedir
-        OUTPUT_VARIABLE APR_INCLUDEDIRS
+        OUTPUT_VARIABLE APR_INCLUDE_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     EXECUTE_PROCESS(
@@ -54,7 +54,7 @@ ENDIF()
 IF (APU_CONFIG_BIN)
     EXECUTE_PROCESS(
         COMMAND ${APU_CONFIG_BIN} --includedir
-        OUTPUT_VARIABLE APU_INCLUDEDIRS
+        OUTPUT_VARIABLE APR_UTIL_INCLUDE_DIR
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     EXECUTE_PROCESS(
@@ -85,8 +85,10 @@ ELSE()
 ENDIF()
   
 # Compile and link lib_oss_c_sdk
-include_directories(${APR_INCLUDEDIRS})
-include_directories(${APU_INCLUDEDIRS})
+include_directories(${APR_INCLUDE_DIR})
+include_directories(${APR_UTIL_INCLUDE_DIR})
+include_directories(${MINIXML_INCLUDE_DIR})
+include_directories(${CURL_INCLUDE_DIR})
 
 aux_source_directory(src SRC_LIST)
 
