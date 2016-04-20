@@ -43,6 +43,12 @@ aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, c
 aos_status_t *abort_test_multipart_upload(const oss_request_options_t *options, const char *bucket_name,
     const char *object_name, aos_string_t *upload_id);
 
+aos_status_t *create_test_live_channel(const oss_request_options_t *options, const char *bucket_name,
+    const char *live_channel);
+
+aos_status_t *delete_test_live_channel(const oss_request_options_t *options, const char *bucket_name,
+    const char *live_channel);
+
 char *gen_test_signed_url(const oss_request_options_t *options, const char *bucket_name,
     const char *object_name, int64_t expires, aos_http_request_t *req);
 

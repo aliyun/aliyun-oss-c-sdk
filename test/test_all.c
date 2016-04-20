@@ -10,6 +10,7 @@ extern CuSuite *test_transport();
 extern CuSuite *test_oss_bucket();
 extern CuSuite *test_oss_object();
 extern CuSuite *test_oss_multipart();
+extern CuSuite *test_oss_live();
 extern CuSuite *test_oss_util();
 extern CuSuite *test_oss_xml();
 extern CuSuite *test_aos();
@@ -21,6 +22,7 @@ static const struct testlist {
     {"test_oss_bucket", test_oss_bucket},
     {"test_oss_object", test_oss_object},
     {"test_oss_multipart", test_oss_multipart},
+    {"test_oss_live", test_oss_live},
     {"test_aos", test_aos},
     {"LastTest", NULL}
 };

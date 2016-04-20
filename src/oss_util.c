@@ -133,6 +133,13 @@ static void generate_proto(const oss_request_options_t *options,
     req->proto = apr_psprintf(options->pool, "%.*s", (int)strlen(proto), proto);
 }
 
+static void generate_rtmp_proto(const oss_request_options_t *options,
+                           aos_http_request_t *req)
+{
+    const char *proto = AOS_RTMP_PREFIX;
+    req->proto = apr_psprintf(options->pool, "%.*s", (int)strlen(proto), proto);
+}
+
 int is_valid_ip(const char *str)
 {
     struct in_addr addr;
@@ -233,6 +240,43 @@ void oss_get_bucket_uri(const oss_request_options_t *options,
                 bucket->len, bucket->data, 
                 raw_endpoint.len, raw_endpoint.data);
         req->uri = apr_psprintf(options->pool, "%s", "");
+    }
+}
+
+void oss_get_rtmp_uri(const oss_request_options_t *options,
+                      const aos_string_t *bucket,
+                      const aos_string_t *live_channel_id,
+                      aos_http_request_t *req)
+{
+    generate_rtmp_proto(options, req);
+
+    int32_t proto_len = strlen(req->proto);
+
+    req->resource = apr_psprintf(options->pool, "%.*s/%.*s", bucket->len, bucket->data,
+        live_channel_id->len, live_channel_id->data);
+
+    const char *raw_endpoint_str = aos_pstrdup(options->pool,
+            &options->config->endpoint) + proto_len;
+    aos_string_t raw_endpoint = {options->config->endpoint.len - proto_len,
+                                 options->config->endpoint.data + proto_len};
+
+    if (options->config->is_cname) {
+        req->host = apr_psprintf(options->pool, "%.*s",
+                raw_endpoint.len, raw_endpoint.data);
+        req->uri = apr_psprintf(options->pool, "live/%.*s",
+            live_channel_id->len, live_channel_id->data);
+    } else if (is_valid_ip(raw_endpoint_str)) {
+        req->host = apr_psprintf(options->pool, "%.*s",
+                raw_endpoint.len, raw_endpoint.data);
+        req->uri = apr_psprintf(options->pool, "%.*s/live/%.*s",
+                                bucket->len, bucket->data,
+                                live_channel_id->len, live_channel_id->data);
+    } else {
+        req->host = apr_psprintf(options->pool, "%.*s.%.*s",
+                bucket->len, bucket->data,
+                raw_endpoint.len, raw_endpoint.data);
+        req->uri = apr_psprintf(options->pool, "live/%.*s",
+            live_channel_id->len, live_channel_id->data);
     }
 }
 
@@ -431,6 +475,64 @@ oss_object_key_t *oss_create_oss_object_key(aos_pool_t *p)
     return (oss_object_key_t *)aos_pcalloc(p, sizeof(oss_object_key_t));
 }
 
+oss_live_channel_publish_url_t *oss_create_oss_live_channel_publish_url(aos_pool_t *p)
+{
+    return (oss_live_channel_publish_url_t *)aos_pcalloc(p, sizeof(oss_live_channel_publish_url_t));
+}
+
+oss_live_channel_play_url_t *oss_create_oss_live_channel_play_url(aos_pool_t *p)
+{
+    return (oss_live_channel_play_url_t *)aos_pcalloc(p, sizeof(oss_live_channel_play_url_t));
+}
+
+oss_live_channel_content_t *oss_create_list_live_channel_content(aos_pool_t *p)
+{
+    oss_live_channel_content_t *list_live_channel_content = NULL;
+    list_live_channel_content = (oss_live_channel_content_t*)oss_create_api_result_content(p,
+        sizeof(oss_live_channel_content_t));
+    aos_list_init(&list_live_channel_content->publish_url_list);
+    aos_list_init(&list_live_channel_content->play_url_list);
+    return list_live_channel_content;
+}
+
+oss_live_record_content_t *oss_create_live_record_content(aos_pool_t *p)
+{
+    oss_live_record_content_t *live_record_content = NULL;
+    live_record_content = (oss_live_record_content_t*)oss_create_api_result_content(p,
+        sizeof(oss_live_record_content_t));
+    return live_record_content;
+}
+
+oss_live_channel_configuration_t *oss_create_live_channel_configuration_content(aos_pool_t *p)
+{
+    oss_live_channel_configuration_t *config;
+    config = (oss_live_channel_configuration_t *)aos_pcalloc(
+            p, sizeof(oss_live_channel_configuration_t));
+
+    aos_str_set(&config->id, "");
+    aos_str_set(&config->description, "");
+    aos_str_set(&config->status, "enabled");
+    aos_str_set(&config->target.type, "HLS");
+    aos_str_set(&config->target.play_list_name, "play.m3u8");
+    config->target.frag_duration = 5; // 5 seconds
+    config->target.frag_count = 3;
+
+    return config;
+}
+
+oss_list_live_channel_params_t *oss_create_list_live_channel_params(aos_pool_t *p)
+{
+    oss_list_live_channel_params_t *params;
+    params = (oss_list_live_channel_params_t *)aos_pcalloc(
+            p, sizeof(oss_list_live_channel_params_t));
+    aos_list_init(&params->live_channel_list);
+    aos_str_set(&params->prefix, "");
+    aos_str_set(&params->marker, "");
+    params->truncated = 1;
+    params->max_keys = OSS_PER_RET_NUM;
+    return params;
+}
+
 void oss_set_multipart_content_type(aos_table_t *headers)
 {
     const char *content_type;
@@ -495,6 +597,20 @@ void oss_init_object_request(const oss_request_options_t *options,
 
     oss_get_object_uri(options, bucket, object, *req);
 }
+
+void oss_init_live_channel_request(const oss_request_options_t *options, 
+                                   const aos_string_t *bucket,
+                                   const aos_string_t *live_channel,
+                                   http_method_e method,
+                                   aos_http_request_t **req,
+                                   aos_table_t *params,
+                                   aos_table_t *headers,
+                                   aos_http_response_t **resp)
+{
+    oss_init_request(options, method, req, params, headers, resp);
+    oss_get_object_uri(options, bucket, live_channel, *req);
+}
+
 
 void oss_init_signed_url_request(const oss_request_options_t *options, 
                                  const aos_string_t *signed_url,

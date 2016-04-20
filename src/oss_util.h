@@ -63,6 +63,14 @@ void oss_init_object_request(const oss_request_options_t *options, const aos_str
         aos_table_t *params, aos_table_t *headers, aos_http_response_t **resp);
 
 /**
+  * @brief  init oss live channel request
+**/
+void oss_init_live_channel_request(const oss_request_options_t *options,
+    const aos_string_t *bucket, const aos_string_t *live_channel,
+    http_method_e method, aos_http_request_t **req, aos_table_t *params,
+    aos_table_t *headers, aos_http_response_t **resp);
+
+/**
   * @brief  init oss request with signed_url
 **/
 void oss_init_signed_url_request(const oss_request_options_t *options, const aos_string_t *signed_url,
@@ -101,6 +109,14 @@ void oss_get_object_uri(const oss_request_options_t *options,
 void oss_get_bucket_uri(const oss_request_options_t *options, 
                         const aos_string_t *bucket,
                         aos_http_request_t *req);
+
+/**
+  * @brief  get rtmp uri using third-level domain if hostname is oss domain, otherwise second-level domain
+**/
+void oss_get_rtmp_uri(const oss_request_options_t *options,
+                      const aos_string_t *bucket,
+                      const aos_string_t *live_channel_id,
+                      aos_http_request_t *req);
 
 /**
   * @brief  write body content into oss request body from buffer
@@ -145,6 +161,7 @@ oss_complete_part_content_t *oss_create_complete_part_content(aos_pool_t *p);
 oss_list_object_params_t *oss_create_list_object_params(aos_pool_t *p);
 oss_list_upload_part_params_t *oss_create_list_upload_part_params(aos_pool_t *p);
 oss_list_multipart_upload_params_t *oss_create_list_multipart_upload_params(aos_pool_t *p);
+oss_list_live_channel_params_t *oss_create_list_live_channel_params(aos_pool_t *p);
 
 /**
   * @brief  create upload part copy params
@@ -175,6 +192,36 @@ oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p);
   * @return oss object content
 **/
 oss_object_key_t *oss_create_oss_object_key(aos_pool_t *p);
+
+/**
+  * @brief  create oss live channel publish url content for delete objects
+  * @return oss live channel publish url content
+**/
+oss_live_channel_publish_url_t *oss_create_oss_live_channel_publish_url(aos_pool_t *p);
+
+/**
+  * @brief  create oss live channel play url content for delete objects
+  * @return oss live channel play url content
+**/
+oss_live_channel_play_url_t *oss_create_oss_live_channel_play_url(aos_pool_t *p);
+
+/**
+  * @brief  create oss list live channel content for delete objects
+  * @return oss list live channel content
+**/
+oss_live_channel_content_t *oss_create_list_live_channel_content(aos_pool_t *p);
+
+/**
+  * @brief  create oss live recored content for delete objects
+  * @return oss live record content
+**/
+oss_live_record_content_t *oss_create_live_record_content(aos_pool_t *p);
+
+/**
+  * @brief  create live channel configuration content
+  * @return live channel configuration content
+**/
+oss_live_channel_configuration_t *oss_create_live_channel_configuration_content(aos_pool_t *p);
 
 /**
   * @brief  get part size for multipart upload

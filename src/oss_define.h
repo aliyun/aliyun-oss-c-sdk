@@ -61,6 +61,19 @@ extern const char OSS_DELETE[];
 extern const char OSS_YES[];
 extern const char OSS_OBJECT_TYPE_NORMAL[];
 extern const char OSS_OBJECT_TYPE_APPENDABLE[];
+extern const char OSS_LIVE_CHANNEL[];
+extern const char OSS_LIVE_CHANNEL_STATUS[];
+extern const char OSS_COMP[];
+extern const char OSS_LIVE_CHANNEL_STAT[];
+extern const char OSS_LIVE_CHANNEL_HISTORY[];
+extern const char OSS_LIVE_CHANNEL_VOD[];
+extern const char OSS_LIVE_CHANNEL_START_TIME[];
+extern const char OSS_LIVE_CHANNEL_END_TIME[];
+extern const char OSS_PLAY_LIST_NAME[];
+extern const char LIVE_CHANNEL_STATUS_DISABLED[];
+extern const char LIVE_CHANNEL_STATUS_ENABLED[];
+extern const char LIVE_CHANNEL_STATUS_IDLE[];
+extern const char LIVE_CHANNEL_STATUS_LIVE[];
 extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
@@ -205,5 +218,77 @@ typedef struct {
     char *suffix;
     char *type;
 } oss_content_type_t;
+
+typedef struct {
+    aos_string_t type;
+    int frag_duration;
+    int frag_count;
+    aos_string_t play_list_name;
+}oss_live_channel_target_t;
+
+typedef struct {
+    aos_string_t id;
+    aos_string_t description;
+    aos_string_t status;
+    oss_live_channel_target_t target;
+} oss_live_channel_configuration_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t publish_url;
+} oss_live_channel_publish_url_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t play_url;
+} oss_live_channel_play_url_t;
+
+typedef struct {
+    int32_t width;
+    int32_t height;
+    int32_t frame_rate;
+    int32_t band_width;
+    aos_string_t codec;
+} oss_video_stat_t;
+
+typedef struct {
+    int32_t band_width;
+    int32_t sample_rate;
+    aos_string_t codec;
+} oss_audio_stat_t;
+
+typedef struct {
+    aos_string_t status;
+    aos_string_t connected_time;
+    aos_string_t remote_addr;
+    oss_video_stat_t video_stat;
+    oss_audio_stat_t audio_stat;
+} oss_live_channel_stat_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t id;
+    aos_string_t description;
+    aos_string_t status;
+    aos_string_t last_modified;
+    aos_list_t publish_url_list;
+    aos_list_t play_url_list;
+} oss_live_channel_content_t;
+
+typedef struct {
+    aos_string_t prefix;
+    aos_string_t marker;
+    int max_keys;
+    int truncated;
+    aos_string_t next_marker;
+    aos_list_t live_channel_list;
+} oss_list_live_channel_params_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t start_time;
+    aos_string_t end_time;
+    aos_string_t remote_addr;
+} oss_live_record_content_t;
 
 #endif
