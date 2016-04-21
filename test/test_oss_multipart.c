@@ -607,7 +607,7 @@ void test_upload_file_from_recover_failed(CuTest *tc)
 
     aos_pool_destroy(p);
 
-    printf("test_upload_file_from_recover ok\n");
+    printf("test_upload_file_from_recover_failed ok\n");
 }
 
 void test_list_upload_part_with_empty(CuTest *tc)

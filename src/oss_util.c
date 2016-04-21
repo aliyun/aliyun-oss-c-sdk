@@ -490,9 +490,6 @@ void oss_init_object_request(const oss_request_options_t *options,
                              aos_http_response_t **resp)
 {
     oss_init_request(options, method, req, params, headers, resp);
-
-    //set_content_type(object->data, headers);
-
     oss_get_object_uri(options, bucket, object, *req);
 }
 

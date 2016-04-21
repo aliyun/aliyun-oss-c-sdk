@@ -23,6 +23,25 @@ aos_status_t *aos_status_dup(aos_pool_t *p, aos_status_t *src)
     return dst;
 }
 
+int aos_should_retry(aos_status_t *s) {
+    int aos_error_code = 0;
+
+    if (s == NULL) {
+        return 0;
+    }
+
+    if (s->code / 100 == 5) {
+        return 1;
+    }
+
+    aos_error_code = atoi(s->error_code);
+    if (aos_error_code == AOSE_REQUEST_TIMEOUT || aos_error_code == AOSE_CONNECTION_FAILED) {
+        return 1;
+    }
+
+    return 0;
+}
+
 aos_status_t *aos_status_parse_from_body(aos_pool_t *p, aos_list_t *bc, int code, aos_status_t *s)
 {
     int res;
