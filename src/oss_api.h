@@ -666,8 +666,8 @@ aos_status_t *oss_post_vod_play_list(const oss_request_options_t *options,
                                      const aos_string_t *bucket,
                                      const aos_string_t *live_channel,
                                      const aos_string_t *play_list_name,
-                                     const aos_string_t *start_time,
-                                     const aos_string_t *end_time,
+                                     const int64_t start_time,
+                                     const int64_t end_time,
                                      aos_table_t **resp_headers);
 
 /*
@@ -685,7 +685,7 @@ char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
                               const aos_string_t *bucket,
                               const aos_string_t *live_channel,
                               const aos_string_t *play_list_name,
-                              int64_t expires,
+                              const int64_t expires,
                               aos_table_t *params);
 
 OSS_CPP_END

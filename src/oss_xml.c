@@ -621,8 +621,8 @@ void oss_publish_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_pu
     char *node_content;
     
     if (NULL != node) {
-		node_content = node->child->value.opaque;
-        url = apr_pstrdup(p, (char *)node_content);
+        node_content = node->child->value.opaque;
+        url = apr_pstrdup(p, node_content);
         aos_str_set(&content->publish_url, url);
     }
 }
@@ -633,20 +633,20 @@ void oss_play_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_play_
     char *node_content;
     
     if (NULL != node) {
-		node_content = node->child->value.opaque;
-        url = apr_pstrdup(p, (char *)node_content);
+        node_content = node->child->value.opaque;
+        url = apr_pstrdup(p, node_content);
         aos_str_set(&content->play_url, url);
     }
 }
 
 void oss_publish_urls_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
-	aos_list_t *publish_xml_list)
+    aos_list_t *publish_xml_list)
 {
     mxml_node_t *node;
 
     node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
     for ( ; node != NULL; ) {
-        oss_live_channel_publish_url_t *content = oss_create_oss_live_channel_publish_url(p);
+        oss_live_channel_publish_url_t *content = oss_create_live_channel_publish_url(p);
         oss_publish_url_parse(p, node, content);
         aos_list_add_tail(&content->node, publish_xml_list);
         node = mxmlFindElement(node, root, xml_path, NULL, NULL, MXML_DESCEND);
@@ -654,13 +654,13 @@ void oss_publish_urls_contents_parse(aos_pool_t *p, mxml_node_t *root, const cha
 }
 
 void oss_play_urls_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
-	aos_list_t *play_xml_list)
+    aos_list_t *play_xml_list)
 {
     mxml_node_t *node;
 
     node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
     for ( ; node != NULL; ) {
-        oss_live_channel_play_url_t *content = oss_create_oss_live_channel_play_url(p);
+        oss_live_channel_play_url_t *content = oss_create_live_channel_play_url(p);
         oss_play_url_parse(p, node, content);
         aos_list_add_tail(&content->node, play_xml_list);
         node = mxmlFindElement(node, root, xml_path, NULL, NULL, MXML_DESCEND);
@@ -668,35 +668,35 @@ void oss_play_urls_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *
 }
 
 void oss_create_live_channel_content_parse(aos_pool_t *p, mxml_node_t *root,
-	const char *publish_xml_path, aos_list_t *publish_url_list, 
-	const char *play_xml_path, aos_list_t *play_url_list)
+    const char *publish_xml_path, aos_list_t *publish_url_list, 
+    const char *play_xml_path, aos_list_t *play_url_list)
 {
     mxml_node_t *node;
-	const char url_xml_path[] = "Url";
+    const char url_xml_path[] = "Url";
 
     node = mxmlFindElement(root, root, publish_xml_path, NULL, NULL, MXML_DESCEND);
-	if (NULL != node) {
-		oss_publish_urls_contents_parse(p, node, url_xml_path, publish_url_list);
-	}
+    if (NULL != node) {
+        oss_publish_urls_contents_parse(p, node, url_xml_path, publish_url_list);
+    }
 
-	node = mxmlFindElement(root, root, play_xml_path, NULL, NULL, MXML_DESCEND);
-	if (NULL != node) {
-		oss_play_urls_contents_parse(p, node, url_xml_path, play_url_list);
-	}
-}	
+    node = mxmlFindElement(root, root, play_xml_path, NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        oss_play_urls_contents_parse(p, node, url_xml_path, play_url_list);
+    }
+}    
 
 int oss_create_live_channel_parse_from_body(aos_pool_t *p, aos_list_t *bc,
-	aos_list_t *publish_url_list, aos_list_t *play_url_list)
+    aos_list_t *publish_url_list, aos_list_t *play_url_list)
 {
     int res;
     mxml_node_t *root = NULL;
-	const char publish_urls_xml_path[] = "PublishUrls";
-	const char play_urls_xml_path[] = "PlayUrls";
+    const char publish_urls_xml_path[] = "PublishUrls";
+    const char play_urls_xml_path[] = "PlayUrls";
 
     res = get_xmldoc(bc, &root);
     if (res == AOSE_OK) {
         oss_create_live_channel_content_parse(p, root, publish_urls_xml_path, publish_url_list,
-			play_urls_xml_path, play_url_list);
+            play_urls_xml_path, play_url_list);
         mxmlDelete(root);
     }
 
@@ -779,28 +779,28 @@ void oss_live_channel_info_target_content_parse(aos_pool_t *p, mxml_node_t *xml_
     node = mxmlFindElement(xml_node, xml_node, "Type", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        type = apr_pstrdup(p, (char *)node_content);
+        type = apr_pstrdup(p, node_content);
         aos_str_set(&target->type, type);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "FragDuration", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        frag_duration = apr_pstrdup(p, (char *)node_content);
+        frag_duration = apr_pstrdup(p, node_content);
         target->frag_duration = atoi(frag_duration);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "FragCount", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        frag_count = apr_pstrdup(p, (char *)node_content);
+        frag_count = apr_pstrdup(p, node_content);
         target->frag_count = atoi(frag_count);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "PlaylistName",NULL, NULL,MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        play_list = apr_pstrdup(p, (char *)node_content);
+        play_list = apr_pstrdup(p, node_content);
         aos_str_set(&target->play_list_name, play_list);
     }
 }
@@ -821,14 +821,14 @@ void oss_live_channel_info_content_parse(aos_pool_t *p, mxml_node_t *root, const
         node = mxmlFindElement(cofig_node, cofig_node, "Description", NULL, NULL, MXML_DESCEND);
         if (NULL != node) {
             node_content = node->child->value.opaque;
-            description = apr_pstrdup(p, (char *)node_content);
+            description = apr_pstrdup(p, node_content);
             aos_str_set(&info->description, description);
         }
 
         node = mxmlFindElement(cofig_node, cofig_node, "Status", NULL, NULL, MXML_DESCEND);
         if (NULL != node) {
             node_content = node->child->value.opaque;
-            status = apr_pstrdup(p, (char *)node_content);
+            status = apr_pstrdup(p, node_content);
             aos_str_set(&info->status, status);
         }
 
@@ -867,35 +867,35 @@ void oss_live_channel_stat_video_content_parse(aos_pool_t *p, mxml_node_t *xml_n
     node = mxmlFindElement(xml_node, xml_node, "Width", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        width = apr_pstrdup(p, (char *) node_content);
+        width = apr_pstrdup(p, node_content);
         video_stat->width = atoi(width);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Height", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        height = apr_pstrdup(p, (char *) node_content);
+        height = apr_pstrdup(p, node_content);
         video_stat->height = atoi(height);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "FrameRate", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        frame_rate = apr_pstrdup(p, (char *) node_content);
+        frame_rate = apr_pstrdup(p, node_content);
         video_stat->frame_rate = atoi(frame_rate);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Bandwidth", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        band_width = apr_pstrdup(p, (char *) node_content);
+        band_width = apr_pstrdup(p, node_content);
         video_stat->band_width = atoi(band_width);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Codec", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        codec = apr_pstrdup(p, (char *) node_content);
+        codec = apr_pstrdup(p, node_content);
         aos_str_set(&video_stat->codec, codec);
     }
 }
@@ -911,21 +911,21 @@ void oss_live_channel_stat_audio_content_parse(aos_pool_t *p, mxml_node_t *xml_n
     node = mxmlFindElement(xml_node, xml_node, "Bandwidth", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        band_width = apr_pstrdup(p, (char *) node_content);
+        band_width = apr_pstrdup(p, node_content);
         audio_stat->band_width = atoi(band_width);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "SampleRate", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        sample_rate = apr_pstrdup(p, (char *) node_content);
+        sample_rate = apr_pstrdup(p, node_content);
         audio_stat->sample_rate = atoi(sample_rate);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Codec", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        codec = apr_pstrdup(p, (char *) node_content);
+        codec = apr_pstrdup(p, node_content);
         aos_str_set(&audio_stat->codec, codec);
     }
 }

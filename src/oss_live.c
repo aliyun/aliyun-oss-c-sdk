@@ -20,7 +20,7 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
-	aos_table_t *headers =NULL;
+    aos_table_t *headers = NULL;
     aos_list_t body;
 
     //init params
@@ -38,16 +38,16 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
     oss_write_request_body_from_buffer(&body, req);
 
     s = oss_process_request(options, req, resp);
-	if (NULL != resp_headers) {
-    	*resp_headers = resp->headers;
-	}
+    if (NULL != resp_headers) {
+        *resp_headers = resp->headers;
+    }
     if (!aos_status_is_ok(s)) {
         return s;
     }
 
     // parse result
     res = oss_create_live_channel_parse_from_body(options->pool, &resp->body, 
-		publish_url_list, play_url_list);
+        publish_url_list, play_url_list);
     if (res != AOSE_OK) {
         aos_xml_error_status_set(s, res);
     }
@@ -70,9 +70,9 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
 
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
-	apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
+    apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
     apr_table_add(query_params, OSS_LIVE_CHANNEL_STATUS, live_channel_status->data);
-	
+    
     //init headers
     headers = aos_table_create_if_null(options, headers, 0);
 
@@ -80,9 +80,9 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-	if (NULL != resp_headers) {		
-		*resp_headers = resp->headers;
-	}
+    if (NULL != resp_headers) {        
+        *resp_headers = resp->headers;
+    }
     
     return s;
 }
@@ -123,7 +123,7 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
     if (res != AOSE_OK) {
         aos_xml_error_status_set(s, res);
     }
-    info->id = *live_channel;
+    aos_str_set(&info->id, aos_pstrdup(options->pool, live_channel));
 
     return s;
 }
@@ -286,8 +286,8 @@ aos_status_t *oss_post_vod_play_list(const oss_request_options_t *options,
                                      const aos_string_t *bucket,
                                      const aos_string_t *live_channel,
                                      const aos_string_t *play_list_name,
-                                     const aos_string_t *start_time,
-                                     const aos_string_t *end_time,
+                                     const int64_t start_time,
+                                     const int64_t end_time,
                                      aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
@@ -301,8 +301,10 @@ aos_status_t *oss_post_vod_play_list(const oss_request_options_t *options,
     //init params
     query_params = aos_table_create_if_null(options, query_params, 3);
     apr_table_add(query_params, OSS_LIVE_CHANNEL_VOD, "");
-    apr_table_add(query_params, OSS_LIVE_CHANNEL_START_TIME, start_time->data);
-    apr_table_add(query_params, OSS_LIVE_CHANNEL_END_TIME, end_time->data);
+    apr_table_add(query_params, OSS_LIVE_CHANNEL_START_TIME,
+        apr_psprintf(options->pool, "%" APR_INT64_T_FMT, start_time));
+    apr_table_add(query_params, OSS_LIVE_CHANNEL_END_TIME,
+        apr_psprintf(options->pool, "%" APR_INT64_T_FMT, end_time));
 
     //init headers
     headers = aos_table_create_if_null(options, headers, 1);
@@ -326,7 +328,7 @@ char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
                               const aos_string_t *bucket,
                               const aos_string_t *live_channel,
                               const aos_string_t *play_list_name,
-                              int64_t expires,
+                              const int64_t expires,
                               aos_table_t *params)
 {
     aos_string_t signed_url;

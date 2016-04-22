@@ -74,6 +74,10 @@ extern const char LIVE_CHANNEL_STATUS_DISABLED[];
 extern const char LIVE_CHANNEL_STATUS_ENABLED[];
 extern const char LIVE_CHANNEL_STATUS_IDLE[];
 extern const char LIVE_CHANNEL_STATUS_LIVE[];
+extern const char LIVE_CHANNEL_DEFAULT_TYPE[];
+extern const char LIVE_CHANNEL_DEFAULT_PLAYLIST[];
+extern const int  LIVE_CHANNEL_DEFAULT_FRAG_DURATION;
+extern const int  LIVE_CHANNEL_DEFAULT_FRAG_COUNT;
 extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
@@ -221,8 +225,8 @@ typedef struct {
 
 typedef struct {
     aos_string_t type;
-    int frag_duration;
-    int frag_count;
+    int32_t frag_duration;
+    int32_t frag_count;
     aos_string_t play_list_name;
 }oss_live_channel_target_t;
 

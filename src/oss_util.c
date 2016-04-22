@@ -475,12 +475,12 @@ oss_object_key_t *oss_create_oss_object_key(aos_pool_t *p)
     return (oss_object_key_t *)aos_pcalloc(p, sizeof(oss_object_key_t));
 }
 
-oss_live_channel_publish_url_t *oss_create_oss_live_channel_publish_url(aos_pool_t *p)
+oss_live_channel_publish_url_t *oss_create_live_channel_publish_url(aos_pool_t *p)
 {
     return (oss_live_channel_publish_url_t *)aos_pcalloc(p, sizeof(oss_live_channel_publish_url_t));
 }
 
-oss_live_channel_play_url_t *oss_create_oss_live_channel_play_url(aos_pool_t *p)
+oss_live_channel_play_url_t *oss_create_live_channel_play_url(aos_pool_t *p)
 {
     return (oss_live_channel_play_url_t *)aos_pcalloc(p, sizeof(oss_live_channel_play_url_t));
 }
@@ -511,11 +511,11 @@ oss_live_channel_configuration_t *oss_create_live_channel_configuration_content(
 
     aos_str_set(&config->id, "");
     aos_str_set(&config->description, "");
-    aos_str_set(&config->status, "enabled");
-    aos_str_set(&config->target.type, "HLS");
-    aos_str_set(&config->target.play_list_name, "play.m3u8");
-    config->target.frag_duration = 5; // 5 seconds
-    config->target.frag_count = 3;
+    aos_str_set(&config->status, LIVE_CHANNEL_STATUS_ENABLED);
+    aos_str_set(&config->target.type, LIVE_CHANNEL_DEFAULT_TYPE);
+    aos_str_set(&config->target.play_list_name, LIVE_CHANNEL_DEFAULT_PLAYLIST);
+    config->target.frag_duration = LIVE_CHANNEL_DEFAULT_FRAG_DURATION;
+    config->target.frag_count = LIVE_CHANNEL_DEFAULT_FRAG_COUNT;
 
     return config;
 }

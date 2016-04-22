@@ -197,13 +197,13 @@ oss_object_key_t *oss_create_oss_object_key(aos_pool_t *p);
   * @brief  create oss live channel publish url content for delete objects
   * @return oss live channel publish url content
 **/
-oss_live_channel_publish_url_t *oss_create_oss_live_channel_publish_url(aos_pool_t *p);
+oss_live_channel_publish_url_t *oss_create_live_channel_publish_url(aos_pool_t *p);
 
 /**
   * @brief  create oss live channel play url content for delete objects
   * @return oss live channel play url content
 **/
-oss_live_channel_play_url_t *oss_create_oss_live_channel_play_url(aos_pool_t *p);
+oss_live_channel_play_url_t *oss_create_live_channel_play_url(aos_pool_t *p);
 
 /**
   * @brief  create oss list live channel content for delete objects

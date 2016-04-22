@@ -18,6 +18,7 @@ static const char *g_s_oss_sub_resource_list[] = {
     "lifecycle",
     "delete",
     "live",
+    "status",
     "comp",
     "vod",
     "startTime",
