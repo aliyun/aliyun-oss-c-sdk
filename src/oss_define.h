@@ -32,6 +32,7 @@ extern const char OSS_CONTENT_LENGTH[];
 extern const char OSS_DATE[];
 extern const char OSS_AUTHORIZATION[];
 extern const char OSS_ACCESSKEYID[];
+extern const char OSS_EXPECT[];
 extern const char OSS_EXPIRES[];
 extern const char OSS_SIGNATURE[];
 extern const char OSS_ACL[];

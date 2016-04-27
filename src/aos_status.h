@@ -28,6 +28,8 @@ static inline int aos_http_is_ok(int st)
 #define aos_status_set(s, c, ec, es)                                    \
     (s)->code = c; (s)->error_code = (char *)ec; (s)->error_msg = (char *)es
 
+int aos_should_retry(aos_status_t *s);
+
 aos_status_t *aos_status_create(aos_pool_t *p);
 
 aos_status_t *aos_status_dup(aos_pool_t *p, aos_status_t *src);

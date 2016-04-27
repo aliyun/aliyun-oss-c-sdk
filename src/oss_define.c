@@ -10,6 +10,7 @@ const char OSS_CONTENT_LENGTH[] = "Content-Length";
 const char OSS_DATE[] = "Date";
 const char OSS_AUTHORIZATION[] = "Authorization";
 const char OSS_ACCESSKEYID[] = "OSSAccessKeyId";
+const char OSS_EXPECT[] = "Expect";
 const char OSS_EXPIRES[] = "Expires";
 const char OSS_SIGNATURE[] = "Signature";
 const char OSS_ACL[] = "acl";

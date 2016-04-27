@@ -359,6 +359,37 @@ void test_aos_url_decode_failed(CuTest *tc) {
     printf("test_aos_url_decode_failed ok\n");
 }
 
+void test_aos_should_retry(CuTest *tc) {
+    aos_status_t s;
+    aos_status_set(&s, 500, "", "");
+    CuAssertIntEquals(tc, 1, aos_should_retry(&s));
+
+    aos_status_set(&s, 505, "", "");
+    CuAssertIntEquals(tc, 1, aos_should_retry(&s));
+
+    aos_status_set(&s, 400, "", "");
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
+
+    aos_status_set(&s, 0, "-995", "");
+    CuAssertIntEquals(tc, 1, aos_should_retry(&s));
+
+    aos_status_set(&s, 0, "-993", "");
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
+
+    aos_status_set(&s, 0, "0", "NULL");
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
+
+    CuAssertIntEquals(tc, 0, aos_should_retry(NULL));
+
+    aos_status_set(&s, 200, "", "");
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
+
+    aos_status_set(&s, 200, NULL, NULL);
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
+
+    printf("test_aos_should_retry ok\n");
+}
+
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();   
@@ -383,6 +414,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_aos_url_decode_with_percent);
     SUITE_ADD_TEST(suite, test_aos_url_decode_with_add);
     SUITE_ADD_TEST(suite, test_aos_url_decode_failed);
+    SUITE_ADD_TEST(suite, test_aos_should_retry);
     
     return suite;
 }
