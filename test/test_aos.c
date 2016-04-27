@@ -370,9 +370,6 @@ void test_aos_should_retry(CuTest *tc) {
     aos_status_set(&s, 400, "", "");
     CuAssertIntEquals(tc, 0, aos_should_retry(&s));
 
-    aos_status_set(&s, 200, "-992", "");
-    CuAssertIntEquals(tc, 1, aos_should_retry(&s));
-
     aos_status_set(&s, 0, "-995", "");
     CuAssertIntEquals(tc, 1, aos_should_retry(&s));
 
@@ -383,6 +380,12 @@ void test_aos_should_retry(CuTest *tc) {
     CuAssertIntEquals(tc, 0, aos_should_retry(&s));
 
     CuAssertIntEquals(tc, 0, aos_should_retry(NULL));
+
+    aos_status_set(&s, 200, "", "");
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
+
+    aos_status_set(&s, 200, NULL, NULL);
+    CuAssertIntEquals(tc, 0, aos_should_retry(&s));
 
     printf("test_aos_should_retry ok\n");
 }

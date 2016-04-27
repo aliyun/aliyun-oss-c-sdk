@@ -26,7 +26,7 @@ aos_status_t *aos_status_dup(aos_pool_t *p, aos_status_t *src)
 int aos_should_retry(aos_status_t *s) {
     int aos_error_code = 0;
 
-    if (s == NULL) {
+    if (s == NULL || s->code / 100 == 2) {
         return 0;
     }
 
@@ -34,9 +34,11 @@ int aos_should_retry(aos_status_t *s) {
         return 1;
     }
 
-    aos_error_code = atoi(s->error_code);
-    if (aos_error_code == AOSE_REQUEST_TIMEOUT || aos_error_code == AOSE_CONNECTION_FAILED) {
-        return 1;
+    if (s->error_code != NULL) {
+        aos_error_code = atoi(s->error_code);
+        if (aos_error_code == AOSE_REQUEST_TIMEOUT || aos_error_code == AOSE_CONNECTION_FAILED) {
+            return 1;
+        }
     }
 
     return 0;
