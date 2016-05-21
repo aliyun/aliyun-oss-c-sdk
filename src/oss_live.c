@@ -282,7 +282,7 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *oss_post_vod_play_list(const oss_request_options_t *options,
+aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
                                      const aos_string_t *bucket,
                                      const aos_string_t *live_channel,
                                      const aos_string_t *play_list_name,

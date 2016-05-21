@@ -38,7 +38,6 @@ void test_live_cleanup(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     aos_string_t bucket;
-    aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
 
@@ -48,9 +47,7 @@ void test_live_cleanup(CuTest *tc)
 
     //delete test bucket
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    s = oss_delete_bucket(options, &bucket, &resp_headers);
-    CuAssertIntEquals(tc, 204, s->code);
-    CuAssertPtrNotNull(tc, resp_headers);
+    oss_delete_bucket(options, &bucket, &resp_headers);
 
     aos_pool_destroy(p);
 }
@@ -243,7 +240,7 @@ void test_get_live_channel_stat(CuTest *tc)
     // get stat
     s = oss_get_live_channel_stat(options, &bucket, &channel_id, &live_stat, NULL);
     CuAssertIntEquals(tc, 200, s->code);
-    content = apr_psprintf(p, "%.*s", live_stat.status.len, live_stat.status.data);
+    content = apr_psprintf(p, "%.*s", live_stat.pushflow_status.len, live_stat.pushflow_status.data);
     CuAssertStrEquals(tc, "Idle", content);
 
     s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
@@ -283,12 +280,26 @@ void test_put_live_channel_status(CuTest *tc)
 
     // check by get info
     s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
-    printf("error %d:%s:%s", s->code, s->error_code, s->error_msg);
+    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
     CuAssertIntEquals(tc, 200, s->code);
     content = apr_psprintf(p, "%.*s", info.id.len, info.id.data);
     CuAssertStrEquals(tc, live_channel_id, content);
     content = apr_psprintf(p, "%.*s", info.status.len, info.status.data);
     CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_DISABLED, content);
+
+    // put status
+    aos_str_set(&channel_stutus, LIVE_CHANNEL_STATUS_ENABLED);
+    s= oss_put_live_channel_status(options, &bucket, &channel_id, &channel_stutus, NULL);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    // check by get info
+    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
+    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
+    CuAssertIntEquals(tc, 200, s->code);
+    content = apr_psprintf(p, "%.*s", info.id.len, info.id.data);
+    CuAssertStrEquals(tc, live_channel_id, content);
+    content = apr_psprintf(p, "%.*s", info.status.len, info.status.data);
+    CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_ENABLED, content);
 
     // delete
     s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
@@ -380,6 +391,7 @@ void test_list_live_channel(CuTest *tc)
 
     // list
     params = oss_create_list_live_channel_params(options->pool);
+    aos_str_set(&params->prefix, "test_live_channel_list");
     s = oss_list_live_channel(options, &bucket, params, NULL);
     CuAssertIntEquals(tc, 200, s->code);
 
@@ -435,6 +447,7 @@ void test_list_live_channel(CuTest *tc)
 
     // list by mark
     params = oss_create_list_live_channel_params(options->pool);
+    aos_str_set(&params->prefix, "test_live_channel_list");
     aos_str_set(&params->marker, "test_live_channel_list2");
     s = oss_list_live_channel(options, &bucket, params, NULL);
     CuAssertIntEquals(tc, 200, s->code);
@@ -464,6 +477,7 @@ void test_list_live_channel(CuTest *tc)
 
     // list by max keys
     params = oss_create_list_live_channel_params(options->pool);
+    aos_str_set(&params->prefix, "test_live_channel_list");
     params->max_keys = 3;
     s = oss_list_live_channel(options, &bucket, params, NULL);
     CuAssertIntEquals(tc, 200, s->code);
@@ -553,7 +567,7 @@ void test_get_live_channel_history(CuTest *tc)
  * Note: the case need put rtmp stream, use command:
  *  ffmpeg \-re \-i allstar.flv \-c copy \-f flv "rtmp://oss-live-channel.demo-oss-cn-shenzhen.aliyuncs.com/live/test_live_channel_vod?playlistName=play.m3u8"
  */
-void test_post_vod_play_list(CuTest *tc)
+void test_gen_vod_play_list(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     oss_request_options_t *options = NULL;
@@ -585,7 +599,7 @@ void test_post_vod_play_list(CuTest *tc)
     start_time = apr_time_now() / 1000000 - 3600;
     end_time = apr_time_now() / 1000000 + 3600;
 
-    s = oss_post_vod_play_list(options, &bucket, &channel_id, &play_list_name,
+    s = oss_gen_vod_play_list(options, &bucket, &channel_id, &play_list_name,
         start_time, end_time, NULL);
     CuAssertIntEquals(tc, 400, s->code);
 
@@ -655,7 +669,7 @@ CuSuite *test_oss_live()
     SUITE_ADD_TEST(suite, test_delete_live_channel);
     SUITE_ADD_TEST(suite, test_list_live_channel);
     SUITE_ADD_TEST(suite, test_get_live_channel_history);
-    SUITE_ADD_TEST(suite, test_post_vod_play_list);
+    SUITE_ADD_TEST(suite, test_gen_vod_play_list);
     SUITE_ADD_TEST(suite, test_gen_rtmp_signed_url);
     SUITE_ADD_TEST(suite, test_live_cleanup);
 

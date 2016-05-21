@@ -662,7 +662,7 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
-aos_status_t *oss_post_vod_play_list(const oss_request_options_t *options,
+aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
                                      const aos_string_t *bucket,
                                      const aos_string_t *live_channel,
                                      const aos_string_t *play_list_name,

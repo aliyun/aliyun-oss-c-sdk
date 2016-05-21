@@ -946,7 +946,7 @@ void oss_live_channel_stat_content_parse(aos_pool_t *p, mxml_node_t *root, const
         if (NULL != node) {
             node_content = node->child->value.opaque;
             status = apr_pstrdup(p, (char *)node_content);
-            aos_str_set(&stat->status, status);
+            aos_str_set(&stat->pushflow_status, status);
         }
 
         node = mxmlFindElement(stat_node, stat_node, "ConnectedTime", NULL, NULL, MXML_DESCEND);
@@ -1008,9 +1008,13 @@ void oss_list_live_channel_content_parse(aos_pool_t *p, mxml_node_t *xml_node, o
 
     node = mxmlFindElement(xml_node, xml_node, "Description", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
-        node_content = node->child->value.opaque;
-        description = apr_pstrdup(p, (char *)node_content);
-        aos_str_set(&content->description, description);
+        if (NULL != node->child) {
+            node_content = node->child->value.opaque;
+            description = apr_pstrdup(p, (char *)node_content);
+            aos_str_set(&content->description, description);
+        } else {
+            aos_str_set(&content->description, "");
+        }
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Status", NULL, NULL, MXML_DESCEND);

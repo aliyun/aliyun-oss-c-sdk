@@ -262,7 +262,7 @@ typedef struct {
 } oss_audio_stat_t;
 
 typedef struct {
-    aos_string_t status;
+    aos_string_t pushflow_status;
     aos_string_t connected_time;
     aos_string_t remote_addr;
     oss_video_stat_t video_stat;
