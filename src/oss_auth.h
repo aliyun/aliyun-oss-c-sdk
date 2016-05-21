@@ -51,6 +51,26 @@ int get_oss_request_signature(const oss_request_options_t *options, aos_http_req
 int oss_get_signed_url(const oss_request_options_t *options, aos_http_request_t *req,
         const aos_string_t *expires, aos_string_t *auth_url);
 
+/**
+  * @brief  get rtmp string to signature
+**/
+int oss_get_rtmp_string_to_sign(aos_pool_t *p, const aos_string_t *expires,
+    const aos_string_t *canon_res, const aos_table_t *params,
+    aos_string_t *signstr);
+
+/**
+  * @brief  generate oss rtmp request signature
+**/
+int get_oss_rtmp_request_signature(const oss_request_options_t *options, aos_http_request_t *req,
+    const aos_string_t *expires, aos_string_t *signature);
+
+/**
+  * @brief  get oss rtmp signed url
+**/
+int oss_get_rtmp_signed_url(const oss_request_options_t *options, aos_http_request_t *req,
+    const aos_string_t *expires, const aos_string_t *play_list_name, aos_table_t *params,
+    aos_string_t *signed_url);
+
 OSS_CPP_END
 
 #endif

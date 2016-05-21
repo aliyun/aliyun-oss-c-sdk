@@ -170,6 +170,40 @@ aos_status_t *abort_test_multipart_upload(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *create_test_live_channel(const oss_request_options_t *options,
+    const char *bucket_name, const char *live_channel)
+{
+    aos_list_t publish_url_list;
+    aos_list_t play_url_list;
+    oss_live_channel_configuration_t *config = NULL;
+    aos_string_t bucket;
+    aos_string_t channel_id;
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&channel_id, live_channel);
+    aos_list_init(&publish_url_list);
+    aos_list_init(&play_url_list);
+
+    config = oss_create_live_channel_configuration_content(options->pool);
+    aos_str_set(&config->id, live_channel);
+    aos_str_set(&config->description, "live channel description");
+
+    return  oss_create_live_channel(options, &bucket, config, &publish_url_list,
+        &play_url_list, NULL);
+}
+
+aos_status_t *delete_test_live_channel(const oss_request_options_t *options,
+    const char *bucket_name, const char *live_channel)
+{
+    aos_string_t bucket;
+    aos_string_t channel_id;
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&channel_id, live_channel);
+
+    return oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+}
+
 char* gen_test_signed_url(const oss_request_options_t *options, 
                           const char *bucket_name,
                           const char *object_name, 
