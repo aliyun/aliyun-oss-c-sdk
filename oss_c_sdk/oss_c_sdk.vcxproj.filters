@@ -1,0 +1,111 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aos_buf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_define.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_fstack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_http_io.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_list.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_status.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_transport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_api.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_auth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_define.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_xml.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="aos_log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="aos_buf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_fstack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_http_io.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_status.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_string.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_transport.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_auth.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_bucket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_define.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_multipart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_xml.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aos_log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

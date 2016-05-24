@@ -2,7 +2,7 @@ PROJECT(oss_c_sdk)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)  
 
-set(CMAKE_VERSION 2.0.0)
+set(CMAKE_VERSION 3.0.0)
 
 # default C / CXX flags
 set(CMAKE_C_FLAGS " -g -ggdb -O0 -Wall -fpic -fPIC -D_LARGEFILE64_SOURCE")
@@ -90,7 +90,7 @@ include_directories(${APR_UTIL_INCLUDE_DIR})
 include_directories(${MINIXML_INCLUDE_DIR})
 include_directories(${CURL_INCLUDE_DIR})
 
-aux_source_directory(src SRC_LIST)
+aux_source_directory(oss_c_sdk SRC_LIST)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC_LIST})
 add_library(${CMAKE_PROJECT_NAME}_static STATIC ${SRC_LIST})
@@ -102,22 +102,22 @@ INSTALL(TARGETS ${CMAKE_PROJECT_NAME} LIBRARY DESTINATION lib)
 INSTALL(TARGETS ${CMAKE_PROJECT_NAME}_static ARCHIVE DESTINATION lib)
 
 INSTALL(FILES
-  src/aos_buf.h
-  src/aos_define.h
-  src/aos_fstack.h
-  src/aos_http_io.h
-  src/aos_list.h
-  src/aos_log.h
-  src/aos_status.h
-  src/aos_string.h
-  src/aos_transport.h
-  src/aos_util.h
-  src/oss_api.h
-  src/oss_auth.h
-  src/oss_define.h
-  src/oss_util.h
-  src/oss_xml.h
+  oss_c_sdk/aos_buf.h
+  oss_c_sdk/aos_define.h
+  oss_c_sdk/aos_fstack.h
+  oss_c_sdk/aos_http_io.h
+  oss_c_sdk/aos_list.h
+  oss_c_sdk/aos_log.h
+  oss_c_sdk/aos_status.h
+  oss_c_sdk/aos_string.h
+  oss_c_sdk/aos_transport.h
+  oss_c_sdk/aos_util.h
+  oss_c_sdk/oss_api.h
+  oss_c_sdk/oss_auth.h
+  oss_c_sdk/oss_define.h
+  oss_c_sdk/oss_util.h
+  oss_c_sdk/oss_xml.h
   DESTINATION include/oss_c_sdk)
 
-add_subdirectory(sample)
-add_subdirectory(test)
+add_subdirectory(oss_c_sdk_sample)
+add_subdirectory(oss_c_sdk_test)

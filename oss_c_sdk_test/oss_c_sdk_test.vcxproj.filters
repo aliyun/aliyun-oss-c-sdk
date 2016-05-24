@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{b4436130-b8b7-4924-a4de-0e3b536bd108}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{9ea438ec-7e59-4704-9985-b189a15cc5ae}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CuTest.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="oss_test_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CuTest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="oss_test_util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_all.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_aos.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_oss_bucket.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_oss_multipart.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="test_oss_object.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,3 +1,9 @@
+# Linux
 *.swp
 *~
-clean.sh
+build
+
+# Visual Studio
+*.sdf
+Debug
+Release
