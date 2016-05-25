@@ -40,9 +40,9 @@ void make_random_body(aos_pool_t *p, int count, aos_list_t *bc)
     int len;
     aos_buf_t *b;
 
-	srand((int)time(0));
+    srand((int)time(0));
     for (; i < count; ++i) {
-		len = 1 + (int)(4096.0*rand() / (RAND_MAX+1.0));
+        len = 1 + (int)(4096.0*rand() / (RAND_MAX+1.0));
         b = make_random_buf(p, len);
         aos_list_add_tail(&b->node, bc);
     }

@@ -140,10 +140,10 @@ static void generate_proto(const oss_request_options_t *options,
 
 int is_valid_ip(const char *str)
 {
-	if (INADDR_NONE == inet_addr(str) || INADDR_ANY == inet_addr(str)) {
-		return 0;
-	}
-	return 1;
+    if (INADDR_NONE == inet_addr(str) || INADDR_ANY == inet_addr(str)) {
+        return 0;
+    }
+    return 1;
 }
 
 oss_config_t *oss_config_create(aos_pool_t *p)
@@ -174,9 +174,9 @@ void oss_get_object_uri(const oss_request_options_t *options,
                         const aos_string_t *object,
                         aos_http_request_t *req)
 {
-	int32_t proto_len;
-	const char *raw_endpoint_str;
-	aos_string_t raw_endpoint;
+    int32_t proto_len;
+    const char *raw_endpoint_str;
+    aos_string_t raw_endpoint;
 
     generate_proto(options, req);
 
@@ -188,8 +188,8 @@ void oss_get_object_uri(const oss_request_options_t *options,
 
     raw_endpoint_str = aos_pstrdup(options->pool, 
             &options->config->endpoint) + proto_len;
-	raw_endpoint.len = options->config->endpoint.len - proto_len;
-	raw_endpoint.data = options->config->endpoint.data + proto_len;
+    raw_endpoint.len = options->config->endpoint.len - proto_len;
+    raw_endpoint.data = options->config->endpoint.data + proto_len;
 
     if (options->config->is_cname) {
         req->host = apr_psprintf(options->pool, "%.*s",
@@ -213,9 +213,9 @@ void oss_get_bucket_uri(const oss_request_options_t *options,
                         const aos_string_t *bucket,
                         aos_http_request_t *req)
 {
-	int32_t proto_len;
-	const char *raw_endpoint_str;
-	aos_string_t raw_endpoint;
+    int32_t proto_len;
+    const char *raw_endpoint_str;
+    aos_string_t raw_endpoint;
 
     generate_proto(options, req);
 
@@ -223,7 +223,7 @@ void oss_get_bucket_uri(const oss_request_options_t *options,
     raw_endpoint_str = aos_pstrdup(options->pool, 
             &options->config->endpoint) + proto_len;
     raw_endpoint.len = options->config->endpoint.len - proto_len;
-	raw_endpoint.data = options->config->endpoint.data + proto_len;
+    raw_endpoint.data = options->config->endpoint.data + proto_len;
 
     if (is_valid_ip(raw_endpoint_str)) {
         req->resource = apr_psprintf(options->pool, "%.*s", 

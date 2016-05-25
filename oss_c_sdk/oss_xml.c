@@ -24,27 +24,27 @@ static int get_truncated_from_xml(aos_pool_t *p, mxml_node_t *xml_node, const ch
 
 static char* new_xml_buff(mxml_node_t *doc)
 {
-	int buff_size;
-	int bytes;
-	int retry;
-	char *xml_buff;
+    int buff_size;
+    int bytes;
+    int retry;
+    char *xml_buff;
 
-	bytes = 0;
-	retry = 3;
-	xml_buff = NULL;
-	buff_size = 4096;
+    bytes = 0;
+    retry = 3;
+    xml_buff = NULL;
+    buff_size = 4096;
 
-	do {
-		buff_size = buff_size * 10;
-		xml_buff = (char*)realloc(xml_buff, buff_size);
-		bytes = mxmlSaveString(doc, xml_buff, buff_size, MXML_NO_CALLBACK);
-	} while(bytes < 0 && retry-- > 0);
+    do {
+        buff_size = buff_size * 10;
+        xml_buff = (char*)realloc(xml_buff, buff_size);
+        bytes = mxmlSaveString(doc, xml_buff, buff_size, MXML_NO_CALLBACK);
+    } while(bytes < 0 && retry-- > 0);
 
-	if (bytes < 0) {
-		free(xml_buff);
-		return NULL;
-	}
-	return xml_buff;
+    if (bytes < 0) {
+        free(xml_buff);
+        return NULL;
+    }
+    return xml_buff;
 }
 
 int get_xmldoc(aos_list_t *bc, mxml_node_t **root)
@@ -429,15 +429,15 @@ char *build_complete_multipart_upload_xml(aos_pool_t *p, aos_list_t *bc)
     aos_list_for_each_entry(oss_complete_part_content_t, content, bc, node) {
         mxml_node_t *part_node = mxmlNewElement(root_node, "Part");
         mxml_node_t *part_number_node = mxmlNewElement(part_node, "PartNumber");
-		mxml_node_t *etag_node = mxmlNewElement(part_node, "ETag");
-		mxmlNewText(part_number_node, 0, content->part_number.data);
+        mxml_node_t *etag_node = mxmlNewElement(part_node, "ETag");
+        mxmlNewText(part_number_node, 0, content->part_number.data);
         mxmlNewText(etag_node, 0, content->etag.data);
     }
-	
-	xml_buff = new_xml_buff(doc);
-	if (xml_buff == NULL) {
-		return NULL;
-	}
+    
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
     aos_str_set(&xml_doc, xml_buff);
     complete_part_xml = aos_pstrdup(p, &xml_doc);
 
@@ -481,18 +481,18 @@ char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list)
         if (content->days != INT_MAX) {
             char value_str[64];
             mxml_node_t *days_node = mxmlNewElement(expire_node, "Days");
-			apr_snprintf(value_str, sizeof(value_str), "%d", content->days);
+            apr_snprintf(value_str, sizeof(value_str), "%d", content->days);
             mxmlNewText(days_node, 0, value_str);
         } else if (content->date.len != 0 && strcmp(content->date.data, "") != 0) {
             mxml_node_t *date_node = mxmlNewElement(expire_node, "Date");
             mxmlNewText(date_node, 0, content->date.data);
         }
     }
-	
-	xml_buff = new_xml_buff(doc);
-	if (xml_buff == NULL) {
-		return NULL;
-	}
+    
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
     aos_str_set(&xml_doc, xml_buff);
     lifecycle_xml = aos_pstrdup(p, &xml_doc);
     
@@ -668,15 +668,15 @@ char *build_objects_xml(aos_pool_t *p, aos_list_t *object_list, const char *quie
         mxmlNewText(key_node, 0, content->key.data);
     }
 
-	xml_buff = new_xml_buff(doc);
-	if (xml_buff == NULL) {
-		return NULL;
-	}
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
     aos_str_set(&xml_doc, xml_buff);
     object_xml = aos_pstrdup(p, &xml_doc);
 
-	free(xml_buff);
-	mxmlDelete(doc);
+    free(xml_buff);
+    mxmlDelete(doc);
 
     return object_xml;
 }

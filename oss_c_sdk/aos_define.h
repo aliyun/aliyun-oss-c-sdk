@@ -69,7 +69,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define aos_table_make(p, n) apr_table_make(p, n)
 #define aos_table_add_int(t, key, value) do {       \
         char value_str[64];                             \
-		apr_snprintf(value_str, sizeof(value_str), "%d", value);\
+        apr_snprintf(value_str, sizeof(value_str), "%d", value);\
         apr_table_add(t, key, value_str);               \
     } while(0)
 

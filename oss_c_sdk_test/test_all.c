@@ -98,7 +98,7 @@ int run_all_tests(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-	int exit_code = -1;
+    int exit_code = -1;
 
     TEST_OSS_ENDPOINT = TEST_OSS_ENDPOINT != NULL ? 
                         TEST_OSS_ENDPOINT : getenv("OSS_TEST_ENDPOINT");

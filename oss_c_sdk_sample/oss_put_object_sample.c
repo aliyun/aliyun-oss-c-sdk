@@ -35,12 +35,12 @@ void put_object_from_buffer()
     aos_list_add_tail(&content->node, &buffer);
 
     s = oss_put_object_from_buffer(options, &bucket, &object, 
-				   &buffer, headers, &resp_headers);
+                   &buffer, headers, &resp_headers);
 
     if (aos_status_is_ok(s)) {
         printf("put object from buffer succeeded\n");
     } else {
-		printf("put object from buffer failed\n");      
+        printf("put object from buffer failed\n");      
     }    
 
     aos_pool_destroy(p);
@@ -87,12 +87,12 @@ void put_object_from_buffer_with_md5()
     apr_table_set(headers, OSS_CONTENT_MD5, b64_value);
 
     s = oss_put_object_from_buffer(options, &bucket, &object, 
-				   &buffer, headers, &resp_headers);
+                   &buffer, headers, &resp_headers);
 
     if (aos_status_is_ok(s)) {
         printf("put object from buffer with md5 succeeded\n");
     } else {
-	printf("put object from buffer with md5 failed\n");
+    printf("put object from buffer with md5 failed\n");
     }
 
     aos_pool_destroy(p);
@@ -126,8 +126,8 @@ void put_object_from_file()
     if (aos_status_is_ok(s)) {
         printf("put object from file succeeded\n");
     } else {
-		printf("put object from file failed, code:%d, error_code:%s, error_msg:%s, request_id:%s\n",
-			s->code, s->error_code, s->error_msg, s->req_id);
+        printf("put object from file failed, code:%d, error_code:%s, error_msg:%s, request_id:%s\n",
+            s->code, s->error_code, s->error_msg, s->req_id);
     }
 
     aos_pool_destroy(p);
@@ -184,7 +184,7 @@ void put_object_by_signed_url()
     if (aos_status_is_ok(s)) {
         printf("put object by signed url succeeded\n");
     } else {
-		printf("put object by signed url failed\n");
+        printf("put object by signed url failed\n");
     }
 
     aos_pool_destroy(p);
@@ -216,7 +216,7 @@ void create_dir()
     if (aos_status_is_ok(s)) {
         printf("create dir succeeded\n");
     } else {
-		printf("create dir failed\n");
+        printf("create dir failed\n");
     }
 
     aos_pool_destroy(p);
@@ -254,7 +254,7 @@ void put_object_to_dir()
     if (aos_status_is_ok(s)) {
         printf("put object to dir succeeded\n");
     } else {
-		printf("put object to dir failed\n");
+        printf("put object to dir failed\n");
     }
 
     free(key);

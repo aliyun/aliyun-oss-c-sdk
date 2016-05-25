@@ -291,7 +291,7 @@ void test_multipart_upload_from_file(CuTest *tc)
     // create multipart upload local file    
     make_rand_string(p, 10 * 1024 * 1024, &data);
     fd = fopen(file_path, "w");
-	CuAssertTrue(tc, fd != NULL);
+    CuAssertTrue(tc, fd != NULL);
     fwrite(data.data, sizeof(data.data[0]), data.len, fd);
     fclose(fd);
 
@@ -389,7 +389,7 @@ void test_upload_part_copy(CuTest *tc)
     // create multipart upload local file    
     make_rand_string(p, 10 * 1024 * 1024, &data);
     fd = fopen(local_filename, "w");
-	CuAssertTrue(tc, fd != NULL);
+    CuAssertTrue(tc, fd != NULL);
     fwrite(data.data, sizeof(data.data[0]), data.len, fd);
     fclose(fd);    
 

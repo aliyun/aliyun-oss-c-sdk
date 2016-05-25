@@ -146,7 +146,7 @@ void get_object_by_signed_url()
     if (aos_status_is_ok(s)) {
         printf("get object by signed url succeeded\n");
     } else {
-		printf("get object by signed url failed\n");
+        printf("get object by signed url failed\n");
     }
 
     aos_pool_destroy(p);
@@ -223,7 +223,7 @@ void get_oss_dir_to_local_dir()
     if (aos_status_is_ok(s)) {
         printf("get dir succeeded\n");
     } else {
-		printf("get dir failed\n");
+        printf("get dir failed\n");
     }
     aos_pool_destroy(parent_pool);
 }

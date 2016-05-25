@@ -15,7 +15,7 @@ void multipart_upload_file_from_buffer()
     aos_string_t object;
     int is_cname = 0;
     aos_table_t *headers = NULL;
-	aos_table_t *complete_headers = NULL;
+    aos_table_t *complete_headers = NULL;
     aos_table_t *resp_headers = NULL;
     oss_request_options_t *options = NULL;
     aos_string_t upload_id;
@@ -32,7 +32,7 @@ void multipart_upload_file_from_buffer()
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
-	complete_headers = aos_table_make(p, 1); 
+    complete_headers = aos_table_make(p, 1); 
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, "multipart-key.1");
     
@@ -45,8 +45,8 @@ void multipart_upload_file_from_buffer()
                upload_id.len, upload_id.data);
     } else {
         printf("Init multipart upload failed\n");
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }    
 
     //upload part
@@ -59,8 +59,8 @@ void multipart_upload_file_from_buffer()
         printf("Upload multipart part succeeded\n");
     } else {
         printf("Upload multipart part failed\n");
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }
 
     aos_list_init(&buffer);
@@ -72,8 +72,8 @@ void multipart_upload_file_from_buffer()
         printf("Upload multipart part succeeded\n");
     } else {
         printf("Upload multipart part failed\n");
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }    
 
     //list part
@@ -87,8 +87,8 @@ void multipart_upload_file_from_buffer()
         printf("List multipart succeeded\n");
     } else {
         printf("List multipart failed\n");
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }
 
     aos_list_for_each_entry(oss_list_part_content_t, part_content, &params->part_list, node) {
@@ -121,7 +121,7 @@ void multipart_upload_file_from_file()
     aos_string_t object;
     int is_cname = 0;
     aos_table_t *headers = NULL;
-	aos_table_t *complete_headers = NULL;
+    aos_table_t *complete_headers = NULL;
     aos_table_t *resp_headers = NULL;
     oss_request_options_t *options = NULL;
     aos_string_t upload_id;
@@ -139,7 +139,7 @@ void multipart_upload_file_from_file()
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 1);
-	complete_headers = aos_table_make(p, 1);
+    complete_headers = aos_table_make(p, 1);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, "multipart-key.2");
     
@@ -152,12 +152,12 @@ void multipart_upload_file_from_file()
                upload_id.len, upload_id.data);
     } else {
         printf("Init multipart upload failed\n");
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }
 
     //upload part from file
-	file_length = get_file_size(MULTIPART_UPLOAD_FILE_PATH);
+    file_length = get_file_size(MULTIPART_UPLOAD_FILE_PATH);
     while(pos < file_length) {
         upload_file = oss_create_upload_file(p);
         aos_str_set(&upload_file->filename, MULTIPART_UPLOAD_FILE_PATH);
@@ -185,8 +185,8 @@ void multipart_upload_file_from_file()
         printf("List multipart succeeded\n");
     } else {
         printf("List multipart failed\n");
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }
 
     aos_list_for_each_entry(oss_list_part_content_t, part_content, &params->part_list, node) {
@@ -238,8 +238,8 @@ void abort_multipart_upload()
                upload_id.len, upload_id.data);
     } else {
         printf("Init multipart upload failed\n"); 
-		aos_pool_destroy(p);
-		return;
+        aos_pool_destroy(p);
+        return;
     }
     
     s = oss_abort_multipart_upload(options, &bucket, &object, &upload_id, 

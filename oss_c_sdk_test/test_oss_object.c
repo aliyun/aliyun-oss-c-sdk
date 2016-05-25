@@ -41,7 +41,7 @@ void test_object_cleanup(CuTest *tc)
     char *object_name5 = "oss_test_append_object_from_file";
     char *object_name6 = "oss_test_copy_object";
     char *object_name7 = "video_1.ts";
-	char *object_name8 = "video_2.ts";
+    char *object_name8 = "video_2.ts";
     char *object_name9 = "oss_test_put_object_from_file2.txt";
     char *object_name10 = "put_object_from_buffer_with_default_content_type";
 
@@ -61,7 +61,7 @@ void test_object_cleanup(CuTest *tc)
     delete_test_object(options, TEST_BUCKET_NAME, object_name7);
     delete_test_object(options, TEST_BUCKET_NAME, object_name8);
     delete_test_object(options, TEST_BUCKET_NAME, object_name9);
-	delete_test_object(options, TEST_BUCKET_NAME, object_name10);
+    delete_test_object(options, TEST_BUCKET_NAME, object_name10);
 
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
@@ -556,7 +556,7 @@ void test_copy_object(CuTest *tc)
     CuAssertPtrNotNull(tc, resp_headers);
 
     aos_pool_destroy(p);
-	apr_sleep(apr_time_from_sec(1));
+    apr_sleep(apr_time_from_sec(1));
 
     /* head object */
     aos_pool_create(&p, NULL);
@@ -761,7 +761,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_range);
     SUITE_ADD_TEST(suite, test_put_object_from_file_with_content_type);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
-	SUITE_ADD_TEST(suite, test_put_object_with_large_length_header);
+    SUITE_ADD_TEST(suite, test_put_object_with_large_length_header);
     SUITE_ADD_TEST(suite, test_get_object_to_file);
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);

@@ -24,12 +24,12 @@ static aos_http_transport_options_t *aos_http_transport_options_create(aos_pool_
 CURL *aos_request_get()
 {
     CURL *request = NULL;
-	
-	apr_thread_mutex_lock(requestStackMutexG);
+    
+    apr_thread_mutex_lock(requestStackMutexG);
     if (requestStackCountG > 0) {
         request = requestStackG[--requestStackCountG];
     }
-	apr_thread_mutex_unlock(requestStackMutexG);
+    apr_thread_mutex_unlock(requestStackMutexG);
 
     // If we got one, deinitialize it for re-use
     if (request) {
@@ -44,7 +44,7 @@ CURL *aos_request_get()
 
 void request_release(CURL *request)
 {
-	apr_thread_mutex_lock(requestStackMutexG);
+    apr_thread_mutex_lock(requestStackMutexG);
 
     // If the request stack is full, destroy this one
     // else put this one at the front of the request stack; we do this because
@@ -52,12 +52,12 @@ void request_release(CURL *request)
     // request, to maximize our chances of re-using a TCP connection before it
     // times out
     if (requestStackCountG == AOS_REQUEST_STACK_SIZE) {
-		apr_thread_mutex_unlock(requestStackMutexG);
+        apr_thread_mutex_unlock(requestStackMutexG);
         curl_easy_cleanup(request);
     }
     else {
         requestStackG[requestStackCountG++] = request;
-		apr_thread_mutex_unlock(requestStackMutexG);
+        apr_thread_mutex_unlock(requestStackMutexG);
     }
 }
 
@@ -276,11 +276,11 @@ int aos_http_io_initialize(const char *user_agent_info, int flags)
         return AOSE_INTERNAL_ERROR;
     }
 
-	if ((s = apr_thread_mutex_create(&requestStackMutexG, APR_THREAD_MUTEX_DEFAULT, aos_global_pool)) != APR_SUCCESS) {
-		aos_error_log("apr_thread_mutex_create failure, code:%d %s.\n", s, apr_strerror(s, buf, sizeof(buf)));
-		return AOSE_INTERNAL_ERROR;
-	}
-	requestStackCountG = 0;
+    if ((s = apr_thread_mutex_create(&requestStackMutexG, APR_THREAD_MUTEX_DEFAULT, aos_global_pool)) != APR_SUCCESS) {
+        aos_error_log("apr_thread_mutex_create failure, code:%d %s.\n", s, apr_strerror(s, buf, sizeof(buf)));
+        return AOSE_INTERNAL_ERROR;
+    }
+    requestStackCountG = 0;
 
     apr_snprintf(aos_user_agent, sizeof(aos_user_agent)-1, "%s(Compatible %s)", 
                  AOS_VER, user_agent_info);
@@ -302,7 +302,7 @@ int aos_http_io_initialize(const char *user_agent_info, int flags)
 
 void aos_http_io_deinitialize()
 {
-	apr_thread_mutex_destroy(requestStackMutexG);
+    apr_thread_mutex_destroy(requestStackMutexG);
 
     while (requestStackCountG--) {
         curl_easy_cleanup(requestStackG[requestStackCountG]);

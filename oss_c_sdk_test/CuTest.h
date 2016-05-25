@@ -51,11 +51,11 @@
 char* CuStrAlloc(int size);
 char* CuStrCopy(const char* old);
 
-#define CU_ALLOC(TYPE)		((TYPE*) malloc(sizeof(TYPE)))
+#define CU_ALLOC(TYPE)        ((TYPE*) malloc(sizeof(TYPE)))
 
-#define HUGE_STRING_LEN	8192
-#define STRING_MAX		256
-#define STRING_INC		256
+#define HUGE_STRING_LEN    8192
+#define STRING_MAX        256
+#define STRING_INC        256
 
 typedef struct
 {
@@ -142,9 +142,9 @@ void CuAssertPtrEquals_LineMsg(CuTest* tc,
 
 /* CuSuite */
 
-#define MAX_TEST_CASES	1024
+#define MAX_TEST_CASES    1024
 
-#define SUITE_ADD_TEST(SUITE,TEST)	CuSuiteAdd(SUITE, CuTestNew(#TEST, TEST))
+#define SUITE_ADD_TEST(SUITE,TEST)    CuSuiteAdd(SUITE, CuTestNew(#TEST, TEST))
 
 typedef struct
 {
