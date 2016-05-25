@@ -5,6 +5,7 @@ build
 
 # Visual Studio
 *.sdf
+*.suo
 Debug
 Release
 !third_party/lib/Debug
