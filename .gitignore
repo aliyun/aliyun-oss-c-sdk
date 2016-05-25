@@ -4,8 +4,11 @@
 build
 
 # Visual Studio
-*.sdf
 *.suo
+*.sdf
+*.opensdf 
+*.vcxproj.filters
+*.vcxproj.user
 Debug
 Release
 !third_party/lib/Debug
