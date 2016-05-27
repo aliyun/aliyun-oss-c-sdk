@@ -1,3 +1,15 @@
+# Linux
 *.swp
 *~
-clean.sh
+build
+
+# Visual Studio
+*.suo
+*.sdf
+*.opensdf 
+*.vcxproj.filters
+*.vcxproj.user
+Debug
+Release
+!third_party/lib/Debug
+!third_party/lib/Release
