@@ -315,8 +315,7 @@ aos_status_t *oss_get_sorted_uploaded_part(oss_request_options_t *options,
     aos_pool_t *parent_pool = NULL;
     aos_status_t *s = NULL;
     aos_status_t *ret = NULL;
-    oss_upload_part_t part_arr[1000];
-    //oss_upload_part_t part_arr[OSS_PER_RET_NUM];
+    oss_upload_part_t *part_arr = NULL;
     int part_index = 0;
     int index = 0;
     int uploaded_part_count = 0;
@@ -327,6 +326,7 @@ aos_status_t *oss_get_sorted_uploaded_part(oss_request_options_t *options,
     char *part_num_str = NULL;
 
     parent_pool = options->pool;
+    part_arr = aos_palloc(parent_pool, OSS_MAX_PART_NUM * sizeof(oss_upload_part_t *));
     params = oss_create_list_upload_part_params(parent_pool);
     while (params->truncated) {
         aos_pool_create(&subpool, parent_pool);
