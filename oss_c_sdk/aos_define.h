@@ -118,5 +118,6 @@ typedef apr_array_header_t aos_array_header_t;
 
 #define AOS_HTTP_PREFIX   "http://"
 #define AOS_HTTPS_PREFIX  "https://"
+#define AOS_RTMP_PREFIX   "rtmp://"
 
 #endif

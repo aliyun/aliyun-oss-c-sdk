@@ -22,6 +22,7 @@
     <ClCompile Include="test_all.c" />
     <ClCompile Include="test_aos.c" />
     <ClCompile Include="test_oss_bucket.c" />
+    <ClCompile Include="test_oss_live.c" />
     <ClCompile Include="test_oss_multipart.c" />
     <ClCompile Include="test_oss_object.c" />
   </ItemGroup>

@@ -130,6 +130,7 @@
     <ClCompile Include="oss_auth.c" />
     <ClCompile Include="oss_bucket.c" />
     <ClCompile Include="oss_define.c" />
+    <ClCompile Include="oss_live.c" />
     <ClCompile Include="oss_multipart.c" />
     <ClCompile Include="oss_object.c" />
     <ClCompile Include="oss_util.c" />
