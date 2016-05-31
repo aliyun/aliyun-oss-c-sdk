@@ -11,7 +11,7 @@
 
 static int get_truncated_from_xml(aos_pool_t *p, mxml_node_t *xml_node, const char *truncated_xml_path);
 
-static int get_truncated_from_xml(aos_pool_t *p, mxml_node_t *xml_node, const char *truncated_xml_path)
+int get_truncated_from_xml(aos_pool_t *p, mxml_node_t *xml_node, const char *truncated_xml_path)
 {
     char *is_truncated;
     int truncated = 0;
@@ -22,29 +22,31 @@ static int get_truncated_from_xml(aos_pool_t *p, mxml_node_t *xml_node, const ch
     return truncated;
 }
 
-static char* new_xml_buff(mxml_node_t *doc)
+static char* new_xml_buff(mxml_node_t *doc);
+
+char* new_xml_buff(mxml_node_t *doc)
 {
-    int buff_size;
-    int bytes;
-    int retry;
-    char *xml_buff;
+    int	bytes;				
+    char buffer[8192];
+    char *s;
 
-    bytes = 0;
-    retry = 3;
-    xml_buff = NULL;
-    buff_size = 4096;
+    bytes = mxmlSaveString(doc, buffer, sizeof(buffer), MXML_NO_CALLBACK);
 
-    do {
-        buff_size = buff_size * 10;
-        xml_buff = (char*)realloc(xml_buff, buff_size);
-        bytes = mxmlSaveString(doc, xml_buff, buff_size, MXML_NO_CALLBACK);
-    } while(bytes < 0 && retry-- > 0);
-
-    if (bytes < 0) {
-        free(xml_buff);
-        return NULL;
+    if (bytes <= 0) {
+        return (NULL);
     }
-    return xml_buff;
+
+    if (bytes < (int)(sizeof(buffer) - 1)) {
+        return (strdup(buffer));
+    }
+
+    if ((s = malloc(bytes + 1)) == NULL) {
+        return (NULL);
+    }
+
+    mxmlSaveString(doc, s, bytes + 1, MXML_NO_CALLBACK);
+
+    return (s);
 }
 
 int get_xmldoc(aos_list_t *bc, mxml_node_t **root)
