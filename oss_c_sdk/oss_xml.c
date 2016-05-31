@@ -31,7 +31,6 @@ char* new_xml_buff(mxml_node_t *doc)
     char *s;
 
     bytes = mxmlSaveString(doc, buffer, sizeof(buffer), MXML_NO_CALLBACK);
-
     if (bytes <= 0) {
         return (NULL);
     }
@@ -43,7 +42,6 @@ char* new_xml_buff(mxml_node_t *doc)
     if ((s = malloc(bytes + 1)) == NULL) {
         return (NULL);
     }
-
     mxmlSaveString(doc, s, bytes + 1, MXML_NO_CALLBACK);
 
     return (s);
