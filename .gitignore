@@ -2,6 +2,10 @@
 *.swp
 *~
 build
+CMake*
+Makefile
+*.cmake
+test.h
 
 # Visual Studio
 *.suo
