@@ -525,7 +525,7 @@ oss_live_channel_configuration_t *oss_create_live_channel_configuration_content(
     config = (oss_live_channel_configuration_t *)aos_pcalloc(
             p, sizeof(oss_live_channel_configuration_t));
 
-    aos_str_set(&config->id, "");
+    aos_str_set(&config->name, "");
     aos_str_set(&config->description, "");
     aos_str_set(&config->status, LIVE_CHANNEL_STATUS_ENABLED);
     aos_str_set(&config->target.type, LIVE_CHANNEL_DEFAULT_TYPE);

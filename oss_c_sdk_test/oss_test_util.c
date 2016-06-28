@@ -186,7 +186,7 @@ aos_status_t *create_test_live_channel(const oss_request_options_t *options,
     aos_list_init(&play_url_list);
 
     config = oss_create_live_channel_configuration_content(options->pool);
-    aos_str_set(&config->id, live_channel);
+    aos_str_set(&config->name, live_channel);
     aos_str_set(&config->description, "live channel description");
 
     return  oss_create_live_channel(options, &bucket, config, &publish_url_list,

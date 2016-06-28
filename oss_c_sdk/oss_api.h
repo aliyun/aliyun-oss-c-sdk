@@ -566,7 +566,7 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
  * @brief  oss set live channel status
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[in]   live_channel_status the oss live channel status, enabled or disabled
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
@@ -581,7 +581,7 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
  * @brief  oss get live channel information
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[out]  info                the oss live channel information
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
@@ -596,7 +596,7 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
  * @brief  oss get live channel stat
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[out]  stat                the oss live channel stat
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
@@ -611,7 +611,7 @@ aos_status_t *oss_get_live_channel_stat(const oss_request_options_t *options,
  * @brief  delete oss live channel
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
@@ -640,7 +640,7 @@ aos_status_t *oss_list_live_channel(const oss_request_options_t *options,
  * @brief  oss get live record history of live channel
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[out]  live_record_list    the oss live records of live channel
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
@@ -655,7 +655,7 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
  * @brief  generate vod play list for a period of time
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[in]   play_list_name      the oss live channel play list name
  * @param[in]   start_time          the start epoch time of play list, such as 1459922368
  * @param[in]   end_time            the end epoch time of play list, such as 1459922563
@@ -674,7 +674,7 @@ aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
  * @brief  gen signed url for put rtmp stream
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
- * @param[in]   live_channel        the oss live channel
+ * @param[in]   live_channel        the oss live channel name
  * @param[in]   play_list_name      the oss live channel play list name
  * @param[in]   expires             the end expire time for signed url
  * @param[in]   params              the user defined parameters in signed url,

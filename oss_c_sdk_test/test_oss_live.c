@@ -60,10 +60,10 @@ void test_create_live_channel_default(CuTest *tc)
     aos_list_t play_url_list;
     oss_live_channel_configuration_t *config = NULL;
     oss_live_channel_configuration_t info;
-    char *live_channel_id = "test_live_channel_create_def";
+    char *live_channel_name = "test_live_channel_create_def";
     char *live_channel_desc = "my test live channel";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     oss_live_channel_publish_url_t *publish_url;
     oss_live_channel_play_url_t *play_url;
     char *content = NULL;
@@ -72,10 +72,10 @@ void test_create_live_channel_default(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     config = oss_create_live_channel_configuration_content(options->pool);
-    aos_str_set(&config->id, live_channel_id);
+    aos_str_set(&config->name, live_channel_name);
     aos_str_set(&config->description, live_channel_desc);
 
     // create
@@ -89,7 +89,7 @@ void test_create_live_channel_default(CuTest *tc)
         content = apr_psprintf(p, "%.*s", publish_url->publish_url.len,
             publish_url->publish_url.data);
         CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), content);
-        CuAssertIntEquals(tc, 1, aos_ends_with(&publish_url->publish_url, &channel_id));
+        CuAssertIntEquals(tc, 1, aos_ends_with(&publish_url->publish_url, &channel_name));
     }
 
     aos_list_for_each_entry(oss_live_channel_play_url_t, play_url, &play_url_list, node) {
@@ -100,10 +100,10 @@ void test_create_live_channel_default(CuTest *tc)
     }
 
     // get info
-    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
+    s = oss_get_live_channel_info(options, &bucket, &channel_name, &info, NULL);
     CuAssertIntEquals(tc, 200, s->code);
-    content = apr_psprintf(p, "%.*s", info.id.len, info.id.data);
-    CuAssertStrEquals(tc, live_channel_id, content);
+    content = apr_psprintf(p, "%.*s", info.name.len, info.name.data);
+    CuAssertStrEquals(tc, live_channel_name, content);
     content = apr_psprintf(p, "%.*s", info.description.len, info.description.data);
     CuAssertStrEquals(tc, live_channel_desc, content);
     content = apr_psprintf(p, "%.*s", info.status.len, info.status.data);
@@ -114,9 +114,8 @@ void test_create_live_channel_default(CuTest *tc)
     CuAssertStrEquals(tc, LIVE_CHANNEL_DEFAULT_PLAYLIST, content);
     CuAssertIntEquals(tc, LIVE_CHANNEL_DEFAULT_FRAG_DURATION, info.target.frag_duration);
     CuAssertIntEquals(tc, LIVE_CHANNEL_DEFAULT_FRAG_COUNT, info.target.frag_count);
-
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
@@ -133,10 +132,10 @@ void test_create_live_channel(CuTest *tc)
     aos_list_t play_url_list;
     oss_live_channel_configuration_t *config = NULL;
     oss_live_channel_configuration_t info;
-    char *live_channel_id = "test_live_channel_create";
+    char *live_channel_name = "test_live_channel_create";
     char *live_channel_desc = "my test live channel,<>{}=?//&";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     oss_live_channel_publish_url_t *publish_url;
     oss_live_channel_play_url_t *play_url;
     aos_table_t *resp_headers = NULL;
@@ -146,10 +145,10 @@ void test_create_live_channel(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     config = oss_create_live_channel_configuration_content(options->pool);
-    aos_str_set(&config->id, live_channel_id);
+    aos_str_set(&config->name, live_channel_name);
     aos_str_set(&config->description, live_channel_desc);
     aos_str_set(&config->status, LIVE_CHANNEL_STATUS_DISABLED);
     aos_str_set(&config->target.type, "HLS");
@@ -169,7 +168,7 @@ void test_create_live_channel(CuTest *tc)
         content = apr_psprintf(p, "%.*s", publish_url->publish_url.len,
             publish_url->publish_url.data);
         CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), content);
-        CuAssertIntEquals(tc, 1, aos_ends_with(&publish_url->publish_url, &channel_id));
+        CuAssertIntEquals(tc, 1, aos_ends_with(&publish_url->publish_url, &channel_name));
     }
 
     aos_list_for_each_entry(oss_live_channel_play_url_t, play_url, &play_url_list, node) {
@@ -180,10 +179,10 @@ void test_create_live_channel(CuTest *tc)
     }
 
     // get info
-    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
+    s = oss_get_live_channel_info(options, &bucket, &channel_name, &info, NULL);
     CuAssertIntEquals(tc, 200, s->code);
-    content = apr_psprintf(p, "%.*s", info.id.len, info.id.data);
-    CuAssertStrEquals(tc, live_channel_id, content);
+    content = apr_psprintf(p, "%.*s", info.name.len, info.name.data);
+    CuAssertStrEquals(tc, live_channel_name, content);
     content = apr_psprintf(p, "%.*s", info.description.len, info.description.data);
     CuAssertStrEquals(tc, live_channel_desc, content);
     content = apr_psprintf(p, "%.*s", info.status.len, info.status.data);
@@ -196,7 +195,7 @@ void test_create_live_channel(CuTest *tc)
     CuAssertIntEquals(tc, 99, info.target.frag_count);
 
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
@@ -213,20 +212,20 @@ void test_get_live_channel_stat(CuTest *tc)
     aos_list_t play_url_list;
     oss_live_channel_configuration_t *config = NULL;
     oss_live_channel_stat_t live_stat;
-    char *live_channel_id = "test_live_channel_stat";
+    char *live_channel_name = "test_live_channel_stat";
     char *live_channel_desc = "my test live channel";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     char *content = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     config = oss_create_live_channel_configuration_content(options->pool);
-    aos_str_set(&config->id, live_channel_id);
+    aos_str_set(&config->name, live_channel_name);
     aos_str_set(&config->description, live_channel_desc);
 
     // create
@@ -237,12 +236,12 @@ void test_get_live_channel_stat(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
 
     // get stat
-    s = oss_get_live_channel_stat(options, &bucket, &channel_id, &live_stat, NULL);
+    s = oss_get_live_channel_stat(options, &bucket, &channel_name, &live_stat, NULL);
     CuAssertIntEquals(tc, 200, s->code);
     content = apr_psprintf(p, "%.*s", live_stat.pushflow_status.len, live_stat.pushflow_status.data);
     CuAssertStrEquals(tc, "Idle", content);
 
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
@@ -255,9 +254,9 @@ void test_put_live_channel_status(CuTest *tc)
     aos_pool_t *p = NULL;
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
-    char *live_channel_id = "test_live_channel_status";
+    char *live_channel_name = "test_live_channel_status";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     aos_string_t channel_stutus;
     oss_live_channel_configuration_t info;
     char *content = NULL;
@@ -266,47 +265,45 @@ void test_put_live_channel_status(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     // create
-    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_id);
+    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_name);
     CuAssertIntEquals(tc, 200, s->code);
 
     // put status
     aos_str_set(&channel_stutus, LIVE_CHANNEL_STATUS_DISABLED);
-    s= oss_put_live_channel_status(options, &bucket, &channel_id, &channel_stutus, NULL);
+    s= oss_put_live_channel_status(options, &bucket, &channel_name, &channel_stutus, NULL);
     CuAssertIntEquals(tc, 200, s->code);
 
     // check by get info
-    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
-    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
+    s = oss_get_live_channel_info(options, &bucket, &channel_name, &info, NULL);
     CuAssertIntEquals(tc, 200, s->code);
-    content = apr_psprintf(p, "%.*s", info.id.len, info.id.data);
-    CuAssertStrEquals(tc, live_channel_id, content);
+    content = apr_psprintf(p, "%.*s", info.name.len, info.name.data);
+    CuAssertStrEquals(tc, live_channel_name, content);
     content = apr_psprintf(p, "%.*s", info.status.len, info.status.data);
     CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_DISABLED, content);
 
     // put status
     aos_str_set(&channel_stutus, LIVE_CHANNEL_STATUS_ENABLED);
-    s= oss_put_live_channel_status(options, &bucket, &channel_id, &channel_stutus, NULL);
+    s= oss_put_live_channel_status(options, &bucket, &channel_name, &channel_stutus, NULL);
     CuAssertIntEquals(tc, 200, s->code);
 
     // check by get info
-    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
-    s = oss_get_live_channel_info(options, &bucket, &channel_id, &info, NULL);
+    s = oss_get_live_channel_info(options, &bucket, &channel_name, &info, NULL);
     CuAssertIntEquals(tc, 200, s->code);
-    content = apr_psprintf(p, "%.*s", info.id.len, info.id.data);
-    CuAssertStrEquals(tc, live_channel_id, content);
+    content = apr_psprintf(p, "%.*s", info.name.len, info.name.data);
+    CuAssertStrEquals(tc, live_channel_name, content);
     content = apr_psprintf(p, "%.*s", info.status.len, info.status.data);
     CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_ENABLED, content);
 
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
 
-    printf("test_gen_rtmp_signed_url ok\n");
+    printf("test_put_live_channel_status ok\n");
 }
 
 void test_delete_live_channel(CuTest *tc)
@@ -318,19 +315,19 @@ void test_delete_live_channel(CuTest *tc)
     aos_list_t play_url_list;
     oss_live_channel_configuration_t *config = NULL;
     oss_live_channel_stat_t live_stat;
-    char *live_channel_id = "test_live_channel_del";
+    char *live_channel_name = "test_live_channel_del";
     char *live_channel_desc = "my test live channel";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     config = oss_create_live_channel_configuration_content(options->pool);
-    aos_str_set(&config->id, live_channel_id);
+    aos_str_set(&config->name, live_channel_name);
     aos_str_set(&config->description, live_channel_desc);
 
     // create
@@ -341,15 +338,15 @@ void test_delete_live_channel(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
 
     // get stat
-    s = oss_get_live_channel_stat(options, &bucket, &channel_id, &live_stat, NULL);
+    s = oss_get_live_channel_stat(options, &bucket, &channel_name, &live_stat, NULL);
     CuAssertIntEquals(tc, 200, s->code);
 
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     // get stat
-    s = oss_get_live_channel_stat(options, &bucket, &channel_id, &live_stat, NULL);
+    s = oss_get_live_channel_stat(options, &bucket, &channel_name, &live_stat, NULL);
     CuAssertIntEquals(tc, 404, s->code);
     CuAssertStrEquals(tc, "NoSuchLiveChannel", s->error_code);
 
@@ -397,7 +394,7 @@ void test_list_live_channel(CuTest *tc)
     channel_count = 0;
     aos_list_for_each_entry(oss_live_channel_content_t, live_chan, &params->live_channel_list, node) {
         channel_count++;
-        content = apr_psprintf(p, "%.*s", live_chan->id.len, live_chan->id.data);
+        content = apr_psprintf(p, "%.*s", live_chan->name.len, live_chan->name.data);
         CuAssertStrEquals(tc, apr_psprintf(p, "test_live_channel_list%d", channel_count), content);
         content = apr_psprintf(p, "%.*s", live_chan->description.len, live_chan->description.data);
         CuAssertStrEquals(tc, "live channel description", content);
@@ -425,7 +422,7 @@ void test_list_live_channel(CuTest *tc)
     channel_count = 0;
     aos_list_for_each_entry(oss_live_channel_content_t, live_chan, &params->live_channel_list, node) {
         channel_count++;
-        content = apr_psprintf(p, "%.*s", live_chan->id.len, live_chan->id.data);
+        content = apr_psprintf(p, "%.*s", live_chan->name.len, live_chan->name.data);
         CuAssertStrEquals(tc, "test_live_channel_list2", content);
         content = apr_psprintf(p, "%.*s", live_chan->description.len, live_chan->description.data);
         CuAssertStrEquals(tc, "live channel description", content);
@@ -454,7 +451,7 @@ void test_list_live_channel(CuTest *tc)
     channel_count = 0;
     aos_list_for_each_entry(oss_live_channel_content_t, live_chan, &params->live_channel_list, node) {
        channel_count++;
-       content = apr_psprintf(p, "%.*s", live_chan->id.len, live_chan->id.data);
+       content = apr_psprintf(p, "%.*s", live_chan->name.len, live_chan->name.data);
        CuAssertStrEquals(tc, apr_psprintf(p, "test_live_channel_list%d", channel_count + 2), content);
        content = apr_psprintf(p, "%.*s", live_chan->description.len, live_chan->description.data);
        CuAssertStrEquals(tc, "live channel description", content);
@@ -484,7 +481,7 @@ void test_list_live_channel(CuTest *tc)
     channel_count = 0;
     aos_list_for_each_entry(oss_live_channel_content_t, live_chan, &params->live_channel_list, node) {
         channel_count++;
-        content = apr_psprintf(p, "%.*s", live_chan->id.len, live_chan->id.data);
+        content = apr_psprintf(p, "%.*s", live_chan->name.len, live_chan->name.data);
         CuAssertStrEquals(tc, apr_psprintf(p, "test_live_channel_list%d", channel_count), content);
         content = apr_psprintf(p, "%.*s", live_chan->description.len, live_chan->description.data);
         CuAssertStrEquals(tc, "live channel description", content);
@@ -526,24 +523,24 @@ void test_get_live_channel_history(CuTest *tc)
     aos_status_t *s = NULL;
     aos_list_t live_record_list;
     oss_live_record_content_t *live_record;
-    char *live_channel_id = "test_live_channel_hist";
+    char *live_channel_name = "test_live_channel_hist";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     aos_string_t content;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     // create
-    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_id);
+    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_name);
     CuAssertIntEquals(tc, 200, s->code);
 
     // get history
     aos_list_init(&live_record_list);
-    s = oss_get_live_channel_history(options, &bucket, &channel_id, &live_record_list, NULL);
+    s = oss_get_live_channel_history(options, &bucket, &channel_name, &live_record_list, NULL);
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_list_for_each_entry(oss_live_record_content_t, live_record, &live_record_list, node) {
@@ -554,7 +551,7 @@ void test_get_live_channel_history(CuTest *tc)
     }
 
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
@@ -571,9 +568,9 @@ void test_gen_vod_play_list(CuTest *tc)
     aos_pool_t *p = NULL;
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
-    char *live_channel_id = "test_live_channel_vod";
+    char *live_channel_name = "test_live_channel_vod";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     aos_string_t play_list_name;
     int64_t start_time = 0;
     int64_t end_time = 0;
@@ -584,13 +581,13 @@ void test_gen_vod_play_list(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     oss_acl = OSS_ACL_PUBLIC_READ_WRITE;
     s = oss_put_bucket_acl(options, &bucket, oss_acl, &resp_headers);
 
     // create
-    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_id);
+    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_name);
     CuAssertIntEquals(tc, 200, s->code);
 
     // post vod
@@ -598,12 +595,12 @@ void test_gen_vod_play_list(CuTest *tc)
     start_time = apr_time_now() / 1000000 - 3600;
     end_time = apr_time_now() / 1000000 + 3600;
 
-    s = oss_gen_vod_play_list(options, &bucket, &channel_id, &play_list_name,
+    s = oss_gen_vod_play_list(options, &bucket, &channel_name, &play_list_name,
         start_time, end_time, NULL);
     CuAssertIntEquals(tc, 400, s->code);
 
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);
@@ -616,9 +613,9 @@ void test_gen_rtmp_signed_url(CuTest *tc)
     aos_pool_t *p = NULL;
     oss_request_options_t *options = NULL;
     aos_status_t *s = NULL;
-    char *live_channel_id = "test_live_channel_url";
+    char *live_channel_name = "test_live_channel_url";
     aos_string_t bucket;
-    aos_string_t channel_id;
+    aos_string_t channel_name;
     aos_string_t play_list_name;
     oss_acl_e oss_acl;
     aos_table_t *resp_headers = NULL;
@@ -629,26 +626,26 @@ void test_gen_rtmp_signed_url(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&channel_id, live_channel_id);
+    aos_str_set(&channel_name, live_channel_name);
 
     oss_acl = OSS_ACL_PRIVATE;
     s = oss_put_bucket_acl(options, &bucket, oss_acl, &resp_headers);
 
     // create
-    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_id);
+    s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_name);
     CuAssertIntEquals(tc, 200, s->code);
 
     // gen url
     aos_str_set(&play_list_name, "play.m3u8");
     expires = apr_time_now() / 1000000 + 60 * 30;
-    rtmp_url = oss_gen_rtmp_signed_url(options, &bucket, &channel_id,
+    rtmp_url = oss_gen_rtmp_signed_url(options, &bucket, &channel_name,
         &play_list_name, expires, NULL);
 
     // manual check passed
     CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), rtmp_url);
 
     // delete
-    s = oss_delete_live_channel(options, &bucket, &channel_id, NULL);
+    s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
     aos_pool_destroy(p);

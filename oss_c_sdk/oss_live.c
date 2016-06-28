@@ -30,7 +30,7 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
     //init headers
     headers = aos_table_create_if_null(options, headers, 0);
 
-    oss_init_live_channel_request(options, bucket, &config->id, HTTP_PUT,
+    oss_init_live_channel_request(options, bucket, &config->name, HTTP_PUT,
                             &req, query_params, headers, &resp);
 
     // build body
@@ -73,8 +73,10 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
     apr_table_add(query_params, OSS_LIVE_CHANNEL_STATUS, live_channel_status->data);
     
-    //init headers
-    headers = aos_table_create_if_null(options, headers, 0);
+    //init headers, forbid 'Expect' and 'Transfer-Encoding' of HTTP
+    headers = aos_table_create_if_null(options, headers, 2);
+	apr_table_set(headers, "Expect", "");
+	apr_table_set(headers, "Transfer-Encoding", "");
 
     oss_init_live_channel_request(options, bucket, live_channel, HTTP_PUT,
                             &req, query_params, headers, &resp);
@@ -123,7 +125,7 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
     if (res != AOSE_OK) {
         aos_xml_error_status_set(s, res);
     }
-    aos_str_set(&info->id, aos_pstrdup(options->pool, live_channel));
+    aos_str_set(&info->name, aos_pstrdup(options->pool, live_channel));
 
     return s;
 }

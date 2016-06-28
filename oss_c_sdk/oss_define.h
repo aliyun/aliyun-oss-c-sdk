@@ -232,7 +232,7 @@ typedef struct {
 }oss_live_channel_target_t;
 
 typedef struct {
-    aos_string_t id;
+    aos_string_t name;
     aos_string_t description;
     aos_string_t status;
     oss_live_channel_target_t target;
@@ -272,7 +272,7 @@ typedef struct {
 
 typedef struct {
     aos_list_t node;
-    aos_string_t id;
+    aos_string_t name;
     aos_string_t description;
     aos_string_t status;
     aos_string_t last_modified;

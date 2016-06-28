@@ -778,12 +778,15 @@ char *build_create_live_channel_xml(aos_pool_t *p, oss_live_channel_configuratio
     mxmlNewText(play_list_node, 0, config->target.play_list_name.data);
 
     // dump
-    xml_buff = mxmlSaveAllocString(doc, MXML_NO_CALLBACK);
-    aos_str_set(&xml_doc, xml_buff);
-    complete_part_xml = aos_pstrdup(p, &xml_doc);
+	xml_buff = new_xml_buff(doc);
+	if (xml_buff == NULL) {
+		return NULL;
+	}
+	aos_str_set(&xml_doc, xml_buff);
+	complete_part_xml = aos_pstrdup(p, &xml_doc);
 
-    free(xml_buff);
-    mxmlDelete(doc);
+	free(xml_buff);
+	mxmlDelete(doc);
 
     return complete_part_xml;
 }
@@ -1025,18 +1028,18 @@ int oss_live_channel_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_liv
 
 void oss_list_live_channel_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_live_channel_content_t *content)
 {
-    char *id;
+    char *name;
     char *description;
     char *status;
     char *last_modified;
     char *node_content;
     mxml_node_t *node;
 
-    node = mxmlFindElement(xml_node, xml_node, "Id", NULL, NULL, MXML_DESCEND);
+    node = mxmlFindElement(xml_node, xml_node, "Name", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         node_content = node->child->value.opaque;
-        id = apr_pstrdup(p, (char *)node_content);
-        aos_str_set(&content->id, id);
+        name = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->name, name);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Description", NULL, NULL, MXML_DESCEND);
