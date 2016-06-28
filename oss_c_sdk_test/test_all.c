@@ -22,7 +22,7 @@ static const struct testlist {
     {"test_oss_bucket", test_oss_bucket},
     {"test_oss_object", test_oss_object},
     {"test_oss_multipart", test_oss_multipart},
-    {"test_oss_live", test_oss_live},
+    //{"test_oss_live", test_oss_live},
     {"test_aos", test_aos},
     {"LastTest", NULL}
 };
