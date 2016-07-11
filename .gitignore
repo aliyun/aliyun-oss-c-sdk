@@ -13,6 +13,8 @@ test.h
 *.suo
 *.sdf
 *.opensdf 
+*.VC.db
+*.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 Debug
