@@ -648,6 +648,539 @@ int oss_delete_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t
     return res;
 }
 
+void oss_publish_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_publish_url_t *content)
+{   
+    char *url;
+    char *node_content;
+    
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        url = apr_pstrdup(p, node_content);
+        aos_str_set(&content->publish_url, url);
+    }
+}
+
+void oss_play_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_play_url_t *content)
+{   
+    char *url;
+    char *node_content;
+    
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        url = apr_pstrdup(p, node_content);
+        aos_str_set(&content->play_url, url);
+    }
+}
+
+void oss_publish_urls_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    aos_list_t *publish_xml_list)
+{
+    mxml_node_t *node;
+
+    node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    for ( ; node != NULL; ) {
+        oss_live_channel_publish_url_t *content = oss_create_live_channel_publish_url(p);
+        oss_publish_url_parse(p, node, content);
+        aos_list_add_tail(&content->node, publish_xml_list);
+        node = mxmlFindElement(node, root, xml_path, NULL, NULL, MXML_DESCEND);
+    }
+}
+
+void oss_play_urls_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    aos_list_t *play_xml_list)
+{
+    mxml_node_t *node;
+
+    node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    for ( ; node != NULL; ) {
+        oss_live_channel_play_url_t *content = oss_create_live_channel_play_url(p);
+        oss_play_url_parse(p, node, content);
+        aos_list_add_tail(&content->node, play_xml_list);
+        node = mxmlFindElement(node, root, xml_path, NULL, NULL, MXML_DESCEND);
+    }
+}
+
+void oss_create_live_channel_content_parse(aos_pool_t *p, mxml_node_t *root,
+    const char *publish_xml_path, aos_list_t *publish_url_list, 
+    const char *play_xml_path, aos_list_t *play_url_list)
+{
+    mxml_node_t *node;
+    const char url_xml_path[] = "Url";
+
+    node = mxmlFindElement(root, root, publish_xml_path, NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        oss_publish_urls_contents_parse(p, node, url_xml_path, publish_url_list);
+    }
+
+    node = mxmlFindElement(root, root, play_xml_path, NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        oss_play_urls_contents_parse(p, node, url_xml_path, play_url_list);
+    }
+}    
+
+int oss_create_live_channel_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    aos_list_t *publish_url_list, aos_list_t *play_url_list)
+{
+    int res;
+    mxml_node_t *root = NULL;
+    const char publish_urls_xml_path[] = "PublishUrls";
+    const char play_urls_xml_path[] = "PlayUrls";
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        oss_create_live_channel_content_parse(p, root, publish_urls_xml_path, publish_url_list,
+            play_urls_xml_path, play_url_list);
+        mxmlDelete(root);
+    }
+
+    return res;
+}
+
+char *build_create_live_channel_xml(aos_pool_t *p, oss_live_channel_configuration_t *config)
+{
+    char *xml_buff;
+    char *complete_part_xml;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    char value_str[64];
+    mxml_node_t *description_node;
+    mxml_node_t *status_node;
+    mxml_node_t *target_node;
+    mxml_node_t *type_node;
+    mxml_node_t *frag_duration_node;
+    mxml_node_t *frag_count_node;
+    mxml_node_t *play_list_node;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "LiveChannelConfiguration");
+
+    description_node = mxmlNewElement(root_node, "Description");
+    mxmlNewText(description_node, 0, config->description.data);
+
+    status_node = mxmlNewElement(root_node, "Status");
+    mxmlNewText(status_node, 0, config->status.data);
+
+    // target
+    target_node = mxmlNewElement(root_node, "Target");
+    type_node = mxmlNewElement(target_node, "Type");
+    mxmlNewText(type_node, 0, config->target.type.data);
+
+    apr_snprintf(value_str, sizeof(value_str), "%d", config->target.frag_duration);
+    frag_duration_node = mxmlNewElement(target_node, "FragDuration");
+    mxmlNewText(frag_duration_node, 0, value_str);
+
+    apr_snprintf(value_str, sizeof(value_str), "%d", config->target.frag_count);
+    frag_count_node = mxmlNewElement(target_node, "FragCount");
+    mxmlNewText(frag_count_node, 0, value_str);
+
+    play_list_node = mxmlNewElement(target_node, "PlaylistName");
+    mxmlNewText(play_list_node, 0, config->target.play_list_name.data);
+
+    // dump
+	xml_buff = new_xml_buff(doc);
+	if (xml_buff == NULL) {
+		return NULL;
+	}
+	aos_str_set(&xml_doc, xml_buff);
+	complete_part_xml = aos_pstrdup(p, &xml_doc);
+
+	free(xml_buff);
+	mxmlDelete(doc);
+
+    return complete_part_xml;
+}
+
+void build_create_live_channel_body(aos_pool_t *p, oss_live_channel_configuration_t *config, aos_list_t *body)
+{
+    char *live_channel_xml;
+    aos_buf_t *b;
+
+    live_channel_xml = build_create_live_channel_xml(p, config);
+    aos_list_init(body);
+    b = aos_buf_pack(p, live_channel_xml, strlen(live_channel_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+
+void oss_live_channel_info_target_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_live_channel_target_t *target)
+{
+    char *type;
+    char *frag_duration;
+    char *frag_count;
+    char *play_list;
+    char *node_content;
+    mxml_node_t *node;
+
+    node = mxmlFindElement(xml_node, xml_node, "Type", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        type = apr_pstrdup(p, node_content);
+        aos_str_set(&target->type, type);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "FragDuration", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        frag_duration = apr_pstrdup(p, node_content);
+        target->frag_duration = atoi(frag_duration);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "FragCount", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        frag_count = apr_pstrdup(p, node_content);
+        target->frag_count = atoi(frag_count);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "PlaylistName",NULL, NULL,MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        play_list = apr_pstrdup(p, node_content);
+        aos_str_set(&target->play_list_name, play_list);
+    }
+}
+
+void oss_live_channel_info_content_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    oss_live_channel_configuration_t *info)
+{
+    mxml_node_t *cofig_node;
+    mxml_node_t *target_node;
+
+    cofig_node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    if (NULL != cofig_node) {
+        char *description;
+        char *status;
+        char *node_content;
+        mxml_node_t *node;
+
+        node = mxmlFindElement(cofig_node, cofig_node, "Description", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            node_content = node->child->value.opaque;
+            description = apr_pstrdup(p, node_content);
+            aos_str_set(&info->description, description);
+        }
+
+        node = mxmlFindElement(cofig_node, cofig_node, "Status", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            node_content = node->child->value.opaque;
+            status = apr_pstrdup(p, node_content);
+            aos_str_set(&info->status, status);
+        }
+
+        target_node = mxmlFindElement(cofig_node, cofig_node, "Target", NULL, NULL, MXML_DESCEND);
+        if (NULL != target_node) {
+            oss_live_channel_info_target_content_parse(p, target_node, &info->target);
+        }
+    }
+}
+
+int oss_live_channel_info_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_live_channel_configuration_t *info)
+{
+    int res;
+    mxml_node_t *root;
+    const char xml_path[] = "LiveChannelConfiguration";
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        oss_live_channel_info_content_parse(p, root, xml_path, info);
+        mxmlDelete(root);
+    }
+
+    return res;
+}
+
+void oss_live_channel_stat_video_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_video_stat_t *video_stat)
+{
+    char *width;
+    char *height;
+    char *frame_rate;
+    char *band_width;
+    char *codec;
+    char *node_content;
+    mxml_node_t *node;
+
+    node = mxmlFindElement(xml_node, xml_node, "Width", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        width = apr_pstrdup(p, node_content);
+        video_stat->width = atoi(width);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Height", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        height = apr_pstrdup(p, node_content);
+        video_stat->height = atoi(height);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "FrameRate", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        frame_rate = apr_pstrdup(p, node_content);
+        video_stat->frame_rate = atoi(frame_rate);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Bandwidth", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        band_width = apr_pstrdup(p, node_content);
+        video_stat->band_width = atoi(band_width);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Codec", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        codec = apr_pstrdup(p, node_content);
+        aos_str_set(&video_stat->codec, codec);
+    }
+}
+
+void oss_live_channel_stat_audio_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_audio_stat_t *audio_stat)
+{
+    char *band_width;
+    char *sample_rate;
+    char *codec;
+    char *node_content;
+    mxml_node_t *node;
+
+    node = mxmlFindElement(xml_node, xml_node, "Bandwidth", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        band_width = apr_pstrdup(p, node_content);
+        audio_stat->band_width = atoi(band_width);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "SampleRate", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        sample_rate = apr_pstrdup(p, node_content);
+        audio_stat->sample_rate = atoi(sample_rate);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Codec", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        codec = apr_pstrdup(p, node_content);
+        aos_str_set(&audio_stat->codec, codec);
+    }
+}
+
+void oss_live_channel_stat_content_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path, oss_live_channel_stat_t *stat)
+{
+    mxml_node_t *stat_node;
+
+    stat_node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    if (NULL != stat_node) {
+        char *status;
+        char *connected_time;
+        char *remote_addr;
+        char *node_content;
+        mxml_node_t *node;
+
+        node = mxmlFindElement(stat_node, stat_node, "Status", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            node_content = node->child->value.opaque;
+            status = apr_pstrdup(p, (char *)node_content);
+            aos_str_set(&stat->pushflow_status, status);
+        }
+
+        node = mxmlFindElement(stat_node, stat_node, "ConnectedTime", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            node_content = node->child->value.opaque;
+            connected_time = apr_pstrdup(p, (char *)node_content);
+            aos_str_set(&stat->connected_time, connected_time);
+        }
+
+        node = mxmlFindElement(stat_node, stat_node, "RemoteAddr", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            node_content = node->child->value.opaque;
+            remote_addr = apr_pstrdup(p, (char *)node_content);
+            aos_str_set(&stat->remote_addr, remote_addr);
+        }
+
+        node = mxmlFindElement(stat_node, stat_node, "Video", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            oss_live_channel_stat_video_content_parse(p, node, &stat->video_stat);
+        }
+
+        node = mxmlFindElement(stat_node, stat_node, "Audio", NULL, NULL, MXML_DESCEND);
+        if (NULL != node) {
+            oss_live_channel_stat_audio_content_parse(p, node, &stat->audio_stat);
+        }
+    }
+}
+
+int oss_live_channel_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_live_channel_stat_t *stat)
+{
+    int res;
+    mxml_node_t *root;
+    const char xml_path[] = "LiveChannelStat";
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        oss_live_channel_stat_content_parse(p, root, xml_path, stat);
+        mxmlDelete(root);
+    }
+
+    return res;
+}
+
+void oss_list_live_channel_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_live_channel_content_t *content)
+{
+    char *name;
+    char *description;
+    char *status;
+    char *last_modified;
+    char *node_content;
+    mxml_node_t *node;
+
+    node = mxmlFindElement(xml_node, xml_node, "Name", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        name = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->name, name);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Description", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        if (NULL != node->child) {
+            node_content = node->child->value.opaque;
+            description = apr_pstrdup(p, (char *)node_content);
+            aos_str_set(&content->description, description);
+        } else {
+            aos_str_set(&content->description, "");
+        }
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Status", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        status = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->status, status);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "LastModified", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        last_modified = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->last_modified, last_modified);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "PublishUrls", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        oss_publish_urls_contents_parse(p, node, "Url", &content->publish_url_list);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "PlayUrls", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        oss_play_urls_contents_parse(p, node, "Url", &content->play_url_list);
+    }
+}
+
+void oss_list_live_channel_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    aos_list_t *live_channel_list)
+{
+    mxml_node_t *content_node;
+    oss_live_channel_content_t *content;
+
+    content_node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    for ( ; content_node != NULL; ) {
+        content = oss_create_list_live_channel_content(p);
+        oss_list_live_channel_content_parse(p, content_node, content);
+        aos_list_add_tail(&content->node, live_channel_list);
+        content_node = mxmlFindElement(content_node, root, xml_path, NULL, NULL, MXML_DESCEND);
+    }
+}
+
+int oss_list_live_channel_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    aos_list_t *live_channel_list, aos_string_t *next_marker, int *truncated)
+{
+    int res;
+    mxml_node_t *root;
+    const char next_marker_xml_path[] = "NextMarker";
+    const char truncated_xml_path[] = "IsTruncated";
+    const char live_channel_xml_path[] = "LiveChannel";
+    char *next_partnumber_marker;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        next_partnumber_marker = get_xmlnode_value(p, root, next_marker_xml_path);
+        if (next_partnumber_marker) {
+            aos_str_set(next_marker, next_partnumber_marker);
+        }
+
+        *truncated = get_truncated_from_xml(p, root, truncated_xml_path);
+
+        oss_list_live_channel_contents_parse(p, root, live_channel_xml_path, live_channel_list);
+
+        mxmlDelete(root);
+    }
+
+    return res;
+}
+
+void oss_live_channel_history_content_parse(aos_pool_t *p, mxml_node_t * xml_node,
+    oss_live_record_content_t *content)
+{
+    char *start_time;
+    char *end_time;
+    char *remote_addr;
+    char *node_content;
+    mxml_node_t *node;
+
+    node = mxmlFindElement(xml_node, xml_node, "StartTime",NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        start_time = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->start_time, start_time);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "EndTime",NULL, NULL,MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        end_time = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->end_time, end_time);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "RemoteAddr",NULL, NULL,MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        remote_addr = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->remote_addr, remote_addr);
+    }
+}
+
+void oss_live_channel_history_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    aos_list_t *live_record_list)
+{
+    mxml_node_t *node;
+    oss_live_record_content_t *content;
+
+    node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    for ( ; node != NULL; ) {
+        content = oss_create_live_record_content(p);
+        oss_live_channel_history_content_parse(p, node, content);
+        aos_list_add_tail(&content->node, live_record_list);
+        node = mxmlFindElement(node, root, xml_path, NULL, NULL, MXML_DESCEND);
+    }
+}
+
+int oss_live_channel_history_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *live_record_list)
+{
+    int res;
+    mxml_node_t *root = NULL;
+    const char rule_xml_path[] = "LiveRecord";
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        oss_live_channel_history_contents_parse(p, root, rule_xml_path, live_record_list);
+        mxmlDelete(root);
+    }
+
+    return res;
+}
+
 char *build_objects_xml(aos_pool_t *p, aos_list_t *object_list, const char *quiet)
 {
     char *object_xml;
