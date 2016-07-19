@@ -57,6 +57,7 @@ extern const char OSS_STS_SECURITY_TOKEN[];
 extern const char OSS_REPLACE_OBJECT_META[];
 extern const char OSS_OBJECT_TYPE[];
 extern const char OSS_NEXT_APPEND_POSITION[];
+extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_DELETE[];
 extern const char OSS_YES[];
