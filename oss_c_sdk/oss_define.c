@@ -35,6 +35,7 @@ const char OSS_STS_SECURITY_TOKEN[] = "x-oss-security-token";
 const char OSS_REPLACE_OBJECT_META[] = "x-oss-replace-object-meta";
 const char OSS_OBJECT_TYPE[] = "x-oss-object-type";
 const char OSS_NEXT_APPEND_POSITION[] = "x-oss-next-append-position";
+const char OSS_PROCESS[] = "x-oss-process";
 const char OSS_LIFECYCLE[] = "lifecycle";
 const char OSS_DELETE[] = "delete";
 const char OSS_YES[] = "yes";

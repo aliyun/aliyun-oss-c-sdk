@@ -23,6 +23,7 @@ static const char *g_s_oss_sub_resource_list[] = {
     "vod",
     "startTime",
     "endTime",
+    "x-oss-process",
     NULL,
 };
 
