@@ -330,14 +330,14 @@ char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
                               const aos_string_t *bucket,
                               const aos_string_t *live_channel,
                               const aos_string_t *play_list_name,
-                              const int64_t expires,
-                              aos_table_t *params)
+                              const int64_t expires)
 {
     aos_string_t signed_url;
     char *expires_str = NULL;
     aos_string_t expires_time;
     int res = AOSE_OK;
     aos_http_request_t *req = NULL;
+    aos_table_t *params = NULL;
 
     expires_str = apr_psprintf(options->pool, "%" APR_INT64_T_FMT, expires);
     aos_str_set(&expires_time, expires_str);

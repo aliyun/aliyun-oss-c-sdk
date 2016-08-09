@@ -677,16 +677,13 @@ aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
  * @param[in]   live_channel        the oss live channel name
  * @param[in]   play_list_name      the oss live channel play list name
  * @param[in]   expires             the end expire time for signed url
- * @param[in]   params              the user defined parameters in signed url,
- *                                  if none, fill NULL
  * @return  signed url, non-NULL success, NULL failure
  */
 char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
                               const aos_string_t *bucket,
                               const aos_string_t *live_channel,
                               const aos_string_t *play_list_name,
-                              const int64_t expires,
-                              aos_table_t *params);
+                              const int64_t expires);
 
 OSS_CPP_END
 
