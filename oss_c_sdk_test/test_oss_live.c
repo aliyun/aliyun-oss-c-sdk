@@ -639,7 +639,7 @@ void test_gen_rtmp_signed_url(CuTest *tc)
     aos_str_set(&play_list_name, "play.m3u8");
     expires = apr_time_now() / 1000000 + 60 * 30;
     rtmp_url = oss_gen_rtmp_signed_url(options, &bucket, &channel_name,
-        &play_list_name, expires, NULL);
+        &play_list_name, expires);
 
     // manual check passed
     CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), rtmp_url);
