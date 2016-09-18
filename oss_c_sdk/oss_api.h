@@ -147,6 +147,48 @@ aos_status_t *oss_put_object_from_file(const oss_request_options_t *options,
                                        aos_table_t **resp_headers);
 
 /*
+ * @brief  put oss object from buffer with process
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   buffer              the buffer containing object content
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[out]  response            the response of process
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_t *options,
+                                         const aos_string_t *bucket, 
+                                         const aos_string_t *object, 
+                                         aos_list_t *buffer,
+                                         aos_table_t *headers, 
+										 aos_table_t *params,
+										 aos_list_t *response, 
+                                         aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss object from file with process
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   filename            the filename to put
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[out]  response            the response of process
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t *options,
+                                       const aos_string_t *bucket, 
+                                       const aos_string_t *object, 
+                                       const aos_string_t *filename,
+                                       aos_table_t *headers, 
+									   aos_table_t *params,
+									   aos_list_t *response, 
+                                       aos_table_t **resp_headers);
+
+/*
  * @brief  get oss object to buffer
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
