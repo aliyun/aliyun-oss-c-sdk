@@ -118,7 +118,7 @@ aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-	oss_init_read_response_body_to_buffer(response, resp);
+    oss_init_read_response_body_to_buffer(response, resp);
     *resp_headers = resp->headers;
 
     return s;
@@ -157,7 +157,7 @@ aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t 
     }
 
     s = oss_process_request(options, req, resp);
-	oss_init_read_response_body_to_buffer(response, resp);
+    oss_init_read_response_body_to_buffer(response, resp);
     *resp_headers = resp->headers;
 
     return s;
