@@ -163,8 +163,8 @@ aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_
                                          const aos_string_t *object, 
                                          aos_list_t *buffer,
                                          aos_table_t *headers, 
-										 aos_table_t *params,
-										 aos_list_t *response, 
+                                         aos_table_t *params,
+                                         aos_list_t *response, 
                                          aos_table_t **resp_headers);
 
 /*
@@ -184,8 +184,8 @@ aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t 
                                        const aos_string_t *object, 
                                        const aos_string_t *filename,
                                        aos_table_t *headers, 
-									   aos_table_t *params,
-									   aos_list_t *response, 
+                                       aos_table_t *params,
+                                       aos_list_t *response, 
                                        aos_table_t **resp_headers);
 
 /*

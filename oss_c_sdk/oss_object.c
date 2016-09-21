@@ -98,8 +98,8 @@ aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_
                                          const aos_string_t *object, 
                                          aos_list_t *buffer,
                                          aos_table_t *headers, 
-										 aos_table_t *params,
-										 aos_list_t *response, 
+                                         aos_table_t *params,
+                                         aos_list_t *response, 
                                          aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
@@ -111,7 +111,7 @@ aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_
     set_content_type(NULL, object->data, headers);
     apr_table_add(headers, OSS_EXPECT, "");
 
-    query_params = aos_table_create_if_null(options, query_params, 0);
+    query_params = aos_table_create_if_null(options, params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, 
                             &req, query_params, headers, &resp);
@@ -129,8 +129,8 @@ aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t 
                                        const aos_string_t *object, 
                                        const aos_string_t *filename,
                                        aos_table_t *headers, 
-									   aos_table_t *params,
-									   aos_list_t *response, 
+                                       aos_table_t *params,
+                                       aos_list_t *response, 
                                        aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
@@ -145,7 +145,7 @@ aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t 
     set_content_type(filename->data, object->data, headers);
     apr_table_add(headers, OSS_EXPECT, "");
 
-    query_params = aos_table_create_if_null(options, query_params, 0);
+    query_params = aos_table_create_if_null(options, params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, &req, 
                             query_params, headers, &resp);

@@ -11,17 +11,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cJSON.h" />
+    <ClInclude Include="cJSON_Utils.h" />
     <ClInclude Include="CuTest.h" />
     <ClInclude Include="oss_config.h" />
     <ClInclude Include="oss_test_util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cJSON.c" />
+    <ClCompile Include="cJSON_Utils.c" />
     <ClCompile Include="CuTest.c" />
     <ClCompile Include="oss_config.c" />
     <ClCompile Include="oss_test_util.c" />
     <ClCompile Include="test_all.c" />
     <ClCompile Include="test_aos.c" />
     <ClCompile Include="test_oss_bucket.c" />
+    <ClCompile Include="test_oss_image.c" />
     <ClCompile Include="test_oss_live.c" />
     <ClCompile Include="test_oss_multipart.c" />
     <ClCompile Include="test_oss_object.c" />
@@ -37,14 +42,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

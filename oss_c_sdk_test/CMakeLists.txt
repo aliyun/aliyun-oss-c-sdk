@@ -8,7 +8,8 @@ configure_file (
 )
 
 set(SAMPLE_SOURCE_FILES CuTest.c oss_test_util.c oss_config.c test_oss_bucket.c 
-    test_oss_object.c test_oss_multipart.c test_oss_live.c test_aos.c test_all.c)
+    test_oss_object.c test_oss_multipart.c test_oss_live.c test_oss_image.c 
+	cJSON_Utils.c cJSON.c test_aos.c test_all.c)
 
 # find_path(APR_INCLUDE_DIR apr-1/apr_time.h)
 # find_path(APR_UTIL_INCLUDE_DIR apr/include/apr-1/apr_md5.h)
@@ -26,6 +27,7 @@ find_library(APR_UTIL_LIBRARY aprutil-1 PATHS /usr/local/apr/lib/)
 find_library(MINIXML_LIBRARY mxml)
 find_library(CURL_LIBRARY curl)
 find_library(PTHREAD_LIBRARY pthread)
+find_library(MATH_LIBRARY m)
 #find_library(SSL_LIBRARY ssl)
 #find_library(IDN_LIBRARY idn)
 find_library(RT_LIBRARY rt)
@@ -39,6 +41,7 @@ target_link_libraries(oss_c_sdk_test ${APR_LIBRARY})
 target_link_libraries(oss_c_sdk_test ${MINIXML_LIBRARY})
 target_link_libraries(oss_c_sdk_test ${CURL_LIBRARY})
 target_link_libraries(oss_c_sdk_test ${PTHREAD_LIBRARY})
+target_link_libraries(oss_c_sdk_test ${MATH_LIBRARY})
 #target_link_libraries(oss_c_sdk_test ${SSL_LIBRARY})
 #target_link_libraries(oss_c_sdk_test ${IDN_LIBRARY})
 target_link_libraries(oss_c_sdk_test ${RT_LIBRARY})

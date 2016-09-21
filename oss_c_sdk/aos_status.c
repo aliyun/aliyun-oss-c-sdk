@@ -36,7 +36,9 @@ int aos_should_retry(aos_status_t *s) {
 
     if (s->error_code != NULL) {
         aos_error_code = atoi(s->error_code);
-        if (aos_error_code == AOSE_REQUEST_TIMEOUT || aos_error_code == AOSE_CONNECTION_FAILED) {
+        if (aos_error_code == AOSE_CONNECTION_FAILED || aos_error_code == AOSE_REQUEST_TIMEOUT || 
+            aos_error_code == AOSE_FAILED_CONNECT || aos_error_code == AOSE_INTERNAL_ERROR || 
+            aos_error_code == AOSE_SERVICE_ERROR) {
             return 1;
         }
     }
