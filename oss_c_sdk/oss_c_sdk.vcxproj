@@ -103,6 +103,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="aos_buf.h" />
+    <ClInclude Include="aos_crc.h" />
     <ClInclude Include="aos_define.h" />
     <ClInclude Include="aos_fstack.h" />
     <ClInclude Include="aos_http_io.h" />
@@ -120,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="aos_buf.c" />
+    <ClCompile Include="aos_crc.c" />
     <ClCompile Include="aos_fstack.c" />
     <ClCompile Include="aos_http_io.c" />
     <ClCompile Include="aos_log.c" />

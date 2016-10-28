@@ -389,6 +389,62 @@ void test_aos_should_retry(CuTest *tc) {
     printf("test_aos_should_retry ok\n");
 }
 
+void test_aos_strtoll(CuTest *tc)
+{
+    int64_t val = 0;
+    char *endptr = NULL;
+
+    val = aos_strtoll("0", NULL, 10);
+    CuAssertTrue(tc, val == 0);
+
+    val = aos_strtoll("9223372036854775807", NULL, 10);
+    CuAssertTrue(tc, val == 9223372036854775807);
+
+    val = aos_strtoll("-9223372036854775808", NULL, 10);
+    CuAssertTrue(tc, val == INT64_MIN);
+
+    val = aos_strtoll("2147483648ABC", &endptr, 10);
+    CuAssertTrue(tc, val == 2147483648);
+    CuAssertStrEquals(tc, endptr, "ABC");
+
+    val = aos_atoi64("0");
+    CuAssertTrue(tc, val == 0);
+
+    val = aos_atoi64("9223372036854775807");
+    CuAssertTrue(tc, val == 9223372036854775807);
+
+    val = aos_atoi64("-9223372036854775808");
+    CuAssertTrue(tc, val == INT64_MIN);
+}
+
+void test_aos_strtoull(CuTest *tc)
+{
+    uint64_t val = 0;
+    char *endptr = NULL;
+
+    val = aos_strtoull("0", NULL, 10);
+    CuAssertTrue(tc, val == 0);
+
+    val = aos_strtoull("9223372036854775807", NULL, 10);
+    CuAssertTrue(tc, val == 9223372036854775807);
+
+    val = aos_strtoull("18446744073709551615", NULL, 10);
+    CuAssertTrue(tc, val == UINT64_MAX);
+
+    val = aos_strtoll("2147483648ABC", &endptr, 10);
+    CuAssertTrue(tc, val == 2147483648);
+    CuAssertStrEquals(tc, endptr, "ABC");
+
+    val = aos_atoui64("0");
+    CuAssertTrue(tc, val == 0);
+
+    val = aos_atoui64("9223372036854775807");
+    CuAssertTrue(tc, val == 9223372036854775807);
+
+    val = aos_atoui64("18446744073709551615");
+    CuAssertTrue(tc, val == UINT64_MAX);
+}
+
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();   
@@ -414,6 +470,8 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_aos_url_decode_with_add);
     SUITE_ADD_TEST(suite, test_aos_url_decode_failed);
     SUITE_ADD_TEST(suite, test_aos_should_retry);
-    
+    SUITE_ADD_TEST(suite, test_aos_strtoll);
+    SUITE_ADD_TEST(suite, test_aos_strtoull);
+
     return suite;
 }

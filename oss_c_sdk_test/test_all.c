@@ -12,8 +12,11 @@ extern CuSuite *test_oss_object();
 extern CuSuite *test_oss_multipart();
 extern CuSuite *test_oss_live();
 extern CuSuite *test_oss_image();
+extern CuSuite *test_oss_progress();
+extern CuSuite *test_oss_callback();
 extern CuSuite *test_oss_util();
 extern CuSuite *test_oss_xml();
+extern CuSuite *test_oss_crc();
 extern CuSuite *test_aos();
 
 static const struct testlist {
@@ -25,6 +28,9 @@ static const struct testlist {
     {"test_oss_multipart", test_oss_multipart},
     {"test_oss_live", test_oss_live},
     {"test_oss_image", test_oss_image},
+    {"test_oss_progress", test_oss_progress},
+    {"test_oss_callback", test_oss_callback},
+    {"test_oss_crc", test_oss_crc},
     {"test_aos", test_aos},
     {"LastTest", NULL}
 };

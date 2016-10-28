@@ -35,6 +35,20 @@ aos_status_t *oss_put_object_from_buffer(const oss_request_options_t *options,
                                          aos_table_t *headers, 
                                          aos_table_t **resp_headers)
 {
+    return oss_do_put_object_from_buffer(options, bucket, object, buffer, 
+                                         headers, NULL, NULL, resp_headers, NULL);
+}
+
+aos_status_t *oss_do_put_object_from_buffer(const oss_request_options_t *options,
+                                            const aos_string_t *bucket, 
+                                            const aos_string_t *object, 
+                                            aos_list_t *buffer,
+                                            aos_table_t *headers, 
+                                            aos_table_t *params,
+                                            oss_progress_callback progress_callback,
+                                            aos_table_t **resp_headers,
+                                            aos_list_t *resp_body)
+{
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
@@ -44,14 +58,22 @@ aos_status_t *oss_put_object_from_buffer(const oss_request_options_t *options,
     set_content_type(NULL, object->data, headers);
     apr_table_add(headers, OSS_EXPECT, "");
 
-    query_params = aos_table_create_if_null(options, query_params, 0);
+    query_params = aos_table_create_if_null(options, params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, progress_callback, 0, &resp);
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_body_to_buffer(resp_body, resp);
+    oss_init_read_response_header(resp_headers, resp);
+
+    if (options->ctl->options->enable_crc) {
+        int res = check_crc_consistent(req->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -63,75 +85,19 @@ aos_status_t *oss_put_object_from_file(const oss_request_options_t *options,
                                        aos_table_t *headers, 
                                        aos_table_t **resp_headers)
 {
-    aos_status_t *s = NULL;
-    aos_http_request_t *req = NULL;
-    aos_http_response_t *resp = NULL;
-    aos_table_t *query_params = NULL;
-    int res = AOSE_OK;
-
-    s = aos_status_create(options->pool);
-
-    headers = aos_table_create_if_null(options, headers, 2);
-    set_content_type(filename->data, object->data, headers);
-    apr_table_add(headers, OSS_EXPECT, "");
-
-    query_params = aos_table_create_if_null(options, query_params, 0);
-
-    oss_init_object_request(options, bucket, object, HTTP_PUT, &req, 
-                            query_params, headers, &resp);
-
-    res = oss_write_request_body_from_file(options->pool, filename, req);
-    if (res != AOSE_OK) {
-        aos_file_error_status_set(s, res);
-        return s;
-    }
-
-    s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
-
-    return s;
+    return oss_do_put_object_from_file(options, bucket, object, filename, 
+                                       headers, NULL, NULL, resp_headers, NULL);
 }
 
-
-aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_t *options,
-                                         const aos_string_t *bucket, 
-                                         const aos_string_t *object, 
-                                         aos_list_t *buffer,
-                                         aos_table_t *headers, 
-                                         aos_table_t *params,
-                                         aos_list_t *response, 
-                                         aos_table_t **resp_headers)
-{
-    aos_status_t *s = NULL;
-    aos_http_request_t *req = NULL;
-    aos_http_response_t *resp = NULL;
-    aos_table_t *query_params = NULL;
-
-    headers = aos_table_create_if_null(options, headers, 2);
-    set_content_type(NULL, object->data, headers);
-    apr_table_add(headers, OSS_EXPECT, "");
-
-    query_params = aos_table_create_if_null(options, params, 0);
-
-    oss_init_object_request(options, bucket, object, HTTP_PUT, 
-                            &req, query_params, headers, &resp);
-    oss_write_request_body_from_buffer(buffer, req);
-
-    s = oss_process_request(options, req, resp);
-    oss_init_read_response_body_to_buffer(response, resp);
-    *resp_headers = resp->headers;
-
-    return s;
-}
-
-aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t *options,
-                                       const aos_string_t *bucket, 
-                                       const aos_string_t *object, 
-                                       const aos_string_t *filename,
-                                       aos_table_t *headers, 
-                                       aos_table_t *params,
-                                       aos_list_t *response, 
-                                       aos_table_t **resp_headers)
+aos_status_t *oss_do_put_object_from_file(const oss_request_options_t *options,
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object, 
+                                          const aos_string_t *filename,
+                                          aos_table_t *headers, 
+                                          aos_table_t *params,
+                                          oss_progress_callback progress_callback,
+                                          aos_table_t **resp_headers,
+                                          aos_list_t *resp_body)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
@@ -148,7 +114,7 @@ aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t 
     query_params = aos_table_create_if_null(options, params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, &req, 
-                            query_params, headers, &resp);
+                            query_params, headers, progress_callback, 0, &resp);
 
     res = oss_write_request_body_from_file(options->pool, filename, req);
     if (res != AOSE_OK) {
@@ -157,8 +123,15 @@ aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t 
     }
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_body_to_buffer(response, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_body_to_buffer(resp_body, resp);
+    oss_init_read_response_header(resp_headers, resp);
+
+    if (options->ctl->options->enable_crc) {
+        int res = check_crc_consistent(req->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -171,6 +144,19 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
                                        aos_list_t *buffer, 
                                        aos_table_t **resp_headers)
 {
+    return oss_do_get_object_to_buffer(options, bucket, object, headers, 
+                                       params, buffer, NULL, resp_headers);
+}
+
+aos_status_t *oss_do_get_object_to_buffer(const oss_request_options_t *options, 
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object,
+                                          aos_table_t *headers, 
+                                          aos_table_t *params,
+                                          aos_list_t *buffer,
+                                          oss_progress_callback progress_callback, 
+                                          aos_table_t **resp_headers)
+{
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
@@ -179,11 +165,18 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
     params = aos_table_create_if_null(options, params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_GET, 
-                            &req, params, headers, &resp);
+                            &req, params, headers, progress_callback, 0, &resp);
 
     s = oss_process_request(options, req, resp);
     oss_init_read_response_body_to_buffer(buffer, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+
+    if (options->ctl->options->enable_crc && !has_range_or_process_in_request(req)) {
+        int res = check_crc_consistent(resp->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -196,6 +189,19 @@ aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
                                      aos_string_t *filename, 
                                      aos_table_t **resp_headers)
 {
+    return oss_do_get_object_to_file(options, bucket, object, headers, 
+                                     params, filename, NULL, resp_headers);
+}
+
+aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
+                                        const aos_string_t *bucket, 
+                                        const aos_string_t *object,
+                                        aos_table_t *headers, 
+                                        aos_table_t *params,
+                                        aos_string_t *filename, 
+                                        oss_progress_callback progress_callback,
+                                        aos_table_t **resp_headers)
+{
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
@@ -205,7 +211,7 @@ aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
     params = aos_table_create_if_null(options, params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_GET, 
-                            &req, params, headers, &resp);
+                            &req, params, headers, progress_callback, 0, &resp);
 
     s = aos_status_create(options->pool);
     res = oss_init_read_response_body_to_file(options->pool, filename, resp);
@@ -215,7 +221,14 @@ aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
     }
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+
+    if (options->ctl->options->enable_crc && !has_range_or_process_in_request(req)) {
+        int res = check_crc_consistent(resp->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -236,10 +249,10 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_HEAD, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -259,11 +272,11 @@ aos_status_t *oss_delete_object(const oss_request_options_t *options,
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_DELETE, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
     oss_get_object_uri(options, bucket, object, req);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -293,10 +306,10 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
     set_content_type(NULL, dest_object->data, headers);
 
     oss_init_object_request(options, dest_bucket, dest_object, HTTP_PUT, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -325,11 +338,56 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
     apr_table_add(headers, OSS_EXPECT, "");
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+
+    return s;
+}
+
+aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *options,
+                                               const aos_string_t *bucket, 
+                                               const aos_string_t *object, 
+                                               int64_t position,
+                                               uint64_t initcrc,
+                                               aos_list_t *buffer, 
+                                               aos_table_t *headers,
+                                               aos_table_t *params,
+                                               oss_progress_callback progress_callback,
+                                               aos_table_t **resp_headers,
+                                               aos_list_t *resp_body)
+{
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    
+    /* init query_params */
+    query_params = aos_table_create_if_null(options, params, 2);
+    apr_table_add(query_params, OSS_APPEND, "");
+    aos_table_add_int64(query_params, OSS_POSITION, position);
+
+    /* init headers */
+    headers = aos_table_create_if_null(options, headers, 2);
+    set_content_type(NULL, object->data, headers);
+    apr_table_add(headers, OSS_EXPECT, "");
+
+    oss_init_object_request(options, bucket, object, HTTP_POST, &req, query_params, 
+                            headers, progress_callback, initcrc, &resp);
+    oss_write_request_body_from_buffer(buffer, req);
+
+    s = oss_process_request(options, req, resp);
+    oss_init_read_response_header(resp_headers, resp);
+    oss_init_read_response_body_to_buffer(resp_body, resp);
+
+    if (options->ctl->options->enable_crc) {
+        int res = check_crc_consistent(req->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -359,7 +417,7 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
     apr_table_add(headers, OSS_EXPECT, "");
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
     res = oss_write_request_body_from_file(options->pool, append_file, req);
 
     s = aos_status_create(options->pool);
@@ -369,7 +427,59 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
     }
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+
+    return s;
+}
+
+aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *options,
+                                             const aos_string_t *bucket, 
+                                             const aos_string_t *object, 
+                                             int64_t position,
+                                             uint64_t initcrc,
+                                             const aos_string_t *append_file, 
+                                             aos_table_t *headers, 
+                                             aos_table_t *params,
+                                             oss_progress_callback progress_callback,
+                                             aos_table_t **resp_headers,
+                                             aos_list_t *resp_body)
+{
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    int res = AOSE_OK;
+
+    /* init query_params */
+    query_params = aos_table_create_if_null(options, params, 2);
+    apr_table_add(query_params, OSS_APPEND, "");
+    aos_table_add_int64(query_params, OSS_POSITION, position);
+    
+    /* init headers */
+    headers = aos_table_create_if_null(options, headers, 2);
+    set_content_type(append_file->data, object->data, headers);
+    apr_table_add(headers, OSS_EXPECT, "");
+
+    oss_init_object_request(options, bucket, object, HTTP_POST,  &req, query_params, 
+                            headers, progress_callback, initcrc, &resp);
+    res = oss_write_request_body_from_file(options->pool, append_file, req);
+
+    s = aos_status_create(options->pool);
+    if (res != AOSE_OK) {
+        aos_file_error_status_set(s, res);
+        return s;
+    }
+
+    s = oss_process_request(options, req, resp);
+    oss_init_read_response_header(resp_headers, resp);
+    oss_init_read_response_body_to_buffer(resp_body, resp);
+
+    if (options->ctl->options->enable_crc) {
+        int res = check_crc_consistent(req->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -395,7 +505,7 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_signed_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -426,7 +536,7 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
     }
 
     s = oss_process_signed_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -450,7 +560,7 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
 
     s = oss_process_signed_request(options, req, resp);
     oss_init_read_response_body_to_buffer(buffer, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -482,7 +592,7 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
     }
 
     s = oss_process_signed_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
  
     return s;
 }
@@ -505,7 +615,7 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
                                 &req, query_params, headers, &resp);
 
     s = oss_process_signed_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }

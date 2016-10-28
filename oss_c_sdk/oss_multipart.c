@@ -30,10 +30,10 @@ aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options,
     oss_set_multipart_content_type(headers);
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -66,10 +66,10 @@ aos_status_t *oss_abort_multipart_upload(const oss_request_options_t *options,
     headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_DELETE, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }
@@ -99,10 +99,10 @@ aos_status_t *oss_list_upload_part(const oss_request_options_t *options,
     headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_GET, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -145,7 +145,7 @@ aos_status_t *oss_list_multipart_upload(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -168,6 +168,20 @@ aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options
                                             aos_table_t *headers,
                                             aos_table_t **resp_headers)
 {
+    return oss_do_complete_multipart_upload(options, bucket, object, upload_id, part_list,
+                                            headers, NULL, resp_headers, NULL);
+}
+
+aos_status_t *oss_do_complete_multipart_upload(const oss_request_options_t *options, 
+                                               const aos_string_t *bucket, 
+                                               const aos_string_t *object, 
+                                               const aos_string_t *upload_id, 
+                                               aos_list_t *part_list, 
+                                               aos_table_t *headers,
+                                               aos_table_t *params,
+                                               aos_table_t **resp_headers,
+                                               aos_list_t *resp_body)
+{
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
@@ -175,19 +189,23 @@ aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options
     aos_list_t body;
 
     //init query_params
-    query_params = aos_table_create_if_null(options, query_params, 1);
+    query_params = aos_table_create_if_null(options, params, 1);
     apr_table_add(query_params, OSS_UPLOAD_ID, upload_id->data);
 
+    //init headers
     headers = aos_table_create_if_null(options, headers, 1);
     oss_set_multipart_content_type(headers);
     apr_table_add(headers, OSS_REPLACE_OBJECT_META, OSS_YES);
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
-                            &req, query_params, headers, &resp);
+                            &req, query_params, headers, NULL, 0, &resp);
+
     build_complete_multipart_upload_body(options->pool, part_list, &body);
     oss_write_request_body_from_buffer(&body, req);
+
     s = oss_process_request(options, req, resp); 
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+    oss_init_read_response_body_to_buffer(resp_body, resp);
 
     return s;
 }
@@ -200,29 +218,52 @@ aos_status_t *oss_upload_part_from_buffer(const oss_request_options_t *options,
                                           aos_list_t *buffer, 
                                           aos_table_t **resp_headers)
 {
+    return oss_do_upload_part_from_buffer(options, bucket, object, upload_id, part_num, 
+                                          buffer, NULL, NULL, NULL, resp_headers, NULL);
+}
+
+aos_status_t *oss_do_upload_part_from_buffer(const oss_request_options_t *options, 
+                                             const aos_string_t *bucket, 
+                                             const aos_string_t *object, 
+                                             const aos_string_t *upload_id,
+                                             int part_num, 
+                                             aos_list_t *buffer, 
+                                             oss_progress_callback progress_callback,
+                                             aos_table_t *headers, 
+                                             aos_table_t *params,
+                                             aos_table_t **resp_headers,
+                                             aos_list_t *resp_body)
+{
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
-    aos_table_t *headers = NULL;
 
     //init query_params
-    query_params = aos_table_create_if_null(options, query_params, 2);
+    query_params = aos_table_create_if_null(options, params, 2);
     apr_table_add(query_params, OSS_UPLOAD_ID, upload_id->data);
     aos_table_add_int(query_params, OSS_PARTNUMBER, part_num);
 
     //init headers
     headers = aos_table_create_if_null(options, headers, 0);
 
-    oss_init_object_request(options, bucket, object, HTTP_PUT, 
-                            &req, query_params, headers, &resp);
+    oss_init_object_request(options, bucket, object, HTTP_PUT, &req, query_params, 
+                            headers, progress_callback, 0, &resp);
 
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+    oss_init_read_response_body_to_buffer(resp_body, resp);
 
-    return s;
+    if (options->ctl->options->enable_crc) {
+        int res = check_crc_consistent(req->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
+
+    return s; 
 }
 
 aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
@@ -233,17 +274,32 @@ aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
                                         oss_upload_file_t *upload_file,
                                         aos_table_t **resp_headers)
 {
+    return oss_do_upload_part_from_file(options, bucket, object, upload_id, part_num, 
+                                        upload_file, NULL, NULL, NULL, resp_headers, NULL);
+}
+
+aos_status_t *oss_do_upload_part_from_file(const oss_request_options_t *options,
+                                           const aos_string_t *bucket, 
+                                           const aos_string_t *object,
+                                           const aos_string_t *upload_id, 
+                                           int part_num, 
+                                           oss_upload_file_t *upload_file,
+                                           oss_progress_callback progress_callback,
+                                           aos_table_t *headers, 
+                                           aos_table_t *params,
+                                           aos_table_t **resp_headers,
+                                           aos_list_t *resp_body)
+{
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL; 
     aos_table_t *query_params = NULL;
-    aos_table_t *headers = NULL;
     int res = AOSE_OK;
 
     s = aos_status_create(options->pool);
 
     //init query_params
-    query_params = aos_table_create_if_null(options, query_params, 2);
+    query_params = aos_table_create_if_null(options, params, 2);
     apr_table_add(query_params, OSS_UPLOAD_ID, upload_id->data);
     aos_table_add_int(query_params, OSS_PARTNUMBER, part_num);
 
@@ -251,7 +307,7 @@ aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
     headers = aos_table_create_if_null(options, headers, 0);
 
     oss_init_object_request(options, bucket, object, HTTP_PUT, &req, 
-                            query_params, headers, &resp);
+                            query_params, headers, progress_callback, 0, &resp);
 
     res = oss_write_request_body_from_upload_file(options->pool, upload_file, req);
     if (res != AOSE_OK) {
@@ -260,7 +316,15 @@ aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
     }
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
+    oss_init_read_response_body_to_buffer(resp_body, resp);
+
+    if (options->ctl->options->enable_crc) {
+        int res = check_crc_consistent(req->crc64, resp->headers);
+        if (res != AOSE_OK) {
+            aos_inconsistent_error_status_set(s, res);
+        }
+    }
 
     return s;
 }
@@ -296,10 +360,10 @@ aos_status_t *oss_upload_part_copy(const oss_request_options_t *options,
     apr_table_add(headers, OSS_COPY_SOURCE_RANGE, copy_source_range);
 
     oss_init_object_request(options, &params->dest_bucket, &params->dest_object, 
-                            HTTP_PUT, &req, query_params, headers, &resp);
+                            HTTP_PUT, &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    *resp_headers = resp->headers;
+    oss_init_read_response_header(resp_headers, resp);
 
     return s;
 }

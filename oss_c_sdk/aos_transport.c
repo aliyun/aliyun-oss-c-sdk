@@ -3,6 +3,7 @@
 #include "aos_string.h"
 #include "aos_http_io.h"
 #include "aos_transport.h"
+#include "aos_crc.h"
 
 static int aos_curl_code_to_status(CURLcode code);
 static void aos_init_curl_headers(aos_curl_http_transport_t *t);
@@ -209,7 +210,7 @@ static void aos_curl_transport_headers_done(aos_curl_http_transport_t *t)
 
     value = apr_table_get(t->resp->headers, "Content-Length");
     if (value != NULL) {
-        t->resp->content_length = apr_atoi64(value);
+        t->resp->content_length = aos_atoi64(value);
     }
 }
 
@@ -256,6 +257,18 @@ size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, voi
         t->controller->reason = "write body failure.";
         return 0;
     }
+
+    if (bytes > 0) {
+        // progress callback
+        if (NULL != t->resp->progress_callback) {
+            t->resp->progress_callback(t->resp->body_len, t->resp->content_length);
+        }
+
+        // crc
+        if (t->controller->options->enable_crc) {
+            t->resp->crc64 = crc64(t->resp->crc64, ptr, bytes);
+        }
+    }
     
     aos_move_transport_state(t, TRANS_STATE_BODY_IN);
     
@@ -283,6 +296,19 @@ size_t aos_curl_default_read_callback(char *buffer, size_t size, size_t nitems, 
         return CURL_READFUNC_ABORT;
     }
     
+    if (bytes > 0) {
+        // progress callback
+        t->req->consumed_bytes += bytes;
+        if (NULL != t->req->progress_callback) {
+            t->req->progress_callback(t->req->consumed_bytes, t->req->body_len);
+        }
+
+        // crc
+        if (t->controller->options->enable_crc) {
+            t->req->crc64 = crc64(t->req->crc64, buffer, bytes);
+        }
+    }
+
     aos_move_transport_state(t, TRANS_STATE_BODY_OUT);
 
     return bytes;

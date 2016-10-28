@@ -47,6 +47,7 @@ void test_live_cleanup(CuTest *tc)
     //delete test bucket
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     oss_delete_bucket(options, &bucket, &resp_headers);
+    apr_sleep(apr_time_from_sec(3));
 
     aos_pool_destroy(p);
 }

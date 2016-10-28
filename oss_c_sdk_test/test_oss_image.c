@@ -12,7 +12,7 @@
 #include "oss_config.h"
 #include "oss_test_util.h"
 #include "apr_time.h"
-#include "cJSON.h"
+#include "cjson.h"
 
 typedef struct {
     long height;
@@ -26,8 +26,8 @@ static char *image_file = "../oss_c_sdk_test/example.jpg";
 #else
 static char *image_file = "oss_c_sdk_test/example.jpg";
 #endif
-static char *original_image = "oss_c_sdk_test/example.jpg";
-static char *processed_image = "oss_c_sdk_test/processed_example.jpg";
+static char *original_image = "oss_c_sdk_test/process/example.jpg";
+static char *processed_image = "oss_c_sdk_test/process/processed_example.jpg";
 
 static void put_example_image(CuTest *tc);
 static void get_iamge_info(CuTest *tc, image_info_t *image_info);
@@ -72,6 +72,7 @@ void test_image_cleanup(CuTest *tc)
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     oss_delete_bucket(options, &bucket, &resp_headers);
+    apr_sleep(apr_time_from_sec(3));
 
     aos_pool_destroy(p);
 }
@@ -387,6 +388,7 @@ void test_oss_put_object_with_process(CuTest *tc) {
     aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
+    char *user_meta = NULL;
     aos_list_t buffer;
     aos_list_t resp_body;
     image_info_t image_info;
@@ -400,25 +402,40 @@ void test_oss_put_object_with_process(CuTest *tc) {
     aos_list_init(&buffer);
     aos_list_init(&resp_body);
 
+    /* headers */
+    headers = aos_table_make(p, 3);
+    apr_table_set(headers, "x-oss-meta-author", "oss");
+    apr_table_set(headers, "Expect", "");
+    apr_table_set(headers, "Transfer-Encoding", "");
+
+    /* param */
     params = aos_table_make(p, 1);
     apr_table_set(params, OSS_PROCESS, "image/resize,m_fixed,w_100,h_100");
 
     /* put original image */
-    s = oss_put_object_from_file_with_process(options, &bucket, &object, &filename, 
-        headers, params, &resp_body, &resp_headers);
+    s = oss_do_put_object_from_file(options, &bucket, &object, &filename, 
+        headers, params, progress_callback, &resp_headers, &resp_body);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
+    /* test head object */
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    
+    user_meta = (char*)(apr_table_get(resp_headers, "x-oss-meta-author"));
+    CuAssertStrEquals(tc, "oss", user_meta);
+
     /* get processed image to buffer */
-    s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
-                                 NULL, &buffer, &resp_headers);
+    s = oss_get_object_to_buffer(options, &bucket, &object, NULL, NULL, 
+                                 &buffer, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_str_set(&object, processed_image);
 
     /* put processed image */
-    s= oss_put_object_from_buffer_with_process(options, &bucket, &object, &buffer,
-                                   headers, params, &resp_body, &resp_headers);
+    s= oss_do_put_object_from_buffer(options, &bucket, &object, &buffer,
+        NULL, params, progress_callback, &resp_headers, &resp_body);
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_pool_destroy(p);

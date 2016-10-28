@@ -53,6 +53,32 @@ unsigned char* aos_md5(aos_pool_t* pool, const char* in, apr_size_t in_len);
 
 int aos_url_decode(const char *in, char *out);
 
+/*
+ * Convert a string to a long long integer.
+ *
+ * Ignores `locale' stuff.  Assumes that the upper and lower case
+ * alphabets and digits are each contiguous.
+ */
+long long aos_strtoll(const char *nptr, char **endptr, int base);
+
+/*
+ * @brief Convert a string to int64_t.
+**/
+int64_t aos_atoi64(const char *nptr);
+
+/*
+ * @brief Convert a string to an unsigned long long integer.
+ *
+ * Ignores `locale' stuff.  Assumes that the upper and lower case
+ * alphabets and digits are each contiguous.
+**/
+unsigned long long aos_strtoull(const char *nptr, char **endptr, int base);
+
+/*
+ * @brief Convert a string to uint64_t.
+**/
+uint64_t aos_atoui64(const char *nptr);
+
 AOS_CPP_END
 
 #endif

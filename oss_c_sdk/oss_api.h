@@ -147,46 +147,50 @@ aos_status_t *oss_put_object_from_file(const oss_request_options_t *options,
                                        aos_table_t **resp_headers);
 
 /*
- * @brief  put oss object from buffer with process
+ * @brief  put oss object from buffer
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
  * @param[in]   buffer              the buffer containing object content
  * @param[in]   headers             the headers for request
  * @param[in]   params              the params for request
- * @param[out]  response            the response of process
+ * @param[in]   progress_callback   the progress callback function
  * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
  * @return  aos_status_t, code is 2xx success, other failure
  */
-aos_status_t *oss_put_object_from_buffer_with_process(const oss_request_options_t *options,
-                                         const aos_string_t *bucket, 
-                                         const aos_string_t *object, 
-                                         aos_list_t *buffer,
-                                         aos_table_t *headers, 
-                                         aos_table_t *params,
-                                         aos_list_t *response, 
-                                         aos_table_t **resp_headers);
+aos_status_t *oss_do_put_object_from_buffer(const oss_request_options_t *options,
+                                            const aos_string_t *bucket, 
+                                            const aos_string_t *object, 
+                                            aos_list_t *buffer,
+                                            aos_table_t *headers, 
+                                            aos_table_t *params,
+                                            oss_progress_callback progress_callback,
+                                            aos_table_t **resp_headers,
+                                            aos_list_t *resp_body);
 
 /*
- * @brief  put oss object from file with process
+ * @brief  put oss object from file
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
  * @param[in]   filename            the filename to put
  * @param[in]   headers             the headers for request
  * @param[in]   params              the params for request
- * @param[out]  response            the response of process
+ * @param[in]   progress_callback   the progress callback function
  * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
  * @return  aos_status_t, code is 2xx success, other failure
  */
-aos_status_t *oss_put_object_from_file_with_process(const oss_request_options_t *options,
-                                       const aos_string_t *bucket, 
-                                       const aos_string_t *object, 
-                                       const aos_string_t *filename,
-                                       aos_table_t *headers, 
-                                       aos_table_t *params,
-                                       aos_list_t *response, 
-                                       aos_table_t **resp_headers);
+aos_status_t *oss_do_put_object_from_file(const oss_request_options_t *options,
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object, 
+                                          const aos_string_t *filename,
+                                          aos_table_t *headers, 
+                                          aos_table_t *params,
+                                          oss_progress_callback progress_callback,
+                                          aos_table_t **resp_headers,
+                                          aos_list_t *resp_body);
 
 /*
  * @brief  get oss object to buffer
@@ -208,13 +212,34 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
                                        aos_table_t **resp_headers);
 
 /*
+ * @brief  get oss object to buffer
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[in]   progress_callback   the progress callback function
+ * @param[out]  buffer              the buffer containing object content
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_get_object_to_buffer(const oss_request_options_t *options, 
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object,
+                                          aos_table_t *headers, 
+                                          aos_table_t *params,
+                                          aos_list_t *buffer,
+                                          oss_progress_callback progress_callback, 
+                                          aos_table_t **resp_headers);
+
+/*
  * @brief  get oss object to file
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
  * @param[in]   headers             the headers for request
  * @param[in]   params              the params for request
- * @param[out]  filename            the filename storing object content
+ * @param[in]  filename             the filename storing object content
  * @param[out]  resp_headers        oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
@@ -225,6 +250,27 @@ aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
                                      aos_table_t *params,
                                      aos_string_t *filename, 
                                      aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss object to file
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[in]   filename            the filename storing object content
+ * @param[in]   progress_callback   the progress callback function
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
+                                        const aos_string_t *bucket, 
+                                        const aos_string_t *object,
+                                        aos_table_t *headers, 
+                                        aos_table_t *params,
+                                        aos_string_t *filename, 
+                                        oss_progress_callback progress_callback,
+                                        aos_table_t **resp_headers);
 
 /*
  * @brief  head oss object
@@ -321,6 +367,33 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
                                             aos_table_t **resp_headers);
 
 /*
+ * @brief  append oss object from buffer
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   position            the start position append
+ * @param[in]   initcrc             the initial crc value
+ * @param[in]   buffer              the buffer containing object content
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[in]   progress_callback   the progress callback function
+ * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *options,
+                                               const aos_string_t *bucket, 
+                                               const aos_string_t *object, 
+                                               int64_t position,
+                                               uint64_t initcrc,
+                                               aos_list_t *buffer, 
+                                               aos_table_t *headers, 
+                                               aos_table_t *params,
+                                               oss_progress_callback progress_callback,
+                                               aos_table_t **resp_headers,
+                                               aos_list_t *resp_body);
+
+/*
  * @brief  append oss object from file
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
@@ -338,6 +411,33 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
                                           const aos_string_t *append_file, 
                                           aos_table_t *headers, 
                                           aos_table_t **resp_headers);
+
+/*
+ * @brief  append oss object from file
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   position            the start position append
+ * @param[in]   initcrc             the initial crc value
+ * @param[in]   append_file         the file containing appending content 
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[in]   progress_callback   the progress callback function
+ * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *options,
+                                             const aos_string_t *bucket, 
+                                             const aos_string_t *object, 
+                                             int64_t position,
+                                             uint64_t initcrc,
+                                             const aos_string_t *append_file, 
+                                             aos_table_t *headers, 
+                                             aos_table_t *params,
+                                             oss_progress_callback progress_callback,
+                                             aos_table_t **resp_headers,
+                                             aos_list_t *resp_body);
 
 /*
  * @brief  gen signed url for oss object api
@@ -468,6 +568,33 @@ aos_status_t *oss_upload_part_from_buffer(const oss_request_options_t *options,
                                           aos_table_t **resp_headers);
 
 /*
+ * @brief  oss upload part from buffer
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   upload_id           the upload id to upload if has
+ * @param[in]   part_num            the upload part number
+ * @param[in]   buffer              the buffer containing upload part content
+ * @param[in]   progress_callback   the progress callback function
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_upload_part_from_buffer(const oss_request_options_t *options, 
+                                             const aos_string_t *bucket, 
+                                             const aos_string_t *object, 
+                                             const aos_string_t *upload_id,
+                                             int part_num, 
+                                             aos_list_t *buffer, 
+                                             oss_progress_callback progress_callback,
+                                             aos_table_t *headers, 
+                                             aos_table_t *params,
+                                             aos_table_t **resp_headers,
+                                             aos_list_t *resp_body);
+
+/*
  * @brief  oss upload part from file
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
@@ -485,6 +612,33 @@ aos_status_t *oss_upload_part_from_file(const oss_request_options_t *options,
                                         int part_num, 
                                         oss_upload_file_t *upload_file,
                                         aos_table_t **resp_headers);
+
+/*
+ * @brief  oss upload part from file
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   upload_id           the upload id to upload if has
+ * @param[in]   part_num            the upload part number
+ * @param[in]   upload_file         the file containing upload part content
+ * @param[in]   progress_callback   the progress callback function
+ * @param[in]   headers             the headers for request
+ * @param[in]   params              the params for request
+ * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_upload_part_from_file(const oss_request_options_t *options,
+                                           const aos_string_t *bucket, 
+                                           const aos_string_t *object,
+                                           const aos_string_t *upload_id, 
+                                           int part_num, 
+                                           oss_upload_file_t *upload_file,
+                                           oss_progress_callback progress_callback,
+                                           aos_table_t *headers, 
+                                           aos_table_t *params,
+                                           aos_table_t **resp_headers,
+                                           aos_list_t *resp_body);
 
 /*
  * @brief  oss abort multipart upload
@@ -520,6 +674,29 @@ aos_status_t *oss_complete_multipart_upload(const oss_request_options_t *options
                                             aos_list_t *part_list, 
                                             aos_table_t *headers,
                                             aos_table_t **resp_headers);
+
+/*
+ * @brief  oss complete multipart upload
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   upload_id           the upload id to upload if has
+ * @param[in]   part_list           the uploaded part list to complete
+ * @param[in]   headers             the headers for request    
+ * @param[in]   params              the params for request
+ * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_complete_multipart_upload(const oss_request_options_t *options, 
+                                               const aos_string_t *bucket, 
+                                               const aos_string_t *object, 
+                                               const aos_string_t *upload_id, 
+                                               aos_list_t *part_list, 
+                                               aos_table_t *headers,
+                                               aos_table_t *params,
+                                               aos_table_t **resp_headers,
+                                               aos_list_t *resp_body);
 
 /*
  * @brief  oss list upload part with specific upload_id for object

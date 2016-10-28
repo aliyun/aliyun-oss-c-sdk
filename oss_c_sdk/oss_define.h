@@ -21,6 +21,10 @@
         aos_status_set(STATUS, RES, AOS_OPEN_FILE_ERROR_CODE, NULL); \
     } while(0)
 
+#define aos_inconsistent_error_status_set(STATUS, RES) do {                     \
+        aos_status_set(STATUS, RES, AOS_INCONSISTENT_ERROR_CODE, NULL); \
+    } while(0)
+
 extern const char OSS_CANNONICALIZED_HEADER_ACL[];
 extern const char OSS_CANNONICALIZED_HEADER_SOURCE[];
 extern const char OSS_CANNONICALIZED_HEADER_PREFIX[];
@@ -57,6 +61,8 @@ extern const char OSS_STS_SECURITY_TOKEN[];
 extern const char OSS_REPLACE_OBJECT_META[];
 extern const char OSS_OBJECT_TYPE[];
 extern const char OSS_NEXT_APPEND_POSITION[];
+extern const char OSS_HASH_CRC64_ECMA[];
+extern const char OSS_CALLBACK[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_DELETE[];

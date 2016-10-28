@@ -21,6 +21,8 @@ aos_buf_t *make_random_buf(aos_pool_t *p, int len);
 
 void make_random_body(aos_pool_t *p, int count, aos_list_t *bc);
 
+int make_random_file(aos_pool_t *p, const char *filename, int len);
+
 void init_test_config(oss_config_t *config, int is_cname);
 
 void init_test_request_options(oss_request_options_t *options, int is_cname);
@@ -53,6 +55,9 @@ char *gen_test_signed_url(const oss_request_options_t *options, const char *buck
     const char *object_name, int64_t expires, aos_http_request_t *req);
 
 unsigned long get_file_size(const char *file_path);
+
+void percentage(int64_t consumed_bytes, int64_t total_bytes);
+void progress_callback(int64_t consumed_bytes, int64_t total_bytes);
 
 OSS_CPP_END
 
