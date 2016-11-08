@@ -9,6 +9,7 @@
 #include "oss_api.h"
 #include "oss_config.h"
 #include "oss_test_util.h"
+#include "aos_crc64.h"
 
 void test_crc_setup(CuTest *tc)
 {
@@ -213,6 +214,38 @@ void test_crc_disable_crc(CuTest *tc)
     printf("test_crc_disable_crc ok\n");
 }
 
+/* Test crc64() on vector[0..len-1] which should have CRC-64 crc.  Also test
+   crc64_combine() on vector[] split in two. */
+static void crc64_combine_test(CuTest *tc, void *vector, size_t len, uint64_t crc)
+{
+    uint64_t crc1, crc2;
+
+    /* test crc64() */
+    crc1 = aos_crc64(0, vector, len);
+    CuAssertTrue(tc, crc1 == crc);
+
+    /* test crc64_combine() */
+    crc1 = aos_crc64(0, vector, (len + 1) >> 1);
+    crc2 = aos_crc64(0, (char*)vector + ((len + 1) >> 1), len >> 1);
+    crc1 = aos_crc64_combine(crc1, crc2, len >> 1);
+    CuAssertTrue(tc, crc1 == crc);
+}
+
+void test_crc_combine(CuTest *tc)
+{
+    char *str1 = "123456789";
+    size_t len1 = 9;
+    uint64_t crc1 = UINT64_C(0x995dc9bbdf1939fa);
+    char *str2 = "This is a test of the emergency broadcast system.";
+    size_t len2 = 49;
+    uint64_t crc2 = UINT64_C(0x27db187fc15bbc72);
+
+    crc64_combine_test(tc, str1, len1, crc1);
+    crc64_combine_test(tc, str2, len2, crc2);
+
+     printf("test_crc_combine ok\n");
+}
+
 void test_crc_negative(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -260,6 +293,7 @@ CuSuite *test_oss_crc()
     SUITE_ADD_TEST(suite, test_crc_append_object_from_buffer);
     SUITE_ADD_TEST(suite, test_crc_append_object_from_file);
     SUITE_ADD_TEST(suite, test_crc_disable_crc);
+    SUITE_ADD_TEST(suite, test_crc_combine);
     SUITE_ADD_TEST(suite, test_crc_negative);
     SUITE_ADD_TEST(suite, test_crc_cleanup);
 

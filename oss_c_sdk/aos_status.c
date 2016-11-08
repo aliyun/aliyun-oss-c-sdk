@@ -28,22 +28,22 @@ int aos_should_retry(aos_status_t *s) {
     int aos_error_code = 0;
 
     if (s == NULL || s->code / 100 == 2) {
-        return 0;
+        return AOS_FALSE;
     }
 
     if (s->code / 100 == 5) {
-        return 1;
+        return AOS_TRUE;
     }
 
     if (s->error_code != NULL) {
         aos_error_code = atoi(s->error_code);
         if (aos_error_code == AOSE_CONNECTION_FAILED || aos_error_code == AOSE_REQUEST_TIMEOUT || 
             aos_error_code == AOSE_FAILED_CONNECT || aos_error_code == AOSE_SERVICE_ERROR) {
-            return 1;
+            return AOS_TRUE;
         }
     }
 
-    return 0;
+    return AOS_FALSE;
 }
 
 aos_status_t *aos_status_parse_from_body(aos_pool_t *p, aos_list_t *bc, int code, aos_status_t *s)

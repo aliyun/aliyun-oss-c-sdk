@@ -347,8 +347,8 @@ int oss_write_request_body_from_upload_file(aos_pool_t *p,
     return res;
 }
 
-void oss_init_read_response_body_to_buffer(aos_list_t *buffer, 
-                                           aos_http_response_t *resp)
+void oss_fill_read_response_body(aos_http_response_t *resp, 
+                                 aos_list_t *buffer)
 {
     if (NULL != buffer) {
         aos_list_movelist(&resp->body, buffer);
@@ -374,9 +374,10 @@ int oss_init_read_response_body_to_file(aos_pool_t *p,
     return res;
 }
 
-void oss_init_read_response_header(aos_table_t **headers, aos_http_response_t *resp)
+void oss_fill_read_response_header(aos_http_response_t *resp, 
+                                   aos_table_t **headers)
 {
-    if (NULL != headers) {        
+    if (NULL != headers && NULL != resp) {        
         *headers = resp->headers;
     }
 }
@@ -615,7 +616,7 @@ void oss_init_object_request(const oss_request_options_t *options,
                              aos_table_t *params, 
                              aos_table_t *headers,
                              oss_progress_callback cb,
-                             uint64_t initcrc,
+                             uint64_t init_crc,
                              aos_http_response_t **resp)
 {
     oss_init_request(options, method, req, params, headers, resp);
@@ -623,7 +624,7 @@ void oss_init_object_request(const oss_request_options_t *options,
         (*resp)->progress_callback = cb;
     } else if (HTTP_PUT == method || HTTP_POST == method) {
         (*req)->progress_callback = cb;
-        (*req)->crc64 = initcrc;
+        (*req)->crc64 = init_crc;
     }
 
     oss_get_object_uri(options, bucket, object, *req);
@@ -783,6 +784,20 @@ aos_table_t* aos_table_create_if_null(const oss_request_options_t *options,
     return table;
 }
 
+int is_enable_crc(const oss_request_options_t *options) 
+{
+    return options->ctl->options->enable_crc;
+}
+
+int has_crc_in_response(const aos_http_response_t *resp) 
+{
+    if (NULL != apr_table_get(resp->headers, OSS_HASH_CRC64_ECMA)) {
+        return AOS_TRUE;
+    }
+
+    return AOS_FALSE;
+}
+
 int has_range_or_process_in_request(const aos_http_request_t *req) 
 {
     if (NULL != apr_table_get(req->headers, "Range") || 
@@ -793,16 +808,20 @@ int has_range_or_process_in_request(const aos_http_request_t *req)
     return AOS_FALSE;
 }
 
-int check_crc_consistent(uint64_t crc, const apr_table_t *headers) 
+static int check_crc(uint64_t crc, const apr_table_t *headers) 
 {
-    char *srv_crc = NULL;
-    srv_crc = (char*)(apr_table_get(headers, OSS_HASH_CRC64_ECMA));
-    if (NULL != srv_crc) {
-        char cli_crc[64];
-        apr_snprintf(cli_crc, sizeof(cli_crc), "%" APR_UINT64_T_FMT, crc);
-        if (strcmp(cli_crc, srv_crc)) {
-            return AOSE_CRC_INCONSISTENT_ERROR;
-        } 
+    char * srv_crc = (char*)(apr_table_get(headers, OSS_HASH_CRC64_ECMA));
+    if (NULL != srv_crc && crc != aos_atoui64(srv_crc)) {
+        return AOSE_CRC_INCONSISTENT_ERROR;
     }
     return AOSE_OK;
+}
+
+int oss_check_crc_consistent(uint64_t crc, const apr_table_t *resp_headers, aos_status_t *s) 
+{
+    int res = check_crc(crc, resp_headers);
+    if (res != AOSE_OK) {
+        aos_inconsistent_error_status_set(s, res);
+    }
+    return res;
 }

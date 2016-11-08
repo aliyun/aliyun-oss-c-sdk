@@ -3,7 +3,7 @@
 #include "aos_string.h"
 #include "aos_http_io.h"
 #include "aos_transport.h"
-#include "aos_crc.h"
+#include "aos_crc64.h"
 
 static int aos_curl_code_to_status(CURLcode code);
 static void aos_init_curl_headers(aos_curl_http_transport_t *t);
@@ -258,7 +258,7 @@ size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, voi
         return 0;
     }
 
-    if (bytes > 0) {
+    if (bytes >= 0) {
         // progress callback
         if (NULL != t->resp->progress_callback) {
             t->resp->progress_callback(t->resp->body_len, t->resp->content_length);
@@ -266,7 +266,7 @@ size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, voi
 
         // crc
         if (t->controller->options->enable_crc) {
-            t->resp->crc64 = crc64(t->resp->crc64, ptr, bytes);
+            t->resp->crc64 = aos_crc64(t->resp->crc64, ptr, bytes);
         }
     }
     
@@ -296,7 +296,7 @@ size_t aos_curl_default_read_callback(char *buffer, size_t size, size_t nitems, 
         return CURL_READFUNC_ABORT;
     }
     
-    if (bytes > 0) {
+    if (bytes >= 0) {
         // progress callback
         t->req->consumed_bytes += bytes;
         if (NULL != t->req->progress_callback) {
@@ -305,7 +305,7 @@ size_t aos_curl_default_read_callback(char *buffer, size_t size, size_t nitems, 
 
         // crc
         if (t->controller->options->enable_crc) {
-            t->req->crc64 = crc64(t->req->crc64, buffer, bytes);
+            t->req->crc64 = aos_crc64(t->req->crc64, buffer, bytes);
         }
     }
 

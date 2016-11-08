@@ -31,7 +31,7 @@ static APR_INLINE int aos_http_is_ok(int st)
 /**
  * @brief determine whether the request should be retried
  * @param[in]   s             the return status of api, such as oss_put_object_from_buffer
- * @return      int           0 indicates no retries, 1 retry
+ * @return      int           AOS_FALSE indicates no retries, AOS_TRUE retry
  */
 int aos_should_retry(aos_status_t *s);
 

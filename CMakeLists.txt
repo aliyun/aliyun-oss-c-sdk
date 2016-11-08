@@ -112,7 +112,7 @@ INSTALL(FILES
   oss_c_sdk/aos_string.h
   oss_c_sdk/aos_transport.h
   oss_c_sdk/aos_util.h
-  oss_c_sdk/aos_crc.c
+  oss_c_sdk/aos_crc64.c
   oss_c_sdk/oss_api.h
   oss_c_sdk/oss_auth.h
   oss_c_sdk/oss_define.h

@@ -263,8 +263,5 @@ void progress_callback(int64_t consumed_bytes, int64_t total_bytes)
 
 void percentage(int64_t consumed_bytes, int64_t total_bytes) 
 {
-    //int64_t rate = 100 * consumed_bytes / total_bytes;
-    //printf("consumed %ld\n", rate);
-
     assert(total_bytes >= consumed_bytes);
 }

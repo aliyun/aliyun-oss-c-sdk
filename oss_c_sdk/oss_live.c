@@ -38,7 +38,7 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
     oss_write_request_body_from_buffer(&body, req);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -80,7 +80,7 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     
     return s;
 }
@@ -109,7 +109,7 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -149,7 +149,7 @@ aos_status_t *oss_get_live_channel_stat(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -185,7 +185,7 @@ aos_status_t *oss_delete_live_channel(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -216,7 +216,7 @@ aos_status_t *oss_list_live_channel(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -256,7 +256,7 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -305,7 +305,7 @@ aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
                             &req, query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }

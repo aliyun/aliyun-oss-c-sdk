@@ -65,14 +65,11 @@ aos_status_t *oss_do_put_object_from_buffer(const oss_request_options_t *options
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_body_to_buffer(resp_body, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_body(resp, resp_body);
+    oss_fill_read_response_header(resp, resp_headers);
 
-    if (options->ctl->options->enable_crc) {
-        int res = check_crc_consistent(req->crc64, resp->headers);
-        if (res != AOSE_OK) {
-            aos_inconsistent_error_status_set(s, res);
-        }
+    if (is_enable_crc(options) && has_crc_in_response(resp)) {
+        oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
 
     return s;
@@ -123,14 +120,11 @@ aos_status_t *oss_do_put_object_from_file(const oss_request_options_t *options,
     }
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_body_to_buffer(resp_body, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_body(resp, resp_body);
+    oss_fill_read_response_header(resp, resp_headers);
 
-    if (options->ctl->options->enable_crc) {
-        int res = check_crc_consistent(req->crc64, resp->headers);
-        if (res != AOSE_OK) {
-            aos_inconsistent_error_status_set(s, res);
-        }
+    if (is_enable_crc(options) && has_crc_in_response(resp)) {
+        oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
 
     return s;
@@ -168,14 +162,12 @@ aos_status_t *oss_do_get_object_to_buffer(const oss_request_options_t *options,
                             &req, params, headers, progress_callback, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_body_to_buffer(buffer, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_body(resp, buffer);
+    oss_fill_read_response_header(resp, resp_headers);
 
-    if (options->ctl->options->enable_crc && !has_range_or_process_in_request(req)) {
-        int res = check_crc_consistent(resp->crc64, resp->headers);
-        if (res != AOSE_OK) {
-            aos_inconsistent_error_status_set(s, res);
-        }
+    if (is_enable_crc(options) && has_crc_in_response(resp) &&  
+        !has_range_or_process_in_request(req)) {
+        oss_check_crc_consistent(resp->crc64, resp->headers, s);
     }
 
     return s;
@@ -221,13 +213,11 @@ aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
     }
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
-    if (options->ctl->options->enable_crc && !has_range_or_process_in_request(req)) {
-        int res = check_crc_consistent(resp->crc64, resp->headers);
-        if (res != AOSE_OK) {
-            aos_inconsistent_error_status_set(s, res);
-        }
+    if (is_enable_crc(options) && has_crc_in_response(resp) && 
+        !has_range_or_process_in_request(req)) {
+            oss_check_crc_consistent(resp->crc64, resp->headers, s);
     }
 
     return s;
@@ -252,7 +242,7 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
                             &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -276,7 +266,7 @@ aos_status_t *oss_delete_object(const oss_request_options_t *options,
     oss_get_object_uri(options, bucket, object, req);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -309,7 +299,7 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
                             &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -342,7 +332,7 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -351,7 +341,7 @@ aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *opti
                                                const aos_string_t *bucket, 
                                                const aos_string_t *object, 
                                                int64_t position,
-                                               uint64_t initcrc,
+                                               uint64_t init_crc,
                                                aos_list_t *buffer, 
                                                aos_table_t *headers,
                                                aos_table_t *params,
@@ -375,18 +365,15 @@ aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *opti
     apr_table_add(headers, OSS_EXPECT, "");
 
     oss_init_object_request(options, bucket, object, HTTP_POST, &req, query_params, 
-                            headers, progress_callback, initcrc, &resp);
+                            headers, progress_callback, init_crc, &resp);
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
-    oss_init_read_response_body_to_buffer(resp_body, resp);
+    oss_fill_read_response_header(resp, resp_headers);
+    oss_fill_read_response_body(resp, resp_body);
 
-    if (options->ctl->options->enable_crc) {
-        int res = check_crc_consistent(req->crc64, resp->headers);
-        if (res != AOSE_OK) {
-            aos_inconsistent_error_status_set(s, res);
-        }
+    if (is_enable_crc(options) && has_crc_in_response(resp)) {
+        oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
 
     return s;
@@ -427,7 +414,7 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
     }
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -436,7 +423,7 @@ aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *option
                                              const aos_string_t *bucket, 
                                              const aos_string_t *object, 
                                              int64_t position,
-                                             uint64_t initcrc,
+                                             uint64_t init_crc,
                                              const aos_string_t *append_file, 
                                              aos_table_t *headers, 
                                              aos_table_t *params,
@@ -461,7 +448,7 @@ aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *option
     apr_table_add(headers, OSS_EXPECT, "");
 
     oss_init_object_request(options, bucket, object, HTTP_POST,  &req, query_params, 
-                            headers, progress_callback, initcrc, &resp);
+                            headers, progress_callback, init_crc, &resp);
     res = oss_write_request_body_from_file(options->pool, append_file, req);
 
     s = aos_status_create(options->pool);
@@ -471,14 +458,11 @@ aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *option
     }
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
-    oss_init_read_response_body_to_buffer(resp_body, resp);
+    oss_fill_read_response_header(resp, resp_headers);
+    oss_fill_read_response_body(resp, resp_body);
 
-    if (options->ctl->options->enable_crc) {
-        int res = check_crc_consistent(req->crc64, resp->headers);
-        if (res != AOSE_OK) {
-            aos_inconsistent_error_status_set(s, res);
-        }
+    if (is_enable_crc(options) && has_crc_in_response(resp)) {
+        oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
 
     return s;
@@ -505,7 +489,7 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
     oss_write_request_body_from_buffer(buffer, req);
 
     s = oss_process_signed_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -536,7 +520,7 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
     }
 
     s = oss_process_signed_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -559,8 +543,8 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
                                 &req, params, headers, &resp);
 
     s = oss_process_signed_request(options, req, resp);
-    oss_init_read_response_body_to_buffer(buffer, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_body(resp, buffer);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -592,7 +576,7 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
     }
 
     s = oss_process_signed_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
  
     return s;
 }
@@ -615,7 +599,7 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
                                 &req, query_params, headers, &resp);
 
     s = oss_process_signed_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }

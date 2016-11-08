@@ -33,7 +33,7 @@ aos_status_t *oss_create_bucket(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -55,7 +55,7 @@ aos_status_t *oss_delete_bucket(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -85,7 +85,7 @@ aos_status_t *oss_put_bucket_acl(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;    
 }
@@ -111,7 +111,7 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -150,7 +150,7 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -190,7 +190,7 @@ aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
     build_lifecycle_body(options->pool, lifecycle_rule_list, &body);
     oss_write_request_body_from_buffer(&body, req);
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -218,7 +218,7 @@ aos_status_t *oss_get_bucket_lifecycle(const oss_request_options_t *options,
                             query_params, headers, &resp);
     
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
     if (!aos_status_is_ok(s)) {
         return s;
     }
@@ -253,7 +253,7 @@ aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
                             query_params, headers, &resp);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }
@@ -304,7 +304,7 @@ aos_status_t *oss_delete_objects(const oss_request_options_t *options,
     oss_write_request_body_from_buffer(&body, req);
 
     s = oss_process_request(options, req, resp);
-    oss_init_read_response_header(resp_headers, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     if (is_quiet) {
         return s;

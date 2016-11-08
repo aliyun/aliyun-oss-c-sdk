@@ -158,6 +158,60 @@ void test_progress_put_and_get_from_file(CuTest *tc)
     printf("test_progress_put_and_get_from_file ok\n");
 }
 
+void test_progress_put_and_get_empty_body(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "oss_test_progress_put_object.ts";
+    char *str = "";
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    size_t length = 0;
+    aos_list_t resp_body;
+    aos_list_t buffer;
+    aos_buf_t *content;
+
+    /* init test*/
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+
+    aos_list_init(&buffer);
+    content = aos_buf_pack(options->pool, str, length);
+    aos_list_add_tail(&content->node, &buffer);
+
+    headers = aos_table_make(p, 1);
+    apr_table_set(headers, "x-oss-meta-author", "oss");
+
+    /* test put object */
+    s = oss_do_put_object_from_buffer(options, &bucket, &object, &buffer, 
+        headers, params, percentage, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, headers);
+    aos_pool_destroy(p);
+
+    /* test get object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    s = oss_do_get_object_to_buffer(options, &bucket, &object, NULL, NULL, 
+        &buffer, percentage, NULL);
+    CuAssertIntEquals(tc, 200, s->code);
+    aos_pool_destroy(p);
+
+    printf("test_progress_put_and_get_empty_body ok\n");
+}
+
 void test_progress_append_object(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -368,6 +422,7 @@ CuSuite *test_oss_progress()
     SUITE_ADD_TEST(suite, test_progress_setup);
     SUITE_ADD_TEST(suite, test_progress_put_and_get_from_buffer);
     SUITE_ADD_TEST(suite, test_progress_put_and_get_from_file);
+    SUITE_ADD_TEST(suite, test_progress_put_and_get_empty_body);
     SUITE_ADD_TEST(suite, test_progress_append_object);
     SUITE_ADD_TEST(suite, test_progress_multipart_from_buffer); 
     SUITE_ADD_TEST(suite, test_progress_multipart_from_file); 

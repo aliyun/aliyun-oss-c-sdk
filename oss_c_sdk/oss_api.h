@@ -372,7 +372,7 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
  * @param[in]   position            the start position append
- * @param[in]   initcrc             the initial crc value
+ * @param[in]   init_crc             the initial crc value
  * @param[in]   buffer              the buffer containing object content
  * @param[in]   headers             the headers for request
  * @param[in]   params              the params for request
@@ -385,7 +385,7 @@ aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *opti
                                                const aos_string_t *bucket, 
                                                const aos_string_t *object, 
                                                int64_t position,
-                                               uint64_t initcrc,
+                                               uint64_t init_crc,
                                                aos_list_t *buffer, 
                                                aos_table_t *headers, 
                                                aos_table_t *params,
@@ -418,7 +418,7 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
  * @param[in]   position            the start position append
- * @param[in]   initcrc             the initial crc value
+ * @param[in]   init_crc             the initial crc value
  * @param[in]   append_file         the file containing appending content 
  * @param[in]   headers             the headers for request
  * @param[in]   params              the params for request
@@ -431,7 +431,7 @@ aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *option
                                              const aos_string_t *bucket, 
                                              const aos_string_t *object, 
                                              int64_t position,
-                                             uint64_t initcrc,
+                                             uint64_t init_crc,
                                              const aos_string_t *append_file, 
                                              aos_table_t *headers, 
                                              aos_table_t *params,
