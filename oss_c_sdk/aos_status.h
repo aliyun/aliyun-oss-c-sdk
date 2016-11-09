@@ -28,6 +28,11 @@ static APR_INLINE int aos_http_is_ok(int st)
 #define aos_status_set(s, c, ec, es)                                    \
     (s)->code = c; (s)->error_code = (char *)ec; (s)->error_msg = (char *)es
 
+/**
+ * @brief determine whether the request should be retried
+ * @param[in]   s             the return status of api, such as oss_put_object_from_buffer
+ * @return      int           AOS_FALSE indicates no retries, AOS_TRUE retry
+ */
 int aos_should_retry(aos_status_t *s);
 
 aos_status_t *aos_status_create(aos_pool_t *p);
@@ -42,6 +47,7 @@ extern const char AOS_HTTP_IO_ERROR_CODE[];
 extern const char AOS_UNKNOWN_ERROR_CODE[];
 extern const char AOS_CLIENT_ERROR_CODE[];
 extern const char AOS_UTF8_ENCODE_ERROR_CODE[];
+extern const char AOS_INCONSISTENT_ERROR_CODE[];
 
 AOS_CPP_END
 

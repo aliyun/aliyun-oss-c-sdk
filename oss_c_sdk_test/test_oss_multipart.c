@@ -37,7 +37,6 @@ void test_multipart_cleanup(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     aos_string_t bucket;
-    aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     char *object_name = "oss_test_multipart_upload";
     char *object_name1 = "oss_test_multipart_upload_from_file";
@@ -63,9 +62,8 @@ void test_multipart_cleanup(CuTest *tc)
 
     //delete test bucket
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    s = oss_delete_bucket(options, &bucket, &resp_headers);
-    CuAssertIntEquals(tc, 204, s->code);
-    CuAssertPtrNotNull(tc, resp_headers);
+    oss_delete_bucket(options, &bucket, &resp_headers);
+    apr_sleep(apr_time_from_sec(3));
 
     aos_pool_destroy(p);
 }

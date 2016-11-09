@@ -18,6 +18,8 @@ typedef struct aos_curl_http_transport_s aos_curl_http_transport_t;
 typedef int (*aos_read_http_body_pt)(aos_http_request_t *req, char *buffer, int len);
 typedef int (*aos_write_http_body_pt)(aos_http_response_t *resp, const char *buffer, int len);
 
+typedef void (*oss_progress_callback)(int64_t consumed_bytes, int64_t total_bytes);
+
 void aos_curl_response_headers_parse(aos_pool_t *p, aos_table_t *headers, char *buffer, int len);
 aos_http_transport_t *aos_curl_http_transport_create(aos_pool_t *p);
 int aos_curl_http_transport_perform(aos_http_transport_t *t);
@@ -28,6 +30,7 @@ struct aos_http_request_options_s {
     int dns_cache_timeout;
     int connect_timeout;
     int64_t max_memory_size;
+    int enable_crc;
 };
 
 struct aos_http_transport_options_s {
@@ -83,6 +86,10 @@ struct aos_http_request_s {
     aos_read_http_body_pt read_body;
 
     aos_http_body_type_e type;
+
+    oss_progress_callback progress_callback;
+    uint64_t crc64;
+    int64_t  consumed_bytes;
 };
 
 struct aos_http_response_s {
@@ -100,6 +107,9 @@ struct aos_http_response_s {
     aos_write_http_body_pt write_body;
 
     aos_http_body_type_e type;
+
+    oss_progress_callback progress_callback;
+    uint64_t crc64;
 };
 
 typedef enum {

@@ -81,6 +81,7 @@ aos_http_request_options_t *aos_http_request_options_create(aos_pool_t *p)
     options->connect_timeout = AOS_CONNECT_TIMEOUT;
     options->dns_cache_timeout = AOS_DNS_CACHE_TIMOUT;
     options->max_memory_size = AOS_MAX_MEMORY_SIZE;
+    options->enable_crc = AOS_TRUE;
 
     return options;
 }

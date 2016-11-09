@@ -48,6 +48,27 @@ void make_random_body(aos_pool_t *p, int count, aos_list_t *bc)
     }
 }
 
+int make_random_file(aos_pool_t *p, const char *filename, int len)
+{
+    apr_file_t *file;
+    aos_string_t str;
+    apr_size_t nbytes;
+    int ret;
+
+    if ((ret = apr_file_open(&file, filename, APR_CREATE | APR_WRITE | APR_TRUNCATE,
+        APR_UREAD | APR_UWRITE | APR_GREAD, p)) != APR_SUCCESS) {
+            return ret;
+    }
+
+    make_rand_string(p, len, &str);
+    nbytes = len;
+
+    ret = apr_file_write(file, str.data, &nbytes);
+    apr_file_close(file);
+
+    return ret;
+}
+
 void init_test_config(oss_config_t *config, int is_cname)
 {
     aos_str_set(&config->endpoint, TEST_OSS_ENDPOINT);
@@ -233,4 +254,14 @@ unsigned long get_file_size(const char *file_path)
     }
 
     return filesize;
+}
+
+void progress_callback(int64_t consumed_bytes, int64_t total_bytes) 
+{
+    assert(total_bytes >= consumed_bytes);  
+}
+
+void percentage(int64_t consumed_bytes, int64_t total_bytes) 
+{
+    assert(total_bytes >= consumed_bytes);
 }

@@ -11,20 +11,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="cjson.h" />
+    <ClInclude Include="cjson_utils.h" />
     <ClInclude Include="CuTest.h" />
     <ClInclude Include="oss_config.h" />
     <ClInclude Include="oss_test_util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cjson.c" />
+    <ClCompile Include="cjson_utils.c" />
     <ClCompile Include="CuTest.c" />
     <ClCompile Include="oss_config.c" />
     <ClCompile Include="oss_test_util.c" />
     <ClCompile Include="test_all.c" />
     <ClCompile Include="test_aos.c" />
     <ClCompile Include="test_oss_bucket.c" />
+    <ClCompile Include="test_oss_callback.c" />
+    <ClCompile Include="test_oss_crc.c" />
+    <ClCompile Include="test_oss_image.c" />
     <ClCompile Include="test_oss_live.c" />
     <ClCompile Include="test_oss_multipart.c" />
     <ClCompile Include="test_oss_object.c" />
+    <ClCompile Include="test_oss_progress.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6373CC30-480D-4FC2-9EB5-2E9835DBB1C4}</ProjectGuid>
@@ -37,14 +45,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -91,7 +99,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
     </ClCompile>

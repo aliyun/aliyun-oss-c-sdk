@@ -60,7 +60,8 @@ void oss_init_bucket_request(const oss_request_options_t *options, const aos_str
 **/
 void oss_init_object_request(const oss_request_options_t *options, const aos_string_t *bucket,
         const aos_string_t *object, http_method_e method, aos_http_request_t **req, 
-        aos_table_t *params, aos_table_t *headers, aos_http_response_t **resp);
+        aos_table_t *params, aos_table_t *headers, oss_progress_callback cb, uint64_t initcrc,
+        aos_http_response_t **resp);
 
 /**
   * @brief  init oss live channel request
@@ -136,12 +137,17 @@ int oss_write_request_body_from_upload_file(aos_pool_t *p, oss_upload_file_t *up
 /**
   * @brief  read body content from oss response body to buffer
 **/
-void oss_init_read_response_body_to_buffer(aos_list_t *buffer, aos_http_response_t *resp);
+void oss_fill_read_response_body(aos_http_response_t *resp, aos_list_t *buffer);
 
 /**
   * @brief  read body content from oss response body to file
 **/
 int oss_init_read_response_body_to_file(aos_pool_t *p, const aos_string_t *filename, aos_http_response_t *resp);
+
+/**
+  * @brief  read response header if headers is not null
+**/
+void oss_fill_read_response_header(aos_http_response_t *resp, aos_table_t **headers);
 
 /**
   * @brief  create oss api result content
@@ -247,6 +253,17 @@ void set_content_type(const char* filename, const char* key, aos_table_t *header
 
 aos_table_t* aos_table_create_if_null(const oss_request_options_t *options, 
                                       aos_table_t *table, int table_size);
+
+int is_enable_crc(const oss_request_options_t *options);
+
+int has_crc_in_response(const aos_http_response_t *resp);
+
+int has_range_or_process_in_request(const aos_http_request_t *req) ;
+
+/**
+ * @brief check crc consistent between client and server
+**/
+int oss_check_crc_consistent(uint64_t crc, const apr_table_t *resp_headers, aos_status_t *s);
 
 OSS_CPP_END
 

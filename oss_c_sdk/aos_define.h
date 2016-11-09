@@ -56,7 +56,8 @@ typedef enum {
     AOSE_FILE_WRITE_ERROR = -981,
     AOSE_XML_PARSE_ERROR = -980,
     AOSE_UTF8_ENCODE_ERROR = -979,
-    AOSE_UNKNOWN_ERROR = -978
+    AOSE_CRC_INCONSISTENT_ERROR = -978,
+    AOSE_UNKNOWN_ERROR = -100
 } aos_error_code_e;
 
 typedef apr_pool_t aos_pool_t;
@@ -113,11 +114,14 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define AOS_VERSION    "3.1.0"
+#define AOS_VERSION    "3.2.0"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 
 #define AOS_HTTP_PREFIX   "http://"
 #define AOS_HTTPS_PREFIX  "https://"
 #define AOS_RTMP_PREFIX   "rtmp://"
+
+#define AOS_FALSE     0
+#define AOS_TRUE      1
 
 #endif
