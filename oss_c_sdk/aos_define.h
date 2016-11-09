@@ -57,7 +57,7 @@ typedef enum {
     AOSE_XML_PARSE_ERROR = -980,
     AOSE_UTF8_ENCODE_ERROR = -979,
     AOSE_CRC_INCONSISTENT_ERROR = -978,
-    AOSE_UNKNOWN_ERROR = -977
+    AOSE_UNKNOWN_ERROR = -100
 } aos_error_code_e;
 
 typedef apr_pool_t aos_pool_t;
