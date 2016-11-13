@@ -150,6 +150,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\aos_crc64.c"
+				>
+			</File>
+			<File
 				RelativePath=".\aos_fstack.c"
 				>
 			</File>
@@ -190,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\oss_live.c"
+				>
+			</File>
+			<File
 				RelativePath=".\oss_multipart.c"
 				>
 			</File>
@@ -213,6 +221,10 @@
 			>
 			<File
 				RelativePath=".\aos_buf.h"
+				>
+			</File>
+			<File
+				RelativePath=".\aos_crc64.h"
 				>
 			</File>
 			<File

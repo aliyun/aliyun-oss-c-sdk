@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\third_party\include;..\third_party\include\mxml;..\third_party\include\aprutil;..\third_party\include\apr;..\oss_c_sdk\"
-				PreprocessorDefinitions="WIN32;_DEBUG"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS"
 				RuntimeLibrary="3"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib oss_c_sdk.lib"
+				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib ws2_32.lib oss_c_sdk.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\Debug\;..\third_party\lib\Debug\;&quot;%(AdditionalLibraryDirectories)&quot;"
 				GenerateDebugInformation="true"
@@ -116,7 +116,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\third_party\include;..\third_party\include\mxml;..\third_party\include\aprutil;..\third_party\include\apr;..\oss_c_sdk\"
-				PreprocessorDefinitions="WIN32;NDEBUG"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS"
 				RuntimeLibrary="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -132,7 +132,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib oss_c_sdk.lib"
+				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib ws2_32.lib oss_c_sdk.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\Release\;..\third_party\lib\Release\;&quot;%(AdditionalLibraryDirectories)&quot;"
 				GenerateDebugInformation="true"
@@ -171,6 +171,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\cjson.c"
+				>
+			</File>
+			<File
+				RelativePath=".\cjson_utils.c"
+				>
+			</File>
+			<File
 				RelativePath=".\CuTest.c"
 				>
 			</File>
@@ -195,11 +203,31 @@
 				>
 			</File>
 			<File
+				RelativePath=".\test_oss_callback.c"
+				>
+			</File>
+			<File
+				RelativePath=".\test_oss_crc.c"
+				>
+			</File>
+			<File
+				RelativePath=".\test_oss_image.c"
+				>
+			</File>
+			<File
+				RelativePath=".\test_oss_live.c"
+				>
+			</File>
+			<File
 				RelativePath=".\test_oss_multipart.c"
 				>
 			</File>
 			<File
 				RelativePath=".\test_oss_object.c"
+				>
+			</File>
+			<File
+				RelativePath=".\test_oss_progress.c"
 				>
 			</File>
 		</Filter>
@@ -208,6 +236,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\cjson.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cjson_utils.h"
+				>
+			</File>
 			<File
 				RelativePath=".\CuTest.h"
 				>
