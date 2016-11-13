@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib oss_c_sdk.lib"
+				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib ws2_32.lib oss_c_sdk.lib"
 				AdditionalLibraryDirectories="..\Debug\;..\third_party\lib\Debug\;&quot;%(AdditionalLibraryDirectories)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -130,7 +130,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib oss_c_sdk.lib"
+				AdditionalDependencies="libapr-1.lib libaprutil-1.lib curl.lib mxml1.lib ws2_32.lib oss_c_sdk.lib"
 				AdditionalLibraryDirectories="..\Release\;..\third_party\lib\Release\;&quot;%(AdditionalLibraryDirectories)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
