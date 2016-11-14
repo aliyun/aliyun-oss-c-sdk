@@ -1,9 +1,20 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+
+## 版本号：3.2.0 日期：2016-11-14
+### 变更内容
+ - 支持上传、下载[CRC](https://github.com/aliyun/aliyun-oss-c-sdk/blob/master/oss_c_sdk_test/test_oss_crc.c)检验
+ - 支持[上传回调](https://github.com/aliyun/aliyun-oss-c-sdk/blob/master/oss_c_sdk_test/test_oss_callback.c)功能
+ - 支持[进度条](https://github.com/aliyun/aliyun-oss-c-sdk/blob/master/oss_c_sdk_test/test_oss_progress.c)功能
+
+## 版本号：3.1.0 日期：2016-08-10
+### 变更内容
+ - 支持[RTMP](https://github.com/aliyun/aliyun-oss-c-sdk/blob/master/oss_c_sdk_test/test_oss_live.c)功能
+ - 支持[图片服务](https://github.com/aliyun/aliyun-oss-c-sdk/blob/master/oss_c_sdk_test/test_oss_image.c)功能
+
 ## 版本号：3.0.0 日期：2016-05-24
 ### 变更内容
  - Windows和Linux版本合并
-
  
 ## 版本号：2.1.0 日期：2016-03-28
 ### 变更内容
@@ -36,7 +47,6 @@
  - 解决所有警告
  - 解决部分头文件宏保护无效的问题
  - 解决oss_head_object_by_url接口不生效的问题
-
 
 ## 版本号：1.0.0 日期：2015-12-16
 ### 变更内容
