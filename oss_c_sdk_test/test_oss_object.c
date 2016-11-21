@@ -638,7 +638,44 @@ void test_copy_object_with_source_url_encode(CuTest *tc)
 
     aos_pool_destroy(p);
 
-    printf("test_copy_object ok\n");
+    printf("test_copy_object_with_source_url_encode ok\n");
+}
+
+void test_copy_object_negative(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t source_bucket;
+    char *source_object_name = NULL;
+    aos_string_t source_object;
+    aos_string_t dest_bucket;
+    char *dest_object_name = "oss_test_copy_object";
+    aos_string_t dest_object;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_status_t *s = NULL;
+
+    char buffer[AOS_MAX_QUERY_ARG_LEN+1];
+    memset(buffer, 'A', AOS_MAX_QUERY_ARG_LEN);
+    buffer[AOS_MAX_QUERY_ARG_LEN] = '\0';
+    source_object_name = buffer;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&source_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&source_object, source_object_name);
+    aos_str_set(&dest_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&dest_object, dest_object_name);
+
+    /* test copy object */
+    s = oss_copy_object(options, &source_bucket, &source_object, 
+        &dest_bucket, &dest_object, NULL, NULL);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_URL_ENCODE_ERROR_CODE, s->error_code);
+
+    aos_pool_destroy(p);
+
+    printf("test_copy_object_negative ok\n");
 }
 
 void test_object_by_url(CuTest *tc)
@@ -834,7 +871,8 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
     SUITE_ADD_TEST(suite, test_copy_object);
-	SUITE_ADD_TEST(suite,test_copy_object_with_source_url_encode);
+	SUITE_ADD_TEST(suite, test_copy_object_with_source_url_encode);
+    SUITE_ADD_TEST(suite, test_copy_object_negative);
     SUITE_ADD_TEST(suite, test_object_by_url);
     SUITE_ADD_TEST(suite, test_delete_object);
     SUITE_ADD_TEST(suite, test_append_object_from_buffer);
