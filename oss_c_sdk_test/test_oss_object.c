@@ -574,6 +574,73 @@ void test_copy_object(CuTest *tc)
     printf("test_copy_object ok\n");
 }
 
+void test_copy_object_with_source_url_encode(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t source_bucket;
+    char *source_object_name = "y9n/g/%E9%98%B4%E9%98%B3%E5%B8%88-%E9%A3%9F%E6%A2%A6%E8%B2%98.ts";
+    char *filename = __FILE__;
+    aos_string_t source_object;
+    aos_string_t dest_bucket;
+    char *dest_object_name = "oss_test_copy_object";
+    aos_string_t dest_object;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_table_t *head_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&source_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&source_object, source_object_name);
+    aos_str_set(&dest_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&dest_object, dest_object_name);
+
+    /* put object */
+    s = create_test_object_from_file(options, TEST_BUCKET_NAME, 
+        source_object_name, filename, NULL);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    /* test copy object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    s = oss_copy_object(options, &source_bucket, &source_object, 
+        &dest_bucket, &dest_object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+    apr_sleep(apr_time_from_sec(1));
+
+    /* head object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &dest_bucket, &dest_object,
+        head_headers, &head_resp_headers);
+
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+
+    /* delete object */
+    s = oss_delete_object(options, &source_bucket, &source_object, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+
+    s = oss_delete_object(options, &dest_bucket, &dest_object, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_copy_object ok\n");
+}
+
 void test_object_by_url(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -767,6 +834,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
     SUITE_ADD_TEST(suite, test_copy_object);
+	SUITE_ADD_TEST(suite,test_copy_object_with_source_url_encode);
     SUITE_ADD_TEST(suite, test_object_by_url);
     SUITE_ADD_TEST(suite, test_delete_object);
     SUITE_ADD_TEST(suite, test_append_object_from_buffer);

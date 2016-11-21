@@ -8,6 +8,7 @@ const char AOS_HTTP_IO_ERROR_CODE[] = "HttpIoError";
 const char AOS_UNKNOWN_ERROR_CODE[] = "UnknownError";
 const char AOS_CLIENT_ERROR_CODE[] = "ClientError";
 const char AOS_UTF8_ENCODE_ERROR_CODE[] = "Utf8EncodeFail";
+const char AOS_URL_ENCODE_ERROR_CODE[] = "UrlEncodeFail";
 const char AOS_INCONSISTENT_ERROR_CODE[] = "InconsistentError";
 
 aos_status_t *aos_status_create(aos_pool_t *p)
