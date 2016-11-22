@@ -79,7 +79,7 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     
     /* JSON format */
     char *callback =  "{"
-        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
+        "\"callbackUrl\":\"http://callback.oss-demo.com:23450\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
@@ -167,7 +167,7 @@ void test_callback_multipart_from_buffer(CuTest *tc)
 
     /* JSON format */
     char *callback =  "{"
-        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
+        "\"callbackUrl\":\"http://callback.oss-demo.com:23450\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""

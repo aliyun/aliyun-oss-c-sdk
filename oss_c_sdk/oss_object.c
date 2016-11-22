@@ -284,6 +284,10 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
+    char buffer[AOS_MAX_QUERY_ARG_LEN*3+1];
+    int res = -1;
+
+    s = aos_status_create(options->pool);
 
     headers = aos_table_create_if_null(options, headers, 2);
     query_params = aos_table_create_if_null(options, query_params, 0);
@@ -292,7 +296,14 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
     copy_source = apr_psprintf(options->pool, "/%.*s/%.*s", 
                                source_bucket->len, source_bucket->data, 
                                source_object->len, source_object->data);
-    apr_table_set(headers, OSS_CANNONICALIZED_HEADER_COPY_SOURCE, copy_source);
+
+    res = aos_url_encode(buffer, copy_source, AOS_MAX_QUERY_ARG_LEN);
+    if (res != AOSE_OK) {
+        aos_status_set(s, res, AOS_URL_ENCODE_ERROR_CODE, NULL);
+        return s;
+    }
+
+    apr_table_set(headers, OSS_CANNONICALIZED_HEADER_COPY_SOURCE, buffer);
     set_content_type(NULL, dest_object->data, headers);
 
     oss_init_object_request(options, dest_bucket, dest_object, HTTP_PUT, 
