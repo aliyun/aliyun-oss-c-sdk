@@ -134,7 +134,7 @@ void test_list_multipart_upload(CuTest *tc)
 
     s = oss_list_multipart_upload(options, &bucket, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
-    CuAssertIntEquals(tc, 0, params->truncated);
+    //CuAssertIntEquals(tc, 0, params->truncated);
 
     s = abort_test_multipart_upload(options, TEST_BUCKET_NAME, object_name1, &upload_id1);
     CuAssertIntEquals(tc, 204, s->code);
