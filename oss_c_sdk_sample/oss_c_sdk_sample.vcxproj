@@ -86,11 +86,15 @@
   <ItemGroup>
     <ClCompile Include="main.c" />
     <ClCompile Include="oss_append_object_sample.c" />
+    <ClCompile Include="oss_callback_sample.c" />
     <ClCompile Include="oss_config.c" />
+    <ClCompile Include="oss_crc_sample.c" />
     <ClCompile Include="oss_delete_object_sample.c" />
     <ClCompile Include="oss_get_object_sample.c" />
     <ClCompile Include="oss_head_object_sample.c" />
+    <ClCompile Include="oss_image_sample.c" />
     <ClCompile Include="oss_multipart_upload_sample.c" />
+    <ClCompile Include="oss_progress_sample.c" />
     <ClCompile Include="oss_put_object_sample.c" />
     <ClCompile Include="oss_sample_util.c" />
   </ItemGroup>

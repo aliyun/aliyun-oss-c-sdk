@@ -85,6 +85,99 @@ void get_object_to_local_file()
 
     s = oss_get_object_to_file(options, &bucket, &object, headers, 
                                params, &file, &resp_headers);
+    if (aos_status_is_ok(s)) {
+        printf("get object to local file succeeded\n");
+    } else {
+        printf("get object to local file failed\n");
+    }
+
+    aos_pool_destroy(p);
+}
+
+void get_object_to_buffer_with_range()
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+    aos_buf_t *content = NULL;
+    char *buf = NULL;
+    int64_t len = 0;
+    int64_t size = 0;
+    int64_t pos = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_sample_request_options(options, is_cname);
+    aos_str_set(&bucket, BUCKET_NAME);
+    aos_str_set(&object, OBJECT_NAME);
+    aos_list_init(&buffer);
+    headers = aos_table_make(p, 1);
+
+    /* 设置Range，读取文件的指定范围，bytes=20-100包括第20和第100个字符 */
+    apr_table_set(headers, "Range", "bytes=20-100");
+
+    s = oss_get_object_to_buffer(options, &bucket, &object, 
+                                 headers, params, &buffer, &resp_headers);
+
+    if (aos_status_is_ok(s)) {
+        printf("get object to buffer succeeded\n");
+    }
+    else {
+        printf("get object to buffer failed\n");  
+    }
+
+    //get buffer len
+    aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
+        len += aos_buf_size(content);
+    }
+
+    buf = aos_pcalloc(p, (apr_size_t)(len + 1));
+    buf[len] = '\0';
+
+    //copy buffer content to memory
+    aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, (size_t)size);
+        pos += size;
+    }
+
+    aos_pool_destroy(p);
+}
+
+void get_object_to_local_file_with_range()
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *download_filename = "get_object_to_local_file.txt";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t file;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_sample_request_options(options, is_cname);
+    aos_str_set(&bucket, BUCKET_NAME);
+    aos_str_set(&object, OBJECT_NAME);
+    aos_str_set(&file, download_filename);
+    headers = aos_table_make(p, 1);
+
+    /* 设置Range，读取文件的指定范围，bytes=20-100包括第20和第100个字符 */
+    apr_table_set(headers, "Range", "bytes=20-100");
+
+    s = oss_get_object_to_file(options, &bucket, &object, headers, 
+                               params, &file, &resp_headers);
 
     if (aos_status_is_ok(s)) {
         printf("get object to local file succeeded\n");
@@ -232,6 +325,10 @@ void get_object_sample()
 {
     get_object_to_buffer();
     get_object_to_local_file();
+
+    get_object_to_buffer_with_range();
+    get_object_to_local_file_with_range();
+
     get_object_by_signed_url();
 
     get_oss_dir_to_local_dir();
