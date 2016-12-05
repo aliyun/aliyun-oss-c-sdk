@@ -32,6 +32,8 @@ void append_object_from_buffer()
     headers1 = aos_table_make(p, 0);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
+
+    oss_delete_object(options, &bucket, &object, NULL);
     s = oss_head_object(options, &bucket, &object, headers1, &resp_headers);
     if (aos_status_is_ok(s)) {
         object_type = (char*)(apr_table_get(resp_headers, OSS_OBJECT_TYPE));
@@ -44,7 +46,7 @@ void append_object_from_buffer()
         }
 
         next_append_position = (char*)(apr_table_get(resp_headers, OSS_NEXT_APPEND_POSITION));
-        position = atoi(next_append_position);
+        position = aos_atoi64(next_append_position);
     }
         
     headers2 = aos_table_make(p, 0);
@@ -102,7 +104,7 @@ void append_object_from_file()
         }
         
         next_append_position = (char*)(apr_table_get(resp_headers, OSS_NEXT_APPEND_POSITION));
-        position = atoi(next_append_position);
+        position = aos_atoi64(next_append_position);
     }
 
     s = oss_append_object_from_file(options, &bucket, &object, 

@@ -14,6 +14,10 @@ extern void put_object_sample();
 extern void get_object_sample();
 extern void head_object_sample();
 extern void multipart_object_sample();
+extern void callback_sample();
+extern void progress_sample();
+extern void crc_sample();
+extern void image_sample();
 
 int main(int argc, char *argv[])
 {
@@ -27,6 +31,10 @@ int main(int argc, char *argv[])
     head_object_sample();
     multipart_object_sample();
     delete_object_sample();
+    callback_sample();
+    progress_sample();
+    crc_sample();
+    image_sample();
 
     aos_http_io_deinitialize();
 

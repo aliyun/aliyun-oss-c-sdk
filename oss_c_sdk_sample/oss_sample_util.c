@@ -77,3 +77,9 @@ int64_t get_file_size(const char *file_path)
 
     return filesize;
 }
+
+void percentage(int64_t consumed_bytes, int64_t total_bytes) 
+{
+    assert(total_bytes >= consumed_bytes);
+    printf("%" APR_INT64_T_FMT, consumed_bytes * 100 / total_bytes);
+}

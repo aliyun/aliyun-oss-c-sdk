@@ -20,6 +20,8 @@ void init_sample_request_options(oss_request_options_t *options, int is_cname);
 
 int64_t get_file_size(const char *file_path);
 
+void percentage(int64_t consumed_bytes, int64_t total_bytes);
+
 OSS_CPP_END
 
 #endif
