@@ -4,6 +4,7 @@
 #include "aos_define.h"
 #include "aos_buf.h"
 
+
 AOS_CPP_START
 
 typedef struct aos_http_request_s aos_http_request_t;
@@ -31,6 +32,8 @@ struct aos_http_request_options_s {
     int connect_timeout;
     int64_t max_memory_size;
     int enable_crc;
+    char *proxy_host;
+    char *proxy_auth;
 };
 
 struct aos_http_transport_options_s {

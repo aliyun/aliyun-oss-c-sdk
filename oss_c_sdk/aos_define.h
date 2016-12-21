@@ -121,6 +121,8 @@ typedef apr_array_header_t aos_array_header_t;
 #define AOS_HTTPS_PREFIX  "https://"
 #define AOS_RTMP_PREFIX   "rtmp://"
 
+#define AOS_TEMP_FILE_SUFFIX  ".tmp"
+
 #define AOS_FALSE     0
 #define AOS_TRUE      1
 

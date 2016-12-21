@@ -198,15 +198,18 @@ aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     int res = AOSE_OK;
+    aos_string_t tmp_filename;
 
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
+
+    oss_get_temporary_file_name(options->pool, filename, &tmp_filename);
 
     oss_init_object_request(options, bucket, object, HTTP_GET, 
                             &req, params, headers, progress_callback, 0, &resp);
 
     s = aos_status_create(options->pool);
-    res = oss_init_read_response_body_to_file(options->pool, filename, resp);
+    res = oss_init_read_response_body_to_file(options->pool, &tmp_filename, resp);
     if (res != AOSE_OK) {
         aos_file_error_status_set(s, res);
         return s;
@@ -219,6 +222,8 @@ aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
         !has_range_or_process_in_request(req)) {
             oss_check_crc_consistent(resp->crc64, resp->headers, s);
     }
+
+    oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
 
     return s;
 }
@@ -571,11 +576,14 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     int res = AOSE_OK;
+    aos_string_t tmp_filename;
 
     s = aos_status_create(options->pool);
 
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
+
+    oss_get_temporary_file_name(options->pool, filename, &tmp_filename);
  
     oss_init_signed_url_request(options, signed_url, HTTP_GET, 
                                 &req, params, headers, &resp);
@@ -588,7 +596,14 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
 
     s = oss_process_signed_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
- 
+
+    if (is_enable_crc(options) && has_crc_in_response(resp) && 
+        !has_range_or_process_in_request(req)) {
+            oss_check_crc_consistent(resp->crc64, resp->headers, s);
+    }
+
+    oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
+
     return s;
 }
 

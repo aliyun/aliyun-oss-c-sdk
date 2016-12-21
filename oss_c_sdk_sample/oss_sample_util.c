@@ -61,7 +61,7 @@ void init_sample_request_options(oss_request_options_t *options, int is_cname)
 {
     options->config = oss_config_create(options->pool);
     init_sample_config(options->config, is_cname);
-    options->ctl = aos_http_controller_create(options->pool, 0);
+    options->ctl = aos_http_controller_create(options->pool, 0, options->config);
 }
 
 int64_t get_file_size(const char *file_path)

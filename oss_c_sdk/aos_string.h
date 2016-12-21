@@ -54,6 +54,14 @@ static APR_INLINE int aos_is_space_or_cntrl(char c)
     return c <= ' ';
 }
 
+static APR_INLINE int aos_is_null_string(aos_string_t *str)
+{
+    if (str == NULL || str->data == NULL || str->len == 0) {
+        return AOS_TRUE;
+    }
+    return AOS_FALSE;
+}
+
 void aos_strip_space(aos_string_t *str);
 void aos_trip_space_and_cntrl(aos_string_t *str);
 void aos_unquote_str(aos_string_t *str);

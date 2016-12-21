@@ -825,3 +825,32 @@ int oss_check_crc_consistent(uint64_t crc, const apr_table_t *resp_headers, aos_
     }
     return res;
 }
+
+int oss_get_temporary_file_name(aos_pool_t *p, const aos_string_t *filename, aos_string_t *temp_file_name)
+{
+    int len = filename->len + 1;
+    char *temp_file_name_ptr = NULL;
+
+    len += strlen(AOS_TEMP_FILE_SUFFIX);
+    temp_file_name_ptr = aos_pcalloc(p, len);
+
+    apr_snprintf(temp_file_name_ptr, len, "%.*s%s", filename->len, filename->data, AOS_TEMP_FILE_SUFFIX);
+    aos_str_set(temp_file_name, temp_file_name_ptr);
+
+    return len;
+}
+
+int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_path, apr_pool_t *pool)
+{
+    int res = -1;
+
+    if (s != NULL) {
+        if (aos_status_is_ok(s)) {
+            res = apr_file_rename(from_path, to_path, pool);
+        } else {
+            res = apr_file_remove(from_path, pool);
+        }
+    }
+
+    return res;
+}

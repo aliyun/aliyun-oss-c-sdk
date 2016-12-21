@@ -82,6 +82,8 @@ aos_http_request_options_t *aos_http_request_options_create(aos_pool_t *p)
     options->dns_cache_timeout = AOS_DNS_CACHE_TIMOUT;
     options->max_memory_size = AOS_MAX_MEMORY_SIZE;
     options->enable_crc = AOS_TRUE;
+    options->proxy_auth = NULL;
+    options->proxy_host = NULL;
 
     return options;
 }
@@ -91,7 +93,7 @@ aos_http_transport_options_t *aos_http_transport_options_create(aos_pool_t *p)
     return (aos_http_transport_options_t *)aos_pcalloc(p, sizeof(aos_http_transport_options_t));
 }
 
-aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner)
+aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner, oss_config_t *config)
 {
     int s;
     aos_http_controller_t *ctl;
@@ -106,6 +108,21 @@ aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner)
     ctl->pool = p;
     ctl->owner = owner;
     ctl->options = aos_default_http_request_options;
+
+    if(!aos_is_null_string(&config->proxy_host)) {
+        // proxy host:port
+        if (config->proxy_port == 0) {
+            ctl->options->proxy_host = apr_psprintf(p, "%.*s", config->proxy_host.len, config->proxy_host.data);
+        } else {
+            ctl->options->proxy_host = apr_psprintf(p, "%.*s:%d", config->proxy_host.len, config->proxy_host.data, 
+                config->proxy_port);
+        }
+        // authorize user:passwd
+        if (!aos_is_null_string(&config->proxy_user) && !aos_is_null_string(&config->proxy_passwd)) {
+            ctl->options->proxy_auth = apr_psprintf(p, "%.*s:%.*s", config->proxy_user.len, 
+                config->proxy_user.data, config->proxy_passwd.len, config->proxy_passwd.data);
+        }
+    }
 
     return ctl;
 }

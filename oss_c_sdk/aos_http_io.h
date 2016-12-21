@@ -2,10 +2,11 @@
 #define LIBAOS_HTTP_IO_H
 
 #include "aos_transport.h"
+#include "oss_define.h"
 
 AOS_CPP_START
 
-aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner);
+aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner, oss_config_t *config);
 
 /* http io error message*/
 static APR_INLINE const char *aos_http_controller_get_reason(aos_http_controller_t *ctl)
