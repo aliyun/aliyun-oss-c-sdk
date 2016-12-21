@@ -6,7 +6,7 @@
 
 AOS_CPP_START
 
-aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner, oss_config_t *config);
+aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner);
 
 /* http io error message*/
 static APR_INLINE const char *aos_http_controller_get_reason(aos_http_controller_t *ctl)

@@ -36,6 +36,11 @@ const char *get_oss_acl_str(oss_acl_e oss_acl);
 **/
 oss_config_t *oss_config_create(aos_pool_t *p);
 
+/** 
+  * @brief evaluate config to curl
+**/
+void oss_config_resolve(aos_pool_t *pool, oss_config_t *config, aos_http_controller_t *ctl);
+
 /**
   * @brief  create oss request options
   * @return oss request options

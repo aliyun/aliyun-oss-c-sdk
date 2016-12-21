@@ -158,6 +158,24 @@ oss_config_t *oss_config_create(aos_pool_t *p)
     return (oss_config_t *)aos_pcalloc(p, sizeof(oss_config_t));
 }
 
+void oss_config_resolve(aos_pool_t *pool, oss_config_t *config, aos_http_controller_t *ctl)
+{
+    if(!aos_is_null_string(&config->proxy_host)) {
+        // proxy host:port
+        if (config->proxy_port == 0) {
+            ctl->options->proxy_host = apr_psprintf(pool, "%.*s", config->proxy_host.len, config->proxy_host.data);
+        } else {
+            ctl->options->proxy_host = apr_psprintf(pool, "%.*s:%d", config->proxy_host.len, config->proxy_host.data, 
+                config->proxy_port);
+        }
+        // authorize user:passwd
+        if (!aos_is_null_string(&config->proxy_user) && !aos_is_null_string(&config->proxy_passwd)) {
+            ctl->options->proxy_auth = apr_psprintf(pool, "%.*s:%.*s", config->proxy_user.len, 
+                config->proxy_user.data, config->proxy_passwd.len, config->proxy_passwd.data);
+        }
+    }
+}
+
 oss_request_options_t *oss_request_options_create(aos_pool_t *p)
 {
     int s;

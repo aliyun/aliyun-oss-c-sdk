@@ -63,7 +63,8 @@ void init_test_proxy_request_options(oss_request_options_t *options, int is_cnam
     aos_str_set(&options->config->proxy_passwd, decrypt("\"\xf\x6\x6\x5[XY^_", options->pool));
     options->config->proxy_port = 3128;
 
-    options->ctl = aos_http_controller_create(options->pool, 0, options->config);
+    options->ctl = aos_http_controller_create(options->pool, 0);
+    oss_config_resolve(options->pool, options->config, options->ctl);
 }
 
 void test_proxy_put_object_from_buffer(CuTest *tc)
