@@ -507,6 +507,10 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
     s = oss_process_signed_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
 
+    if (is_enable_crc(options) && has_crc_in_response(resp)) {
+        oss_check_crc_consistent(req->crc64, resp->headers, s);
+    }
+
     return s;
 }
 
@@ -538,6 +542,10 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
     s = oss_process_signed_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
 
+    if (is_enable_crc(options) && has_crc_in_response(resp)) {
+        oss_check_crc_consistent(req->crc64, resp->headers, s);
+    }
+
     return s;
 }
 
@@ -561,6 +569,11 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
     s = oss_process_signed_request(options, req, resp);
     oss_fill_read_response_body(resp, buffer);
     oss_fill_read_response_header(resp, resp_headers);
+
+    if (is_enable_crc(options) && has_crc_in_response(resp) &&  
+        !has_range_or_process_in_request(req)) {
+            oss_check_crc_consistent(resp->crc64, resp->headers, s);
+    }
 
     return s;
 }
