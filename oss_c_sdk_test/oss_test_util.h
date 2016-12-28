@@ -56,6 +56,8 @@ char *gen_test_signed_url(const oss_request_options_t *options, const char *buck
 
 unsigned long get_file_size(const char *file_path);
 
+char *decrypt(const char *encrypted_str, aos_pool_t *pool);
+
 void percentage(int64_t consumed_bytes, int64_t total_bytes);
 void progress_callback(int64_t consumed_bytes, int64_t total_bytes);
 

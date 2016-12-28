@@ -115,6 +115,10 @@ typedef struct {
     aos_string_t access_key_secret;
     aos_string_t sts_token;
     int is_cname;
+    aos_string_t proxy_host;
+    int proxy_port;
+    aos_string_t proxy_user;
+    aos_string_t proxy_passwd;
 } oss_config_t;
 
 typedef struct {

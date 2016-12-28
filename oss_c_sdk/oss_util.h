@@ -36,6 +36,11 @@ const char *get_oss_acl_str(oss_acl_e oss_acl);
 **/
 oss_config_t *oss_config_create(aos_pool_t *p);
 
+/** 
+  * @brief evaluate config to curl
+**/
+void oss_config_resolve(aos_pool_t *pool, oss_config_t *config, aos_http_controller_t *ctl);
+
 /**
   * @brief  create oss request options
   * @return oss request options
@@ -264,6 +269,10 @@ int has_range_or_process_in_request(const aos_http_request_t *req) ;
  * @brief check crc consistent between client and server
 **/
 int oss_check_crc_consistent(uint64_t crc, const apr_table_t *resp_headers, aos_status_t *s);
+
+int oss_get_temporary_file_name(aos_pool_t *p, const aos_string_t *filename, aos_string_t *temp_file_name);
+
+int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_path, apr_pool_t *pool);
 
 OSS_CPP_END
 

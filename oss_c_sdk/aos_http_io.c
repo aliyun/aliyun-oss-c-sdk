@@ -82,6 +82,8 @@ aos_http_request_options_t *aos_http_request_options_create(aos_pool_t *p)
     options->dns_cache_timeout = AOS_DNS_CACHE_TIMOUT;
     options->max_memory_size = AOS_MAX_MEMORY_SIZE;
     options->enable_crc = AOS_TRUE;
+    options->proxy_auth = NULL;
+    options->proxy_host = NULL;
 
     return options;
 }
@@ -102,6 +104,7 @@ aos_http_controller_t *aos_http_controller_create(aos_pool_t *p, int owner)
             return NULL;
         }
     }
+
     ctl = (aos_http_controller_t *)aos_pcalloc(p, sizeof(aos_http_controller_ex_t));
     ctl->pool = p;
     ctl->owner = owner;

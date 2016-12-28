@@ -855,6 +855,39 @@ void test_append_object_from_file(CuTest *tc)
     printf("test_append_object_from_file ok\n");
 }
 
+void test_get_not_exist_object_to_file(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "oss_test_put_object_from_file_not_exist_.txt";
+    aos_string_t object;
+    char *filename = "oss_test_get_object_to_file_not_exist";
+    aos_string_t file;
+    oss_request_options_t *options = NULL; 
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&file, filename);
+
+    /* test get object to file */
+    s = oss_get_object_to_file(options, &bucket, &object, headers, 
+        params, &file, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+    CuAssertIntEquals(tc, -1, get_file_size(filename));
+
+    aos_pool_destroy(p);
+
+    printf("test_get_not_exist_object_to_file ok\n");
+}
+
 CuSuite *test_oss_object()
 {
     CuSuite* suite = CuSuiteNew();   

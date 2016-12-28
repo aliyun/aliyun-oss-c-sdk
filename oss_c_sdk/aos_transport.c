@@ -388,6 +388,17 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
     aos_init_curl_headers(t);
     curl_easy_setopt_safe(CURLOPT_HTTPHEADER, t->headers);
 
+    if (t->controller->options->proxy_host != NULL) {
+        // proxy
+        curl_easy_setopt_safe(CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
+        curl_easy_setopt_safe(CURLOPT_PROXY, t->controller->options->proxy_host);
+        // authorize
+        if (t->controller->options->proxy_auth != NULL) {
+            curl_easy_setopt_safe(CURLOPT_PROXYAUTH, CURLAUTH_BASIC);
+            curl_easy_setopt_safe(CURLOPT_PROXYUSERPWD, t->controller->options->proxy_auth);
+        }
+    }
+
     if (NULL == t->req->signed_url) {
         if (aos_init_curl_url(t) != AOSE_OK) {
             return t->controller->error_code;

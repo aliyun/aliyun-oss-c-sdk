@@ -114,12 +114,14 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define AOS_VERSION    "3.2.1"
+#define AOS_VERSION    "3.3.0"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 
 #define AOS_HTTP_PREFIX   "http://"
 #define AOS_HTTPS_PREFIX  "https://"
 #define AOS_RTMP_PREFIX   "rtmp://"
+
+#define AOS_TEMP_FILE_SUFFIX  ".tmp"
 
 #define AOS_FALSE     0
 #define AOS_TRUE      1

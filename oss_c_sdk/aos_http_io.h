@@ -2,6 +2,7 @@
 #define LIBAOS_HTTP_IO_H
 
 #include "aos_transport.h"
+#include "oss_define.h"
 
 AOS_CPP_START
 

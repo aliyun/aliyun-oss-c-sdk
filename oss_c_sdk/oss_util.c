@@ -158,6 +158,24 @@ oss_config_t *oss_config_create(aos_pool_t *p)
     return (oss_config_t *)aos_pcalloc(p, sizeof(oss_config_t));
 }
 
+void oss_config_resolve(aos_pool_t *pool, oss_config_t *config, aos_http_controller_t *ctl)
+{
+    if(!aos_is_null_string(&config->proxy_host)) {
+        // proxy host:port
+        if (config->proxy_port == 0) {
+            ctl->options->proxy_host = apr_psprintf(pool, "%.*s", config->proxy_host.len, config->proxy_host.data);
+        } else {
+            ctl->options->proxy_host = apr_psprintf(pool, "%.*s:%d", config->proxy_host.len, config->proxy_host.data, 
+                config->proxy_port);
+        }
+        // authorize user:passwd
+        if (!aos_is_null_string(&config->proxy_user) && !aos_is_null_string(&config->proxy_passwd)) {
+            ctl->options->proxy_auth = apr_psprintf(pool, "%.*s:%.*s", config->proxy_user.len, 
+                config->proxy_user.data, config->proxy_passwd.len, config->proxy_passwd.data);
+        }
+    }
+}
+
 oss_request_options_t *oss_request_options_create(aos_pool_t *p)
 {
     int s;
@@ -823,5 +841,34 @@ int oss_check_crc_consistent(uint64_t crc, const apr_table_t *resp_headers, aos_
     if (res != AOSE_OK) {
         aos_inconsistent_error_status_set(s, res);
     }
+    return res;
+}
+
+int oss_get_temporary_file_name(aos_pool_t *p, const aos_string_t *filename, aos_string_t *temp_file_name)
+{
+    int len = filename->len + 1;
+    char *temp_file_name_ptr = NULL;
+
+    len += strlen(AOS_TEMP_FILE_SUFFIX);
+    temp_file_name_ptr = aos_pcalloc(p, len);
+
+    apr_snprintf(temp_file_name_ptr, len, "%.*s%s", filename->len, filename->data, AOS_TEMP_FILE_SUFFIX);
+    aos_str_set(temp_file_name, temp_file_name_ptr);
+
+    return len;
+}
+
+int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_path, apr_pool_t *pool)
+{
+    int res = -1;
+
+    if (s != NULL) {
+        if (aos_status_is_ok(s)) {
+            res = apr_file_rename(from_path, to_path, pool);
+        } else {
+            res = apr_file_remove(from_path, pool);
+        }
+    }
+
     return res;
 }

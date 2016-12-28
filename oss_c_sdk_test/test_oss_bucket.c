@@ -242,6 +242,7 @@ void test_list_object_with_delimiter(CuTest *tc)
     params = oss_create_list_object_params(p);
     params->max_ret = 5;
     params->truncated = 0;
+    aos_str_set(&params->prefix, "oss_tmp");
     aos_str_set(&params->delimiter, "/");
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_list_object(options, &bucket, params, &resp_headers);

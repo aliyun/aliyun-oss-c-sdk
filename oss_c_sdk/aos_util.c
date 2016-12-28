@@ -509,7 +509,9 @@ unsigned long long aos_strtoull(const char *nptr, char **endptr, int base)
 		}
 	}
 	if (neg && any > 0)
+#pragma warning(disable : 4146)
 		acc = -acc;
+#pragma warning(default : 4146)
 	if (endptr != 0)
 		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);

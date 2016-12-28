@@ -256,6 +256,27 @@ unsigned long get_file_size(const char *file_path)
     return filesize;
 }
 
+char *decrypt(const char *encrypted_str, aos_pool_t *pool)
+{
+    char *res_str = NULL;
+    int i = 0;
+
+    if (encrypted_str == NULL) {
+        return NULL;
+    }
+
+    res_str =  (char *)aos_palloc(pool, strlen(encrypted_str) + 1);
+
+    while (*encrypted_str != '\0') {
+        res_str[i] = 0x6a ^ *encrypted_str;
+        encrypted_str++;
+        i++;
+    }
+    res_str[i] = '\0';
+
+    return res_str;
+}
+
 void progress_callback(int64_t consumed_bytes, int64_t total_bytes) 
 {
     assert(total_bytes >= consumed_bytes);  
