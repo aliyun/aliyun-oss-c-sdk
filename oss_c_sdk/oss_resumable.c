@@ -127,9 +127,6 @@ void oss_build_thread_params(oss_upload_thread_params_t *thr_params, int part_nu
         thr_params[i].options.config = config;
         thr_params[i].options.ctl = ctl;
         thr_params[i].options.pool = subpool;
-        //thr_params[i].options.config = options->config;
-        //thr_params[i].options.ctl = options->ctl;
-        //thr_params[i].options.pool = subpool;
         thr_params[i].bucket = bucket;
         thr_params[i].object = object;
         thr_params[i].filepath = filepath;
