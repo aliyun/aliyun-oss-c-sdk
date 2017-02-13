@@ -402,7 +402,7 @@ void test_list_live_channel(CuTest *tc)
         content = apr_psprintf(p, "%.*s", live_chan->status.len, live_chan->status.data);
         CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_ENABLED, content);
         content = apr_psprintf(p, "%.*s", live_chan->last_modified.len, live_chan->last_modified.data);
-        CuAssertStrnEquals(tc, "2016", strlen("2016"), content);
+        CuAssertStrnEquals(tc, "201", strlen("201"), content);
         aos_list_for_each_entry(oss_live_channel_publish_url_t, publish_url, &live_chan->publish_url_list, node) {
             content = apr_psprintf(p, "%.*s", publish_url->publish_url.len, publish_url->publish_url.data);
             CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), content);
@@ -430,7 +430,7 @@ void test_list_live_channel(CuTest *tc)
         content = apr_psprintf(p, "%.*s", live_chan->status.len, live_chan->status.data);
         CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_ENABLED, content);
         content = apr_psprintf(p, "%.*s", live_chan->last_modified.len, live_chan->last_modified.data);
-        CuAssertStrnEquals(tc, "2016", strlen("2016"), content);
+        CuAssertStrnEquals(tc, "201", strlen("201"), content);
         aos_list_for_each_entry(oss_live_channel_publish_url_t, publish_url, &live_chan->publish_url_list, node) {
             content = apr_psprintf(p, "%.*s", publish_url->publish_url.len, publish_url->publish_url.data);
             CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), content);
@@ -459,7 +459,7 @@ void test_list_live_channel(CuTest *tc)
        content = apr_psprintf(p, "%.*s", live_chan->status.len, live_chan->status.data);
        CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_ENABLED, content);
        content = apr_psprintf(p, "%.*s", live_chan->last_modified.len, live_chan->last_modified.data);
-       CuAssertStrnEquals(tc, "2016", strlen("2016"), content);
+       CuAssertStrnEquals(tc, "201", strlen("201"), content);
        aos_list_for_each_entry(oss_live_channel_publish_url_t, publish_url, &live_chan->publish_url_list, node) {
            content = apr_psprintf(p, "%.*s", publish_url->publish_url.len,
                publish_url->publish_url.data);
@@ -489,7 +489,7 @@ void test_list_live_channel(CuTest *tc)
         content = apr_psprintf(p, "%.*s", live_chan->status.len, live_chan->status.data);
         CuAssertStrEquals(tc, LIVE_CHANNEL_STATUS_ENABLED, content);
         content = apr_psprintf(p, "%.*s", live_chan->last_modified.len, live_chan->last_modified.data);
-        CuAssertStrnEquals(tc, "2016", strlen("2016"), content);
+        CuAssertStrnEquals(tc, "201", strlen("201"), content);
         aos_list_for_each_entry(oss_live_channel_publish_url_t, publish_url, &live_chan->publish_url_list, node) {
             content = apr_psprintf(p, "%.*s", publish_url->publish_url.len, publish_url->publish_url.data);
             CuAssertStrnEquals(tc, AOS_RTMP_PREFIX, strlen(AOS_RTMP_PREFIX), content);
