@@ -764,6 +764,17 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
                               int64_t part_size,
                               aos_table_t *headers);
 
+aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
+                                        aos_string_t *bucket, 
+                                        aos_string_t *object, 
+                                        aos_string_t *filepath,                           
+                                        aos_table_t *headers,
+                                        aos_table_t *params,
+                                        oss_resumable_clt_params_t *clt_params, 
+                                        oss_progress_callback progress_callback,
+                                        aos_table_t **resp_headers,
+                                        aos_list_t *resp_body);
+
 /*
  * @brief  oss create live channel
  * @param[in]   options             the oss request options

@@ -96,6 +96,7 @@
     <ClCompile Include="oss_multipart_upload_sample.c" />
     <ClCompile Include="oss_progress_sample.c" />
     <ClCompile Include="oss_put_object_sample.c" />
+    <ClCompile Include="oss_resumable_sample.c" />
     <ClCompile Include="oss_sample_util.c" />
   </ItemGroup>
   <ItemGroup>

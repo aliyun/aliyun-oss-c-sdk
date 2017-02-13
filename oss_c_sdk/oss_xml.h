@@ -6,6 +6,7 @@
 #include "aos_transport.h"
 #include "aos_status.h"
 #include "oss_define.h"
+#include "oss_resumable.h"
 
 OSS_CPP_START
 
@@ -46,8 +47,26 @@ char *build_objects_xml(aos_pool_t *p, aos_list_t *object_list, const char *quie
 void build_delete_objects_body(aos_pool_t *p, aos_list_t *object_list, int is_quiet, 
             aos_list_t *body);
 
+mxml_node_t	*set_xmlnode_value_str(mxml_node_t *parent, const char *name, const aos_string_t *value);
+mxml_node_t	*set_xmlnode_value_int(mxml_node_t *parent, const char *name, int value);
+mxml_node_t	*set_xmlnode_value_int64(mxml_node_t *parent, const char *name, int64_t value);
+
+int get_xmlnode_value_str(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, aos_string_t *value);
+int get_xmlnode_value_int(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, int *value);
+int get_xmlnode_value_int64(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, int64_t *value);
+
 /**
-  * @bried  pares acl from xml body for get_bucket_acl
+  * @brief  build xml for checkpoint
+**/
+char *oss_build_checkpoint_xml(aos_pool_t *p, const oss_checkpoint_t *checkpoint);
+
+/**
+  * @bried  parse checkpoint from xml
+**/
+int oss_checkpoint_parse_from_body(aos_pool_t *p, const char *xml_body, oss_checkpoint_t *checkpoint);
+
+/**
+  * @bried  parse acl from xml body for get_bucket_acl
 **/
 int oss_acl_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_acl);
 

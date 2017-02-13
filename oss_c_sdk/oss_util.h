@@ -5,6 +5,7 @@
 #include "aos_transport.h"
 #include "aos_status.h"
 #include "oss_define.h"
+#include "oss_resumable.h"
 
 OSS_CPP_START
 
@@ -233,6 +234,19 @@ oss_live_record_content_t *oss_create_live_record_content(aos_pool_t *p);
   * @return live channel configuration content
 **/
 oss_live_channel_configuration_t *oss_create_live_channel_configuration_content(aos_pool_t *p);
+
+/**
+  * @brief  create oss checkpoint content
+  * @return oss checkpoint content
+**/
+oss_checkpoint_t *oss_create_checkpoint_content(aos_pool_t *p);
+
+/**
+  * @brief  create oss resumable clt params content
+  * @return oss checkpoint content
+**/
+oss_resumable_clt_params_t *oss_create_resumable_clt_params_content(aos_pool_t *p, int64_t part_size, int32_t thread_num,
+                                                                    int enable_checkpoint, const char *checkpoint_path);
 
 /**
   * @brief  get part size for multipart upload

@@ -127,7 +127,6 @@ void test_proxy_list_object(CuTest *tc)
     oss_list_object_params_t *params = NULL;
     oss_list_object_content_t *content = NULL;
     int size = 0;
-    char *key = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -142,7 +141,6 @@ void test_proxy_list_object(CuTest *tc)
 
     aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
         ++size;
-        key = apr_psprintf(p, "%.*s", content->key.len, content->key.data);
     }
     CuAssertIntEquals(tc, 1 ,size);
 

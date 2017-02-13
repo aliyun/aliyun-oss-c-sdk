@@ -23,6 +23,8 @@ void make_random_body(aos_pool_t *p, int count, aos_list_t *bc);
 
 int make_random_file(aos_pool_t *p, const char *filename, int len);
 
+int fill_test_file(aos_pool_t *p, const char *filename, const char *content);
+
 void init_test_config(oss_config_t *config, int is_cname);
 
 void init_test_request_options(oss_request_options_t *options, int is_cname);

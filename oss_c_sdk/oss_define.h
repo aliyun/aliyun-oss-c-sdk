@@ -236,8 +236,15 @@ typedef struct {
 } oss_content_type_t;
 
 typedef struct {
+    int64_t  part_size;  // bytes, default 1MB
+    int32_t  thread_num;  // default 1
+    int      enable_checkpoint; // default disable, false
+    aos_string_t checkpoint_path;  // dafault ./filepath.ucp or ./filepath.dcp
+} oss_resumable_clt_params_t;
+
+typedef struct {
     aos_string_t type;
-    int32_t frag_duration;
+    int32_t frag_duration; 
     int32_t frag_count;
     aos_string_t play_list_name;
 }oss_live_channel_target_t;

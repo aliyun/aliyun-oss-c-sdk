@@ -57,6 +57,8 @@ typedef enum {
     AOSE_XML_PARSE_ERROR = -980,
     AOSE_UTF8_ENCODE_ERROR = -979,
     AOSE_CRC_INCONSISTENT_ERROR = -978,
+    AOSE_FILE_FLUSH_ERROR = -977,
+    AOSE_FILE_TRUNC_ERROR = -976,
     AOSE_UNKNOWN_ERROR = -100
 } aos_error_code_e;
 
@@ -98,11 +100,16 @@ typedef apr_array_header_t aos_array_header_t;
 #define AOS_MAX_QUERY_ARG_LEN 1024
 #define AOS_MAX_GMT_TIME_LEN 128
 
+#define AOS_MAX_XML_NODE_VALUE_LEN 1024
+#define AOS_MAX_INT64_STRING_LEN 64
+
 #define AOS_CONNECT_TIMEOUT 10
 #define AOS_DNS_CACHE_TIMOUT 60
 #define AOS_MIN_SPEED_LIMIT 1024
 #define AOS_MIN_SPEED_TIME 15
-#define AOS_MAX_MEMORY_SIZE 1024*1024*1024L;
+#define AOS_MAX_MEMORY_SIZE 1024*1024*1024L
+#define AOS_MAX_PART_SIZE 512*1024*1024L
+#define AOS_DEFAULT_PART_SIZE 1024*1024L
 
 #define AOS_REQUEST_STACK_SIZE 32
 
@@ -114,7 +121,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define AOS_VERSION    "3.3.0"
+#define AOS_VERSION    "3.4.0"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 
 #define AOS_HTTP_PREFIX   "http://"

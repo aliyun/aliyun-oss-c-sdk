@@ -69,6 +69,25 @@ int make_random_file(aos_pool_t *p, const char *filename, int len)
     return ret;
 }
 
+int fill_test_file(aos_pool_t *p, const char *filename, const char *content) 
+{
+    apr_file_t *file;
+    apr_size_t nbytes;
+    int ret;
+
+    if ((ret = apr_file_open(&file, filename, APR_CREATE | APR_WRITE | APR_TRUNCATE,
+        APR_UREAD | APR_UWRITE | APR_GREAD, p)) != APR_SUCCESS) {
+            return ret;
+    }
+
+    nbytes = strlen(content);
+
+    ret = apr_file_write(file, content, &nbytes);
+    apr_file_close(file);
+
+    return ret;
+}
+
 void init_test_config(oss_config_t *config, int is_cname)
 {
     aos_str_set(&config->endpoint, TEST_OSS_ENDPOINT);

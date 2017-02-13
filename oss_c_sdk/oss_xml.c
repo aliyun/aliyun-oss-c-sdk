@@ -1225,3 +1225,211 @@ void build_delete_objects_body(aos_pool_t *p, aos_list_t *object_list, int is_qu
     b = aos_buf_pack(p, objects_xml, strlen(objects_xml));
     aos_list_add_tail(&b->node, body);
 }
+
+mxml_node_t	*set_xmlnode_value_str(mxml_node_t *parent, const char *name, const aos_string_t *value)
+{
+    mxml_node_t *node;
+    char buff[AOS_MAX_XML_NODE_VALUE_LEN];
+    node = mxmlNewElement(parent, name);
+    apr_snprintf(buff, AOS_MAX_XML_NODE_VALUE_LEN, "%.*s", value->len, value->data);
+    return mxmlNewText(node, 0, buff);
+}
+
+mxml_node_t	*set_xmlnode_value_int(mxml_node_t *parent, const char *name, int value)
+{
+    mxml_node_t *node;
+    char buff[AOS_MAX_INT64_STRING_LEN];
+    node = mxmlNewElement(parent, name);
+    apr_snprintf(buff, AOS_MAX_INT64_STRING_LEN, "%d", value);
+    return mxmlNewText(node, 0, buff);
+}
+
+mxml_node_t	*set_xmlnode_value_int64(mxml_node_t *parent, const char *name, int64_t value)
+{
+    mxml_node_t *node;
+    char buff[AOS_MAX_INT64_STRING_LEN];
+    node = mxmlNewElement(parent, name);
+    apr_snprintf(buff, AOS_MAX_INT64_STRING_LEN, "%" APR_INT64_T_FMT, value);
+    return mxmlNewText(node, 0, buff);
+}
+
+int get_xmlnode_value_str(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, aos_string_t *value)
+{
+    char *node_content;
+    node_content = get_xmlnode_value(p, xml_node, xml_path);
+    if (NULL == node_content) {
+        return AOS_FALSE;
+    }
+    aos_str_set(value, node_content);
+    return AOS_TRUE;
+}
+
+int get_xmlnode_value_int(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, int *value)
+{
+    char *node_content;
+    node_content = get_xmlnode_value(p, xml_node, xml_path);
+    if (NULL == node_content) {
+        return AOS_FALSE;
+    }
+    *value = atoi(node_content);
+    return AOS_TRUE;
+}
+
+int get_xmlnode_value_int64(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, int64_t *value)
+{
+    char *node_content;
+    node_content = get_xmlnode_value(p, xml_node, xml_path);
+    if (NULL == node_content) {
+        return AOS_FALSE;
+    }
+    *value = aos_atoi64(node_content);
+    return AOS_TRUE;
+}
+
+char *oss_build_checkpoint_xml(aos_pool_t *p, const oss_checkpoint_t *checkpoint)
+{
+    char *checkpoint_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *local_node;
+    mxml_node_t *object_node;
+    mxml_node_t *cpparts_node;
+    mxml_node_t *parts_node;
+    int i = 0;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "Checkpoint");
+
+    // MD5
+    set_xmlnode_value_str(root_node, "MD5", &checkpoint->md5);
+
+    // Type
+    set_xmlnode_value_int(root_node, "Type", checkpoint->cp_type);
+
+    // LocalFile
+    local_node = mxmlNewElement(root_node, "LocalFile");
+    // LocalFile.Path
+    set_xmlnode_value_str(local_node, "Path", &checkpoint->file_path);
+    // LocalFile.Size
+    set_xmlnode_value_int64(local_node, "Size", checkpoint->file_size);
+    // LocalFile.LastModified
+    set_xmlnode_value_int64(local_node, "LastModified", checkpoint->file_last_modified);
+    // LocalFile.MD5
+    set_xmlnode_value_str(local_node, "MD5", &checkpoint->file_md5);
+
+    // Object
+    object_node = mxmlNewElement(root_node, "Object");
+    // Object.Key
+    set_xmlnode_value_str(object_node, "Key", &checkpoint->object_name);
+    // Object.Size
+    set_xmlnode_value_int64(object_node, "Size", checkpoint->object_size);
+    // Object.LastModified
+    set_xmlnode_value_str(object_node, "LastModified", &checkpoint->object_last_modified);
+    // Object.ETag
+    set_xmlnode_value_str(object_node, "ETag", &checkpoint->object_etag);
+
+    // UploadId
+    set_xmlnode_value_str(root_node, "UploadId", &checkpoint->upload_id);
+
+    // CpParts
+    cpparts_node = mxmlNewElement(root_node, "CPParts");
+    // CpParts.Number
+    set_xmlnode_value_int(cpparts_node, "Number", checkpoint->part_num);
+    // CpParts.Size
+    set_xmlnode_value_int64(cpparts_node, "Size", checkpoint->part_size);
+    // CpParts.Parts
+    parts_node = mxmlNewElement(cpparts_node, "Parts");
+    for (i = 0; i < checkpoint->part_num; i++) {
+        mxml_node_t *part_node = mxmlNewElement(parts_node, "Part");
+        set_xmlnode_value_int(part_node, "Index", checkpoint->parts[i].index);
+        set_xmlnode_value_int64(part_node, "Offset", checkpoint->parts[i].offset);
+        set_xmlnode_value_int64(part_node, "Size", checkpoint->parts[i].size);
+        set_xmlnode_value_int(part_node, "Completed", checkpoint->parts[i].completed);
+        set_xmlnode_value_str(part_node, "ETag", &checkpoint->parts[i].etag);
+    }
+
+    // dump
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    checkpoint_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return checkpoint_xml;
+}
+
+int oss_checkpoint_parse_from_body(aos_pool_t *p, const char *xml_body, oss_checkpoint_t *checkpoint)
+{
+    mxml_node_t *root;
+    mxml_node_t *local_node;
+    mxml_node_t *object_node;
+    mxml_node_t *cpparts_node;
+    mxml_node_t *parts_node;
+    mxml_node_t *node;
+    int index = 0;
+
+    root = mxmlLoadString(NULL, xml_body, MXML_OPAQUE_CALLBACK);
+    if (NULL == root) {
+        return AOSE_XML_PARSE_ERROR; 
+    }
+
+    // MD5
+    get_xmlnode_value_str(p, root, "MD5", &checkpoint->md5);
+
+    // Type
+    get_xmlnode_value_int(p, root, "Type", &checkpoint->cp_type);
+
+    // LocalFile
+    local_node = mxmlFindElement(root, root, "LocalFile", NULL, NULL, MXML_DESCEND);
+    // LocalFile.Path
+    get_xmlnode_value_str(p, local_node, "Path", &checkpoint->file_path);
+    // LocalFile.Size
+    get_xmlnode_value_int64(p, local_node, "Size", &checkpoint->file_size);
+    // LocalFile.LastModified
+    get_xmlnode_value_int64(p, local_node, "LastModified", &checkpoint->file_last_modified);
+    // LocalFile.MD5
+    get_xmlnode_value_str(p, local_node, "MD5", &checkpoint->file_md5);
+
+    // Object
+    object_node = mxmlFindElement(root, root, "Object", NULL, NULL, MXML_DESCEND);
+    // Object.Key
+    get_xmlnode_value_str(p, object_node, "Key", &checkpoint->object_name);
+    // Object.Size
+    get_xmlnode_value_int64(p, object_node, "Size", &checkpoint->object_size);
+    // Object.LastModified
+    get_xmlnode_value_str(p, object_node, "LastModified", &checkpoint->object_last_modified);
+    // Object.ETag
+    get_xmlnode_value_str(p, object_node, "ETag", &checkpoint->object_etag);
+
+    // UploadId
+    get_xmlnode_value_str(p, root, "UploadId", &checkpoint->upload_id);
+
+    // CpParts
+    cpparts_node = mxmlFindElement(root, root, "CPParts", NULL, NULL, MXML_DESCEND);
+    // CpParts.Number
+    get_xmlnode_value_int(p, cpparts_node, "Number", &checkpoint->part_num);
+    // CpParts.Size
+    get_xmlnode_value_int64(p, cpparts_node, "Size", &checkpoint->part_size);
+    // CpParts.Parts
+    parts_node = mxmlFindElement(cpparts_node, cpparts_node, "Parts", NULL, NULL, MXML_DESCEND);
+    node = mxmlFindElement(parts_node, parts_node, "Part", NULL, NULL, MXML_DESCEND);
+    for ( ; node != NULL; ) {
+        get_xmlnode_value_int(p, node, "Index", &index);
+        checkpoint->parts[index].index = index;
+        get_xmlnode_value_int64(p, node, "Offset", &checkpoint->parts[index].offset);
+        get_xmlnode_value_int64(p, node, "Size", &checkpoint->parts[index].size);
+        get_xmlnode_value_int(p, node, "Completed", &checkpoint->parts[index].completed);
+        get_xmlnode_value_str(p, node, "ETag", &checkpoint->parts[index].etag);
+        node = mxmlFindElement(node, parts_node, "Part", NULL, NULL, MXML_DESCEND);
+    }
+
+    mxmlDelete(root);
+
+    return AOSE_OK;
+}

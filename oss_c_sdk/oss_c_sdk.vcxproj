@@ -116,6 +116,7 @@
     <ClInclude Include="oss_api.h" />
     <ClInclude Include="oss_auth.h" />
     <ClInclude Include="oss_define.h" />
+    <ClInclude Include="oss_resumable.h" />
     <ClInclude Include="oss_util.h" />
     <ClInclude Include="oss_xml.h" />
   </ItemGroup>
@@ -135,6 +136,7 @@
     <ClCompile Include="oss_live.c" />
     <ClCompile Include="oss_multipart.c" />
     <ClCompile Include="oss_object.c" />
+    <ClCompile Include="oss_resumable.c" />
     <ClCompile Include="oss_util.c" />
     <ClCompile Include="oss_xml.c" />
   </ItemGroup>
