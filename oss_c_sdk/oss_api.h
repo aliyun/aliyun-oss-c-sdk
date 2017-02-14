@@ -764,6 +764,20 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
                               int64_t part_size,
                               aos_table_t *headers);
 
+/*
+ * @brief  oss upload file with mulit-thread and resumable
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   filename            the filename containing object content
+ * @param[in]   headers             the headers for request    
+ * @param[in]   params              the params for request
+ * @param[in]   clt_params          the control params of upload
+ * @param[in]   progress_callback   the progress callback function
+ * @param[out]  resp_headers        oss server response headers
+ * @param[out]  resp_body           oss server response body
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
 aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
                                         aos_string_t *bucket, 
                                         aos_string_t *object, 

@@ -359,6 +359,7 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
     oss_part_task_result_t *results;
     oss_part_task_result_t *task_res;
     oss_upload_thread_params_t *thr_params;
+    aos_table_t *cb_headers = NULL;
     apr_thread_pool_t *thrp;
     apr_uint32_t launched = 0;
     apr_uint32_t failed = 0;
@@ -366,6 +367,7 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
     apr_uint32_t total_num = 0;
     apr_queue_t *failed_parts;
     apr_queue_t *completed_parts;
+    int64_t consume_bytes = 0;
     void *task_result;
     char *part_num_str;
     char *etag;
@@ -382,7 +384,7 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
     results = (oss_part_task_result_t *)aos_palloc(parent_pool, sizeof(oss_part_task_result_t) * part_num);
     thr_params = (oss_upload_thread_params_t *)aos_palloc(parent_pool, sizeof(oss_upload_thread_params_t) * part_num);
     oss_build_thread_params(thr_params, part_num, parent_pool, options, bucket, object, filepath, &upload_id, parts, results);
-
+    
     // init upload
     aos_pool_create(&subpool, parent_pool);
     options->pool = subpool;
@@ -430,8 +432,23 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
             apr_sleep(1000);
         } else if(rv == APR_EOF) {
             break;
+        } else if(rv == APR_SUCCESS) {
+            task_res = (oss_part_task_result_t*)task_result;
+            if (NULL != progress_callback) {
+                consume_bytes += task_res->part->size;
+                progress_callback(consume_bytes, finfo->size);
+            }
         }
         total_num = apr_atomic_read32(&launched) + apr_atomic_read32(&failed) + apr_atomic_read32(&completed);
+    }
+
+    // deal with left successful parts
+    while(APR_SUCCESS == apr_queue_trypop(completed_parts, &task_result)) {
+        task_res = (oss_part_task_result_t*)task_result;
+        if (NULL != progress_callback) {
+            consume_bytes += task_res->part->size;
+            progress_callback(consume_bytes, finfo->size);
+        }
     }
 
     // failed
@@ -458,8 +475,15 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
 
     // complete upload
     options->pool = subpool;
-    s = oss_complete_multipart_upload(options, bucket, object, &upload_id,
-        &completed_part_list, NULL, resp_headers);
+    if (NULL != headers && NULL != apr_table_get(headers, OSS_CALLBACK)) {
+        cb_headers = aos_table_make(subpool, 2);
+        apr_table_set(cb_headers, OSS_CALLBACK, apr_table_get(headers, OSS_CALLBACK));
+        if (NULL != apr_table_get(headers, OSS_CALLBACK_VAR)) {
+            apr_table_set(cb_headers, OSS_CALLBACK_VAR, apr_table_get(headers, OSS_CALLBACK_VAR));
+        }
+    }
+    s = oss_do_complete_multipart_upload(options, bucket, object, &upload_id, 
+        &completed_part_list, cb_headers, NULL, resp_headers, resp_body);
     s = aos_status_dup(parent_pool, s);
     aos_pool_destroy(subpool);
     options->pool = parent_pool;
@@ -492,6 +516,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
     oss_part_task_result_t *results;
     oss_part_task_result_t *task_res;
     oss_upload_thread_params_t *thr_params;
+    aos_table_t *cb_headers = NULL;
     apr_thread_pool_t *thrp;
     apr_uint32_t launched = 0;
     apr_uint32_t failed = 0;
@@ -502,6 +527,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
     oss_checkpoint_t *checkpoint = NULL;
     int need_init_upload = AOS_TRUE;
     int has_left_result = AOS_FALSE;
+    int64_t consume_bytes = 0;
     void *task_result;
     char *part_num_str;
     int part_num = 0;
@@ -599,14 +625,19 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
                 thr_params[idx].result->s = ret;
                 apr_queue_push(failed_parts, thr_params[idx].result);
             }
+            if (NULL != progress_callback) {
+                consume_bytes += task_res->part->size;
+                progress_callback(consume_bytes, finfo->size);
+            }
         }
         total_num = apr_atomic_read32(&launched) + apr_atomic_read32(&failed) + apr_atomic_read32(&completed);
     }
 
-    // deal with left 
+    // deal with left successful parts
     while(APR_SUCCESS == apr_queue_trypop(completed_parts, &task_result)) {
         task_res = (oss_part_task_result_t*)task_result;
         oss_update_checkpoint(parent_pool, checkpoint, task_res->part->index, &task_res->etag);
+        consume_bytes += task_res->part->size;
         has_left_result = AOS_TRUE;
     }
     if (has_left_result) {
@@ -614,6 +645,9 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
         if (rv != AOSE_OK) {
             aos_status_set(ret, rv, AOS_WRITE_FILE_ERROR_CODE, NULL);
             return ret;
+        }
+        if (NULL != progress_callback) {
+            progress_callback(consume_bytes, finfo->size);
         }
     }
     apr_file_close(checkpoint->thefile);
@@ -641,8 +675,15 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
 
     // complete upload
     options->pool = subpool;
-    s = oss_complete_multipart_upload(options, bucket, object, &upload_id,
-        &completed_part_list, NULL, resp_headers);
+    if (NULL != headers && NULL != apr_table_get(headers, OSS_CALLBACK)) {
+        cb_headers = aos_table_make(subpool, 2);
+        apr_table_set(cb_headers, OSS_CALLBACK, apr_table_get(headers, OSS_CALLBACK));
+        if (NULL != apr_table_get(headers, OSS_CALLBACK_VAR)) {
+            apr_table_set(cb_headers, OSS_CALLBACK_VAR, apr_table_get(headers, OSS_CALLBACK_VAR));
+        }
+    }
+    s = oss_do_complete_multipart_upload(options, bucket, object, &upload_id, 
+        &completed_part_list, cb_headers, NULL, resp_headers, resp_body);
     s = aos_status_dup(parent_pool, s);
     aos_pool_destroy(subpool);
     options->pool = parent_pool;

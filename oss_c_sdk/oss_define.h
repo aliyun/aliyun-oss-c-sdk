@@ -63,6 +63,7 @@ extern const char OSS_OBJECT_TYPE[];
 extern const char OSS_NEXT_APPEND_POSITION[];
 extern const char OSS_HASH_CRC64_ECMA[];
 extern const char OSS_CALLBACK[];
+extern const char OSS_CALLBACK_VAR[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_DELETE[];

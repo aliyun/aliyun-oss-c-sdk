@@ -56,6 +56,10 @@ void test_resumable_cleanup(CuTest *tc)
     delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_file_size_unavailable.jpg");
     delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_uploadid_unavailable.jpg");
     delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_uploadid_available.jpg");
+    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_callback_without_checkpoint.jpg");
+    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_progress_without_checkpoint.jpg");
+    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_callback_with_checkpoint.jpg");
+    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_progress_with_checkpoint.jpg");
 
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
@@ -1045,6 +1049,307 @@ void test_resumable_upload_with_uploadid_available(CuTest *tc)
     printf("test_resumable_upload_with_uploadid_available ok\n");
 }
 
+void test_resumable_upload_with_file_path_invalid(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_with_file_path_invalid.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, "/uvwxyz/abchij/test.jpg");
+
+    // upload
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 1024, 1, AOS_TRUE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers, &resp_body);
+    CuAssertStrEquals(tc, "OpenFileFail", s->error_code);
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_upload_with_file_path_invalid ok\n");
+}
+
+void test_resumable_upload_callback_without_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_callback_without_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    int64_t content_length = 0;
+    aos_buf_t *content;
+    char b64_buf[1024];
+    int b64_len = 64;
+    char *buf = NULL;
+    int64_t len = 0;
+    int64_t size = 0;
+    int64_t pos = 0;
+    char *callback =  "{"
+        "\"callbackUrl\":\"http://callback.oss-demo.com:23450\","
+        "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
+        "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
+        "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
+        "}";
+    char *callback_var =  "{"
+        "\"x:var1\":\"value1\","
+        "\"x:var2\":\"value2\""
+        "}";
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_local_file);
+
+    headers = aos_table_make(p, 2);
+    b64_len = aos_base64_encode((unsigned char*)callback, strlen(callback), b64_buf);
+    b64_buf[b64_len] = '\0';
+    apr_table_set(headers, OSS_CALLBACK, apr_pstrdup(p, b64_buf));
+    b64_len = aos_base64_encode((unsigned char*)callback_var, strlen(callback_var), b64_buf);
+    b64_buf[b64_len] = '\0';
+    apr_table_set(headers, OSS_CALLBACK_VAR, apr_pstrdup(p, b64_buf));
+
+    // upload object
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    /* get buffer len */
+    len = aos_buf_list_len(&resp_body);
+    buf = (char *)aos_pcalloc(p, (apr_size_t)(len + 1));
+    buf[len] = '\0';
+
+    /* copy buffer content to memory */
+    aos_list_for_each_entry(aos_buf_t, content, &resp_body, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, (size_t)size);
+        pos += size;
+    }
+    CuAssertStrEquals(tc, buf, "{\"Status\":\"OK\"}");
+
+    aos_pool_destroy(p);
+
+    // head object
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(test_local_file));
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_upload_callback_without_checkpoint ok\n");
+}
+
+void test_resumable_upload_progress_without_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_progress_without_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    int64_t content_length = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_local_file);
+
+    // upload object
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, percentage, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    // head object
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(test_local_file));
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_upload_progress_without_checkpoint ok\n");
+}
+
+void test_resumable_upload_callback_with_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_callback_with_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    int64_t content_length = 0;
+    aos_buf_t *content;
+    char b64_buf[1024];
+    int b64_len = 64;
+    char *buf = NULL;
+    int64_t len = 0;
+    int64_t size = 0;
+    int64_t pos = 0;
+    char *callback =  "{"
+        "\"callbackUrl\":\"http://callback.oss-demo.com:23450\","
+        "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
+        "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
+        "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
+        "}";
+    char *callback_var =  "{"
+        "\"x:var1\":\"value1\","
+        "\"x:var2\":\"value2\""
+        "}";
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_local_file);
+
+    headers = aos_table_make(p, 2);
+    b64_len = aos_base64_encode((unsigned char*)callback, strlen(callback), b64_buf);
+    b64_buf[b64_len] = '\0';
+    apr_table_set(headers, OSS_CALLBACK, apr_pstrdup(p, b64_buf));
+    b64_len = aos_base64_encode((unsigned char*)callback_var, strlen(callback_var), b64_buf);
+    b64_buf[b64_len] = '\0';
+    apr_table_set(headers, OSS_CALLBACK_VAR, apr_pstrdup(p, b64_buf));
+
+    // upload object
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    /* get buffer len */
+    len = aos_buf_list_len(&resp_body);
+    buf = (char *)aos_pcalloc(p, (apr_size_t)(len + 1));
+    buf[len] = '\0';
+
+    /* copy buffer content to memory */
+    aos_list_for_each_entry(aos_buf_t, content, &resp_body, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, (size_t)size);
+        pos += size;
+    }
+    CuAssertStrEquals(tc, buf, "{\"Status\":\"OK\"}");
+
+    aos_pool_destroy(p);
+
+    // head object
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(test_local_file));
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_upload_callback_with_checkpoint ok\n");
+}
+
+void test_resumable_upload_progress_with_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_progress_with_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    int64_t content_length = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_local_file);
+
+    // upload object
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, percentage, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    // head object
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(test_local_file));
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_upload_progress_with_checkpoint ok\n");
+}
+
 CuSuite *test_oss_resumable()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1067,6 +1372,11 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_resumable_upload_with_file_size_unavailable);
     SUITE_ADD_TEST(suite, test_resumable_upload_with_uploadid_unavailable);
     SUITE_ADD_TEST(suite, test_resumable_upload_with_uploadid_available);
+    SUITE_ADD_TEST(suite, test_resumable_upload_with_file_path_invalid);
+    SUITE_ADD_TEST(suite, test_resumable_upload_callback_without_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_upload_progress_without_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_upload_callback_with_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_upload_progress_with_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;

@@ -37,6 +37,7 @@ const char OSS_OBJECT_TYPE[] = "x-oss-object-type";
 const char OSS_NEXT_APPEND_POSITION[] = "x-oss-next-append-position";
 const char OSS_HASH_CRC64_ECMA[] = "x-oss-hash-crc64ecma";
 const char OSS_CALLBACK[] = "x-oss-callback";
+const char OSS_CALLBACK_VAR[] = "x-oss-callback-var";
 const char OSS_PROCESS[] = "x-oss-process";
 const char OSS_LIFECYCLE[] = "lifecycle";
 const char OSS_DELETE[] = "delete";
