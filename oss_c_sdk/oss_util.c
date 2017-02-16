@@ -564,6 +564,35 @@ oss_live_channel_configuration_t *oss_create_live_channel_configuration_content(
     return config;
 }
 
+oss_checkpoint_t *oss_create_checkpoint_content(aos_pool_t *p) 
+{
+    oss_checkpoint_t *cp;
+    cp = (oss_checkpoint_t *)aos_pcalloc(p, sizeof(oss_checkpoint_t));
+    cp->parts = (oss_checkpoint_part_t *)aos_pcalloc(p, sizeof(oss_checkpoint_part_t) * OSS_MAX_PART_NUM);
+    aos_str_set(&cp->md5, "");
+    aos_str_set(&cp->file_path, "");
+    aos_str_set(&cp->file_md5, "");
+    aos_str_set(&cp->object_name, "");
+    aos_str_set(&cp->object_last_modified, "");
+    aos_str_set(&cp->object_etag, "");
+    aos_str_set(&cp->upload_id, "");
+    return cp;
+}
+
+oss_resumable_clt_params_t *oss_create_resumable_clt_params_content(aos_pool_t *p, int64_t part_size, int32_t thread_num,
+                                                                    int enable_checkpoint, const char *checkpoint_path)
+{
+    oss_resumable_clt_params_t *clt;
+    clt = (oss_resumable_clt_params_t *)aos_pcalloc(p, sizeof(oss_resumable_clt_params_t));
+    clt->part_size = part_size;
+    clt->thread_num = thread_num;
+    clt->enable_checkpoint = enable_checkpoint;
+    if (enable_checkpoint && NULL != checkpoint_path) {
+        aos_str_set(&clt->checkpoint_path, checkpoint_path);
+    }
+    return clt;
+}
+
 oss_list_live_channel_params_t *oss_create_list_live_channel_params(aos_pool_t *p)
 {
     oss_list_live_channel_params_t *params;

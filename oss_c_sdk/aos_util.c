@@ -509,9 +509,13 @@ unsigned long long aos_strtoull(const char *nptr, char **endptr, int base)
 		}
 	}
 	if (neg && any > 0)
+#ifdef WIN32
 #pragma warning(disable : 4146)
+#endif
 		acc = -acc;
+#ifdef WIN32
 #pragma warning(default : 4146)
+#endif
 	if (endptr != 0)
 		*endptr = (char *) (any ? s - 1 : nptr);
 	return (acc);
