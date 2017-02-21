@@ -22,7 +22,7 @@ typedef struct {
 } image_info_t;
 
 #if defined(WIN32)
-static char *image_file = "../oss_c_sdk_test/example.jpg";
+static char *image_file = "..\\oss_c_sdk_test\\example.jpg";
 #else
 static char *image_file = "oss_c_sdk_test/example.jpg";
 #endif

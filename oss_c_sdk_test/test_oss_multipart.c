@@ -625,6 +625,8 @@ void test_list_upload_part_with_empty(CuTest *tc)
     aos_list_t complete_part_list;
     aos_table_t *complete_resp_headers = NULL;
     char *content_type_for_complete = "video/MP2T";
+    oss_list_part_content_t *part_content1 = NULL;
+    oss_complete_part_content_t *complete_content1 = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -649,6 +651,14 @@ void test_list_upload_part_with_empty(CuTest *tc)
     CuAssertIntEquals(tc, 0, params->truncated);
     CuAssertStrEquals(tc, NULL, params->next_part_number_marker.data);
     CuAssertPtrNotNull(tc, list_part_resp_headers);
+
+    // test for #OSS-1161
+    aos_list_for_each_entry(oss_list_part_content_t, part_content1, &params->part_list, node) {
+        complete_content1 = oss_create_complete_part_content(p);
+        aos_str_set(&complete_content1->part_number, part_content1->part_number.data);
+        aos_str_set(&complete_content1->etag, part_content1->etag.data);
+        aos_list_add_tail(&complete_content1->node, &complete_part_list);
+    }
 
     //complete multipart
     apr_table_add(headers, OSS_CONTENT_TYPE, content_type_for_complete);
