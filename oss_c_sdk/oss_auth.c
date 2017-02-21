@@ -24,6 +24,7 @@ static const char *g_s_oss_sub_resource_list[] = {
     "startTime",
     "endTime",
     "x-oss-process",
+    "security-token",
     NULL,
 };
 
@@ -354,13 +355,16 @@ int oss_get_signed_url(const oss_request_options_t *options,
     aos_string_t signature;
     const char *proto;
 
+    if (options->config->sts_token.data != NULL) {
+        apr_table_set(req->query_params, OSS_SECURITY_TOKEN, options->config->sts_token.data);
+    }
+
     res = get_oss_request_signature(options, req, expires, &signature);
     if (res != AOSE_OK) {
         return res;
     }
 
-    apr_table_set(req->query_params, OSS_ACCESSKEYID, 
-                  options->config->access_key_id.data);
+    apr_table_set(req->query_params, OSS_ACCESSKEYID, options->config->access_key_id.data);
     apr_table_set(req->query_params, OSS_EXPIRES, expires->data);
     apr_table_set(req->query_params, OSS_SIGNATURE, signature.data);
 

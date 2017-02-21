@@ -232,6 +232,7 @@ void oss_get_object_uri(const oss_request_options_t *options,
                 raw_endpoint.len, raw_endpoint.data);
         req->uri = object->data;
     }
+
 }
 
 void oss_get_bucket_uri(const oss_request_options_t *options, 
@@ -690,7 +691,6 @@ void oss_init_live_channel_request(const oss_request_options_t *options,
     oss_get_object_uri(options, bucket, live_channel, *req);
 }
 
-
 void oss_init_signed_url_request(const oss_request_options_t *options, 
                                  const aos_string_t *signed_url,
                                  http_method_e method, 
@@ -699,7 +699,11 @@ void oss_init_signed_url_request(const oss_request_options_t *options,
                                  aos_table_t *headers, 
                                  aos_http_response_t **resp)
 {
-    oss_init_request(options, method, req, params, headers, resp);
+    *req = aos_http_request_create(options->pool);
+    *resp = aos_http_response_create(options->pool);
+    (*req)->method = method;
+    (*req)->headers = headers;
+    (*req)->query_params = params;
     (*req)->signed_url = signed_url->data;
 }
 

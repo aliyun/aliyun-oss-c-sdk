@@ -289,11 +289,6 @@ int aos_http_io_initialize(const char *user_agent_info, int flags)
     apr_snprintf(aos_user_agent, sizeof(aos_user_agent)-1, "%s(Compatible %s)", 
                  AOS_VER, user_agent_info);
 
-    if ((s = apr_file_open_stderr(&aos_stderr_file, aos_global_pool)) != APR_SUCCESS) {
-        aos_error_log("apr_file_open_stderr failure, code:%d %s.\n", s, apr_strerror(s, buf, sizeof(buf)));
-        return AOSE_INTERNAL_ERROR;
-    }
-
     req_options = aos_http_request_options_create(aos_global_pool);
     trans_options = aos_http_transport_options_create(aos_global_pool);
     trans_options->user_agent = aos_user_agent;

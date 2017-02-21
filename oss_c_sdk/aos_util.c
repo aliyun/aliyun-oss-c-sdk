@@ -82,13 +82,9 @@ int aos_url_encode(char *dest, const char *src, int maxSrcSize)
             return AOSE_INVALID_ARGUMENT;
         }
         c = *src;
-        if (isalnum(c) ||
-            (c == '-') || (c == '_') || (c == '.') || (c == '!') || 
-            (c == '~') || (c == '*') || (c == '\'') || (c == '(') ||
-            (c == ')') || (c == '/')) {
+        if (isalnum(c) || (c == '-') || (c == '_') || (c == '.') || (c == '~')) {
             *dest++ = c;
         } else if (*src == ' ') {
-            // *dest++ = '+';
             *dest++ = '%';
             *dest++ = '2';
             *dest++ = '0';

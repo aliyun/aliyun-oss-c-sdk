@@ -31,6 +31,7 @@ const char OSS_POSITION[] = "position";
 const char OSS_MULTIPART_CONTENT_TYPE[] = "application/x-www-form-urlencoded";
 const char OSS_COPY_SOURCE[] = "x-oss-copy-source";
 const char OSS_COPY_SOURCE_RANGE[] = "x-oss-copy-source-range";
+const char OSS_SECURITY_TOKEN[] = "security-token";
 const char OSS_STS_SECURITY_TOKEN[] = "x-oss-security-token";
 const char OSS_REPLACE_OBJECT_META[] = "x-oss-replace-object-meta";
 const char OSS_OBJECT_TYPE[] = "x-oss-object-type";

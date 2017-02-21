@@ -284,9 +284,9 @@ void test_aos_ends_with(CuTest *tc) {
 void test_aos_url_encode_failed(CuTest *tc) {
     int ret;
     char *dest;
-    dest = (char*)malloc(20);
+    dest = (char*)malloc(1024);
     
-    ret = aos_url_encode(dest, "abc.xx.com", 1);
+    ret = aos_url_encode(dest, "/mingdi-hz-3/./xxx/./ddd/", 1);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, ret);
 
     free(dest);
@@ -303,7 +303,7 @@ void test_aos_url_encode_with_blank_char(CuTest *tc) {
     
     ret = aos_url_encode(dest, source, strlen(source));
     CuAssertIntEquals(tc, AOSE_OK, ret);
-    CuAssertStrEquals(tc, "abc.xx.com/a%20b", dest);
+    CuAssertStrEquals(tc, "abc.xx.com%2Fa%20b", dest);
 
     free(dest);
 

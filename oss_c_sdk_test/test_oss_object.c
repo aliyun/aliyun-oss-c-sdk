@@ -159,6 +159,45 @@ void test_put_object_from_buffer_with_default_content_type(CuTest *tc)
     printf("test_put_object_from_buffer_with_default_content_type ok\n");
 }
 
+void test_put_object_from_buffer_with_specified(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "./xxx/./ddd/";
+    char *str = "test oss c sdk";
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_table_t *headers = NULL;
+    aos_table_t *head_headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+
+    /* test put object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 1);
+    apr_table_set(headers, "x-oss-meta-author", "oss");
+    s = create_test_object(options, TEST_BUCKET_NAME, object_name, str, headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, headers);
+
+    aos_pool_destroy(p);
+
+    /* head object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, 
+        head_headers, &head_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+
+    printf("test_put_object_from_buffer_with_specified ok\n");
+}
 
 void test_put_object_from_file(CuTest *tc)
 {
@@ -670,8 +709,8 @@ void test_copy_object_negative(CuTest *tc)
     /* test copy object */
     s = oss_copy_object(options, &source_bucket, &source_object, 
         &dest_bucket, &dest_object, NULL, NULL);
-    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_URL_ENCODE_ERROR_CODE, s->error_code);
+    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertStrEquals(tc, "InvalidObjectName", s->error_code);
 
     aos_pool_destroy(p);
 
@@ -895,6 +934,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_object_setup);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer);
     SUITE_ADD_TEST(suite, test_put_object_from_file);
+    SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_specified);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_range);
     SUITE_ADD_TEST(suite, test_put_object_from_file_with_content_type);
