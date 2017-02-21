@@ -230,6 +230,14 @@
 				RelativePath=".\test_oss_progress.c"
 				>
 			</File>
+			<File
+				RelativePath=".\test_oss_proxy.c"
+				>
+			</File>
+			<File
+				RelativePath=".\test_oss_resumable.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\oss_resumable.c"
+				>
+			</File>
+			<File
 				RelativePath=".\oss_util.c"
 				>
 			</File>
@@ -273,6 +277,10 @@
 			</File>
 			<File
 				RelativePath=".\oss_define.h"
+				>
+			</File>
+			<File
+				RelativePath=".\oss_resumable.h"
 				>
 			</File>
 			<File
