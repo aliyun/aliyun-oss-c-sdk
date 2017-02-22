@@ -99,6 +99,9 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```
  - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
 
+## License
+- MIT
+ 
 ## 联系我们
 - [阿里云OSS官方网站](http://oss.aliyun.com)
 - [阿里云OSS官方论坛](http://bbs.aliyun.com)
