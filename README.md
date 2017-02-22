@@ -14,7 +14,7 @@
 ## 安装方法
 ### 环境依赖
 OSS C SDK使用curl进行网络操作，无论是作为客户端还是服务器端，都需要依赖curl。
-另外，OSS C SDK使用apr/apr-util库解决内存管理以及跨平台问题，使用minixml库解析请求返回的xml，
+OSS C SDK使用apr/apr-util库解决内存管理以及跨平台问题，使用minixml库解析请求返回的xml，
 OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安装，并且将它们的头文件目录和库文件目录都加入到了项目中。
 
 #### 第三方库下载以及安装
@@ -99,6 +99,9 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```
  - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
 
+## License
+- MIT
+ 
 ## 联系我们
 - [阿里云OSS官方网站](http://oss.aliyun.com)
 - [阿里云OSS官方论坛](http://bbs.aliyun.com)
