@@ -17,8 +17,6 @@ test.h
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
-stdint.h
-stdint.h.bak
 Debug
 Release
 !third_party/lib/Debug
