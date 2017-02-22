@@ -1,5 +1,19 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：3.4.0 日期：2017-02-22
+### 变更内容
+- 添加：支持并发断点续传上传`oss_resumable_upload_file`
+- 修复：`oss_gen_signed_url`支持临时用户签名
+- 修复：初始化默认不打开`fd 2`，退出时不关闭`fd 2`
+- 修复：修复key为`xxx/./yyy/`，`./async_test/test`报`SignatureDoesNotMatch`的问题
+
+## 版本号：3.3.0 日期：2016-12-28
+### 变更内容
+ - 添加：支持代理Proxy
+ - 修复：oss_get_object_to_file先下载到本地临时文件，成功后修改文件名称
+ - 修复：去除Visual Studio编译警告aos_util.c(512) C4146
+ - 修复：URL上传下载添加CRC校验
+
 ## 版本号：3.2.1 日期：2016-11-21
 ### 变更内容
 - 解决oss_copy_object源文件名没有url编码的问题
