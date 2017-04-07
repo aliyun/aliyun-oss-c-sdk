@@ -1,5 +1,10 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：3.4.1 日期：2017-04-07
+### 变更内容
+- 添加：list_object使用示例`oss_list_object_sample.c`
+- 修复：CMakeLists中加入`oss_resumable.h`
+
 ## 版本号：3.4.0 日期：2017-02-22
 ### 变更内容
 - 添加：支持并发断点续传上传`oss_resumable_upload_file`

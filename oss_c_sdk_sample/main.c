@@ -13,6 +13,7 @@ extern void delete_object_sample();
 extern void put_object_sample();
 extern void get_object_sample();
 extern void head_object_sample();
+extern void list_object_sample();
 extern void multipart_object_sample();
 extern void callback_sample();
 extern void progress_sample();
@@ -29,6 +30,7 @@ int main(int argc, char *argv[])
     append_object_sample();
     get_object_sample();
     head_object_sample();
+    list_object_sample();
     multipart_object_sample();
     delete_object_sample();
     callback_sample();
