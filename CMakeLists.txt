@@ -112,10 +112,11 @@ INSTALL(FILES
   oss_c_sdk/aos_string.h
   oss_c_sdk/aos_transport.h
   oss_c_sdk/aos_util.h
-  oss_c_sdk/aos_crc64.c
+  oss_c_sdk/aos_crc64.h
   oss_c_sdk/oss_api.h
   oss_c_sdk/oss_auth.h
   oss_c_sdk/oss_define.h
+  oss_c_sdk/oss_resumable.h
   oss_c_sdk/oss_util.h
   oss_c_sdk/oss_xml.h
   DESTINATION include/oss_c_sdk)
