@@ -149,7 +149,7 @@ void test_multipart_upload(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
-    char *object_name = "oss_test_multipart_upload.js";
+    char *object_name = "oss_test_multipart_upload";
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
@@ -170,7 +170,7 @@ void test_multipart_upload(CuTest *tc)
     int part_num = 1;
     int part_num1 = 2;
     char *expect_part_num_marker = "1";
-    char *content_type_for_complete = "video/MP2T";
+    char *content_type_for_complete = "application/octet-stream";
     char *actual_content_type = NULL;
 
     aos_pool_create(&p, NULL);
