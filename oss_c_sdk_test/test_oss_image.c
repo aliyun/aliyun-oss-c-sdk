@@ -121,7 +121,7 @@ void test_resize_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 100, image_info.height);
     CuAssertIntEquals(tc, 100, image_info.width);
-    CuAssertIntEquals(tc, 3587, image_info.size);
+    CuAssertIntEquals(tc, 3267, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
 
     printf("test_resize_image ok\n");
@@ -171,7 +171,7 @@ void test_crop_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 100, image_info.height);
     CuAssertIntEquals(tc, 100, image_info.width);
-    CuAssertIntEquals(tc, 2281, image_info.size);
+    CuAssertIntEquals(tc, 1969, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
     
     printf("test_crop_image ok\n");
@@ -221,7 +221,7 @@ void test_rotate_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 400, image_info.height);
     CuAssertIntEquals(tc, 267, image_info.width);
-    CuAssertIntEquals(tc, 21509, image_info.size);
+    CuAssertIntEquals(tc, 20998, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
 
     printf("test_rotate_image ok\n");
@@ -271,7 +271,7 @@ void test_sharpen_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 267, image_info.height);
     CuAssertIntEquals(tc, 400, image_info.width);
-    CuAssertIntEquals(tc, 24183, image_info.size);
+    CuAssertIntEquals(tc, 23015, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
 
     printf("test_sharpen_image ok\n");
@@ -321,7 +321,7 @@ void test_watermark_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 267, image_info.height);
     CuAssertIntEquals(tc, 400, image_info.width);
-    CuAssertIntEquals(tc, 26953, image_info.size);
+    CuAssertIntEquals(tc, 26369, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
 
     printf("test_watermark_image ok\n");

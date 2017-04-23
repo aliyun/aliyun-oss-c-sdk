@@ -149,7 +149,7 @@ void test_multipart_upload(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
-    char *object_name = "oss_test_multipart_upload";
+    char *object_name = "oss_test_multipart_upload.js";
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
