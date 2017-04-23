@@ -1350,6 +1350,58 @@ void test_resumable_upload_progress_with_checkpoint(CuTest *tc)
     printf("test_resumable_upload_progress_with_checkpoint ok\n");
 }
 
+void test_resumable_upload_content_type(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_content_type.ts";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    int64_t content_length = 0;
+    char *content_type = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_local_file);
+
+    // upload object
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    // head object
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(test_local_file));
+
+    content_type = (char*)(apr_table_get(resp_headers, OSS_CONTENT_TYPE));
+    CuAssertStrEquals(tc, "video/MP2T", content_type);
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_upload_content_type ok\n");
+}
+
 CuSuite *test_oss_resumable()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1377,6 +1429,7 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_resumable_upload_progress_without_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_upload_callback_with_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_upload_progress_with_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_upload_content_type);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;

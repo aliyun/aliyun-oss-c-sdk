@@ -59,7 +59,6 @@ extern const char OSS_COPY_SOURCE[];
 extern const char OSS_COPY_SOURCE_RANGE[];
 extern const char OSS_SECURITY_TOKEN[];
 extern const char OSS_STS_SECURITY_TOKEN[];
-extern const char OSS_REPLACE_OBJECT_META[];
 extern const char OSS_OBJECT_TYPE[];
 extern const char OSS_NEXT_APPEND_POSITION[];
 extern const char OSS_HASH_CRC64_ECMA[];

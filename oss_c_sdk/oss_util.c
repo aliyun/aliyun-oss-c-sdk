@@ -607,14 +607,6 @@ oss_list_live_channel_params_t *oss_create_list_live_channel_params(aos_pool_t *
     return params;
 }
 
-void oss_set_multipart_content_type(aos_table_t *headers)
-{
-    const char *content_type;
-    content_type = (char*)(apr_table_get(headers, OSS_CONTENT_TYPE));
-    content_type = content_type == NULL ? OSS_MULTIPART_CONTENT_TYPE : content_type;
-    apr_table_set(headers, OSS_CONTENT_TYPE, content_type);
-}
-
 const char *get_oss_acl_str(oss_acl_e oss_acl)
 {
     switch (oss_acl) {
