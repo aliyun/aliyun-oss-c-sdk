@@ -33,7 +33,6 @@ const char OSS_COPY_SOURCE[] = "x-oss-copy-source";
 const char OSS_COPY_SOURCE_RANGE[] = "x-oss-copy-source-range";
 const char OSS_SECURITY_TOKEN[] = "security-token";
 const char OSS_STS_SECURITY_TOKEN[] = "x-oss-security-token";
-const char OSS_REPLACE_OBJECT_META[] = "x-oss-replace-object-meta";
 const char OSS_OBJECT_TYPE[] = "x-oss-object-type";
 const char OSS_NEXT_APPEND_POSITION[] = "x-oss-next-append-position";
 const char OSS_HASH_CRC64_ECMA[] = "x-oss-hash-crc64ecma";

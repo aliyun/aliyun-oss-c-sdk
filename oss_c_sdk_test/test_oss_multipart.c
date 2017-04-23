@@ -170,7 +170,7 @@ void test_multipart_upload(CuTest *tc)
     int part_num = 1;
     int part_num1 = 2;
     char *expect_part_num_marker = "1";
-    char *content_type_for_complete = "video/MP2T";
+    char *content_type_for_complete = "application/octet-stream";
     char *actual_content_type = NULL;
 
     aos_pool_create(&p, NULL);

@@ -188,12 +188,6 @@ oss_upload_part_copy_params_t *oss_create_upload_part_copy_params(aos_pool_t *p)
 oss_upload_file_t *oss_create_upload_file(aos_pool_t *p);
 
 /**
-  * @brief  get content-type for HTTP_POST request
-  * @return content-type for HTTP_POST request
-**/
-void oss_set_multipart_content_type(aos_table_t *headers);
-
-/**
   * @brief  create lifecycle rule content
   * @return lifecycle rule content
 **/

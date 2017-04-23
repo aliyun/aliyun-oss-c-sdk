@@ -189,7 +189,7 @@ void test_list_object(CuTest *tc)
     params = oss_create_list_object_params(p);
     params->max_ret = 1;
     params->truncated = 0;
-    aos_str_set(&params->prefix, "oss_test");
+    aos_str_set(&params->prefix, "oss_test_object");
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_list_object(options, &bucket, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);

@@ -27,7 +27,7 @@ aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options,
 
     //init headers
     headers = aos_table_create_if_null(options, headers, 1);
-    oss_set_multipart_content_type(headers);
+    set_content_type(NULL, object->data, headers);
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
                             &req, query_params, headers, NULL, 0, &resp);
@@ -194,8 +194,7 @@ aos_status_t *oss_do_complete_multipart_upload(const oss_request_options_t *opti
 
     //init headers
     headers = aos_table_create_if_null(options, headers, 1);
-    oss_set_multipart_content_type(headers);
-    apr_table_add(headers, OSS_REPLACE_OBJECT_META, OSS_YES);
+    apr_table_set(headers, OSS_CONTENT_TYPE, OSS_MULTIPART_CONTENT_TYPE);
 
     oss_init_object_request(options, bucket, object, HTTP_POST, 
                             &req, query_params, headers, NULL, 0, &resp);
