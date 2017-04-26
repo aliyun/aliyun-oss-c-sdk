@@ -121,7 +121,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define AOS_VERSION    "3.4.0"
+#define AOS_VERSION    "3.4.3"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 
 #define AOS_HTTP_PREFIX   "http://"
@@ -132,5 +132,20 @@ typedef apr_array_header_t aos_array_header_t;
 
 #define AOS_FALSE     0
 #define AOS_TRUE      1
+
+# ifndef WIN32
+# ifndef __LONG_LONG_MAX__
+# define __LONG_LONG_MAX__ 9223372036854775807LL
+# endif
+# ifndef LLONG_MIN
+#  define LLONG_MIN (-LLONG_MAX-1)
+# endif
+# ifndef LLONG_MAX
+#  define LLONG_MAX __LONG_LONG_MAX__
+# endif
+# ifndef ULLONG_MAX
+#  define ULLONG_MAX (LLONG_MAX * 2ULL + 1)
+# endif
+# endif
 
 #endif

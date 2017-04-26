@@ -80,8 +80,9 @@ int oss_open_checkpoint_file(aos_pool_t *pool,  aos_string_t *checkpoint_path, o
     char buf[256];
     s = apr_file_open(&thefile, checkpoint_path->data, APR_CREATE | APR_WRITE, APR_UREAD | APR_UWRITE | APR_GREAD, pool);
     if (s == APR_SUCCESS) {
-        aos_error_log("apr_file_info_get failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         checkpoint->thefile = thefile;
+    } else {
+        aos_error_log("apr_file_info_get failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
     }
     return s;
 }
