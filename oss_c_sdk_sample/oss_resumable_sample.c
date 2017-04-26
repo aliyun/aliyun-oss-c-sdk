@@ -27,7 +27,7 @@ void resumable_upload_with_multi_threads()
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 0);
     aos_str_set(&bucket, BUCKET_NAME);
-    aos_str_set(&object, "my_key.zip");
+    aos_str_set(&object, "my_key_1.zip");
     aos_str_set(&filename, "local_big_file.zip");
     aos_list_init(&resp_body);
 
@@ -64,7 +64,7 @@ void resumable_upload_with_resumable()
     init_sample_request_options(options, is_cname);
     headers = aos_table_make(p, 0);
     aos_str_set(&bucket, BUCKET_NAME);
-    aos_str_set(&object, "my_key.zip");
+    aos_str_set(&object, "my_key_2.zip");
     aos_str_set(&filename, "local_big_file.zip");
     aos_list_init(&resp_body);
 
@@ -82,7 +82,7 @@ void resumable_upload_with_resumable()
     aos_pool_destroy(p);
 }
 
-void resumable_object_sample()
+void resumable_upload_sample()
 {
     resumable_upload_with_multi_threads();
     resumable_upload_with_resumable();

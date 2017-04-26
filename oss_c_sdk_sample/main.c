@@ -19,6 +19,7 @@ extern void callback_sample();
 extern void progress_sample();
 extern void crc_sample();
 extern void image_sample();
+extern void resumable_upload_sample();
 
 int main(int argc, char *argv[])
 {
@@ -37,6 +38,7 @@ int main(int argc, char *argv[])
     progress_sample();
     crc_sample();
     image_sample();
+    resumable_upload_sample();
 
     aos_http_io_deinitialize();
 

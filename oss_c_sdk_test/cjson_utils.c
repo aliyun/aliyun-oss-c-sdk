@@ -393,3 +393,4 @@ cJSON *cJSONUtils_GenerateMergePatch(cJSON *from,cJSON *to)
 	if (!patch->child) {cJSON_Delete(patch);return 0;}
 	return patch;
 }
+

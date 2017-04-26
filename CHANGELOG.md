@@ -1,5 +1,15 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：3.4.3 日期：2017-04-26
+### 变更内容
+- 修复：添加宏`ULLONG_MAX`的定义
+- 修复：示例工程的CMakeLists中加入`oss_resumable_sample.c`
+- 修复：`oss_open_checkpoint_file`错误打印日志的问题
+
+## 版本号：3.4.2 日期：2017-04-23
+### 变更内容
+- 修复：解决分片上传ContentType被覆盖的问题
+
 ## 版本号：3.4.1 日期：2017-04-07
 ### 变更内容
 - 添加：list_object使用示例`oss_list_object_sample.c`
