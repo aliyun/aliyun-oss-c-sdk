@@ -1,64 +1,66 @@
-# Aliyun OSS SDK for C
+﻿# Alibaba Cloud OSS SDK for C
 
-[![GitHub version](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk.svg)](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk)
+[![GitHub Version](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk.svg)](https://badge.fury.io/gh/aliyun%2Faliyun-oss-c-sdk)
 [![Build Status](https://travis-ci.org/aliyun/aliyun-oss-c-sdk.svg?branch=master)](https://travis-ci.org/aliyun/aliyun-oss-c-sdk)
 [![Coverage Status](https://coveralls.io/repos/github/aliyun/aliyun-oss-c-sdk/badge.svg?branch=master)](https://coveralls.io/github/aliyun/aliyun-oss-c-sdk?branch=master)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE)
 
-## 关于
-阿里云对象存储（Object Storage Service，简称OSS），是阿里云对外提供的海量、安全、低成本、高可靠的云存储服务。用户可以通过调用API，在任何应用、任何时间、任何地点上传和下载数据，也可以通过用户Web控制台对数据进行简单的管理。OSS适合存放任意文件类型，适合各种网站、开发企业及开发者使用。OSS C SDK提供了一系列接口方便用户使用OSS。
+## [README of Chinese](https://github.com/aliyun/aliyun-oss-c-sdk/blob/master/README-CN.md)
 
-## 版本
- - 当前版本：3.4.3
+## About
+Alibaba Cloud Object Storage Service (OSS) is a cloud storage service provided by Alibaba Cloud, featuring massive capacity, security, a low cost, and high reliability. You can upload and download data on any application anytime and anywhere by calling APIs, and perform simple management of data through the web console. The OSS can store any type of files and therefore applies to various websites, development enterprises and developers. The OSS C SDK provides a variety of interfaces for convenient use of the OSS. 
 
-## 安装方法
-### 环境依赖
-OSS C SDK使用curl进行网络操作，无论是作为客户端还是服务器端，都需要依赖curl。
-OSS C SDK使用apr/apr-util库解决内存管理以及跨平台问题，使用minixml库解析请求返回的xml，
-OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安装，并且将它们的头文件目录和库文件目录都加入到了项目中。
+## Version
+ - Current version: 3.4.3. 
 
-#### 第三方库下载以及安装
+## Install OSS C SDK
+### Environment dependency
+The OSS C SDK adopts cURL for network operations on both clients and servers.
+OSS C SDK uses the APR and APR-Util libraries for memory management and cross-platform operations, and uses the Mini-XML library for parsing XML returned by a request.
+These external libraries are not included in the OSS C SDK. You need to install these libraries and add their header file directories and the library file directories to the project.
 
-##### libcurl （建议 7.32.0 及以上版本）
+#### Download and install third-party libraries
 
-  请从[这里](http://curl.haxx.se/download.html)下载，并参考[libcurl 安装指南](http://curl.haxx.se/docs/install.html)安装。典型的安装方式如下：
+##### libcurl (Version 7.32.0 or above is recommended)
+
+  Download from [here](http://curl.haxx.se/download.html) and install it by referring to [libcurl Installation Guide](http://curl.haxx.se/docs/install.html). A typical installation approach is as follows:
 ```shell
     ./configure
     make
     make install
 ```
 
-注意：
- - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
+Notes:
+ - When you run the ./configure command, the default installation directory is /usr/local/. To specify another installation directory, use ./configure --prefix=/your/install/path/.
 
-##### apr （建议 1.5.2 及以上版本）
+##### APR (Version 1.5.2 or above is recommended)
 
-  请从[这里](https://apr.apache.org/download.cgi)下载，典型的安装方式如下：
+  Download from [here](https://apr.apache.org/download.cgi). A typical installation method is as follows:
  ```shell
     ./configure
     make
     make install
 ```
 
-注意：
- - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
+Notes:
+ - When you run the ./configure command, the default installation directory is /usr/local/. To specify another installation directory, use ./configure --prefix=/your/install/path/.
 
-##### apr-util （建议 1.5.4 及以上版本）
+##### APR-Util (Version 1.5.4 or above is recommended)
 
-  请从[这里](https://apr.apache.org/download.cgi)下载，安装时需要注意指定--with-apr选项，典型的安装方式如下：
+  Download from [here](https://apr.apache.org/download.cgi). The --with-apr option must be specified during installation. A typical installation method is as follows:
 ```shell
     ./configure --with-apr=/your/apr/install/path
     make
     make install
 ```
 
-注意：
- - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
- - 需要通过--with-apr指定apr安装目录，如果apr安装到系统目录下需要指定--with-apr=/usr/local/apr/
+Notes:
+ - When you run the ./configure command, the default installation directory is /usr/local/. To specify another installation directory, use ./configure --prefix=/your/install/path/.
+ - You need to specify the APR installation directory through --with-apr. To install APR under a system directory, specify --with-apr=/usr/local/apr/.
 
-##### minixml （建议 2.8 及以上版本）
+##### Mini-XML (Version 2.8 or above is recommended)
 
-  请从[这里](http://www.msweet.org/downloads.php?L+Z3)下载，典型的安装方式如下:
+  Download from [here](http://www.msweet.org/downloads.php?L+Z3). A typical installation method is as follows:
 ```shell
     ./configure
     make
@@ -66,44 +68,44 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 ```
 
 
-注意：
- - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
+Notes:
+ - When you run the ./configure command, the default installation directory is /usr/local/. To specify another installation directory, use ./configure --prefix=/your/install/path/.
 
-##### CMake (建议2.6.0及以上版本)
+##### CMake (Version 2.6.0 or above is recommended)
 
-  请从[这里](https://cmake.org/download)下载，典型的安装方式如下：
+  Download from [here](https://cmake.org/download). A typical installation method is as follows:
 ```shell
     ./configure
     make
     make install
 ```
 
-注意：
- - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
+Notes:
+ - When you run the ./configure command, the default installation directory is /usr/local/. To specify another installation directory, use ./configure --prefix=/your/install/path/.
 
-#### OSS C SDK的安装
+#### Install OSS C SDK
 
-  安装时请在cmake命令中指定第三方库头文件以及库文件的路径，典型的编译命令如下：
+  Specify the third-party library header file and library file paths in the cmake command during installation. A typical compilation command is as follows: 
 ```shell
     cmake .
     make
     make install
 ```
 
-注意：
- - 执行cmake . 时默认会到/usr/local/下面去寻找curl，apr，apr-util，mxml的头文件和库文件。
- - 默认编译是Debug类型，可以指定以下几种编译类型： Debug, Release, RelWithDebInfo和MinSizeRel，如果要使用release类型编译，则执行cmake . -DCMAKE_BUILD_TYPE=Release
- - 如果您在安装curl，apr，apr-util，mxml时指定了安装目录，则需要在执行cmake时指定这些库的路径，比如：
+Notes:
+ - When you run the cmake command, the header files and library files of cURL, APR, APR-Util and Mini-XML will be searched in the directory /usr/local/ by default.
+ - The default compilation is of the Debug type and you can specify the following types of compilation: Debug, Release, RelWithDebInfo and MinSizeRel. To use the Release compilation type, run the command cmake . -DCMAKE_BUILD_TYPE=Release.
+ - If You have specified installation directories for cURL, APR, APR-Util and Mini-XML, you need to specify the paths of these libraries when running CMake. For example, 
 ```shell
    cmake . -DCURL_INCLUDE_DIR=/usr/local/include/curl/ -DCURL_LIBRARY=/usr/local/lib/libcurl.a -DAPR_INCLUDE_DIR=/usr/local/include/apr-1/ -DAPR_LIBRARY=/usr/local/lib/libapr-1.a -DAPR_UTIL_INCLUDE_DIR=/usr/local/apr/include/apr-1 -DAPR_UTIL_LIBRARY=/usr/local/apr/lib/libaprutil-1.a -DMINIXML_INCLUDE_DIR=/usr/local/include -DMINIXML_LIBRARY=/usr/local/lib/libmxml.a
 ```
- - 如果要指定安装目录，则需要在cmake时增加： -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/
+ - To specify an installation directory, add the following when running CMake: -DCMAKE_INSTALL_PREFIX=/your/install/path/usr/local/。
 
 ## License
 - MIT
  
-## 联系我们
-- [阿里云OSS官方网站](http://oss.aliyun.com)
-- [阿里云OSS官方论坛](http://bbs.aliyun.com)
-- [阿里云OSS官方文档中心](http://www.aliyun.com/product/oss#Docs)
-- 阿里云官方技术支持：[提交工单](https://workorder.console.aliyun.com/#/ticket/createIndex)
+## Contact us
+- [Alibaba Cloud OSS official website](http://oss.aliyun.com).
+- [Alibaba Cloud OSS official forum](http://bbs.aliyun.com).
+- [Alibaba Cloud OSS official documentation center](http://www.aliyun.com/product/oss#Docs).
+- Alibaba Cloud official technical support: [Submit a ticket](https://workorder.console.aliyun.com/#/ticket/createIndex).
