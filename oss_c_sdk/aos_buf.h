@@ -54,6 +54,13 @@ int aos_open_file_for_range_read(aos_pool_t *p, const char *path,
  */
 int aos_open_file_for_write(aos_pool_t *p, const char *path, aos_file_buf_t *fb);
 
+/**
+ * create the file if not there.
+ * @param fb not check file_pos, file_last.
+ * @return AOSE_OK success, other failure.
+ */
+int aos_open_file_for_write_notrunc(aos_pool_t *p, const char *path, aos_file_buf_t *fb);
+
 AOS_CPP_END
 
 #endif

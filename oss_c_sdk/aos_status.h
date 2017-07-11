@@ -25,8 +25,12 @@ static APR_INLINE int aos_http_is_ok(int st)
     return st / 100 == 2;
 }
 
-#define aos_status_set(s, c, ec, es)                                    \
-    (s)->code = c; (s)->error_code = (char *)ec; (s)->error_msg = (char *)es
+#define aos_status_set(s, c, ec, es) do {                                  \
+    (s)->code = (c); \
+    (s)->error_code = (char *)(ec); \
+    (s)->error_msg = (char *)(es); \
+} while (0)
+
 
 /**
  * @brief determine whether the request should be retried

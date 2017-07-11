@@ -61,7 +61,8 @@ typedef struct {
     apr_uint32_t *completed;       // the number of completed part tasks, use atomic
     apr_queue_t  *failed_parts;    // the queue of failed parts tasks, thread safe
     apr_queue_t  *completed_parts; // the queue of completed parts tasks, thread safe
-} oss_upload_thread_params_t;
+    apr_queue_t  *task_result_queue;
+} oss_thread_params_t;
 
 int32_t oss_get_thread_num(oss_resumable_clt_params_t *clt_params);
 
@@ -80,15 +81,15 @@ int oss_get_part_num(int64_t file_size, int64_t part_size);
 
 void oss_build_parts(int64_t file_size, int64_t part_size, oss_checkpoint_part_t *parts);
 
-void oss_build_thread_params(oss_upload_thread_params_t *thr_params, int part_num, 
+void oss_build_thread_params(oss_thread_params_t *thr_params, int part_num, 
                              aos_pool_t *parent_pool, oss_request_options_t *options, 
                              aos_string_t *bucket, aos_string_t *object, aos_string_t *filepath,
                              aos_string_t *upload_id, oss_checkpoint_part_t *parts,
                              oss_part_task_result_t *result);
 
-void oss_destroy_thread_pool(oss_upload_thread_params_t *thr_params, int part_num);
+void oss_destroy_thread_pool(oss_thread_params_t *thr_params, int part_num);
 
-void oss_set_task_tracker(oss_upload_thread_params_t *thr_params, int part_num, 
+void oss_set_task_tracker(oss_thread_params_t *thr_params, int part_num, 
                           apr_uint32_t *launched, apr_uint32_t *failed, apr_uint32_t *completed,
                           apr_queue_t *failed_parts, apr_queue_t *completed_parts);
 
@@ -135,6 +136,17 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
                                                 oss_progress_callback progress_callback,
                                                 aos_table_t **resp_headers,
                                                 aos_list_t *resp_body);
+
+
+aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
+                                        aos_string_t *bucket, 
+                                        aos_string_t *object, 
+                                        aos_string_t *filepath,                           
+                                        aos_table_t *headers,
+                                        aos_table_t *params,
+                                        oss_resumable_clt_params_t *clt_params, 
+                                        oss_progress_callback progress_callback,
+                                        aos_table_t **resp_headers);
 
 AOS_CPP_END
 

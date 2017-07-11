@@ -1402,6 +1402,392 @@ void test_resumable_upload_content_type(CuTest *tc)
     printf("test_resumable_upload_content_type ok\n");
 }
 
+void test_resumable_download_without_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_without_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_without_checkpoint ok\n");
+}
+
+void test_resumable_download_with_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_with_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_with_checkpoint ok\n");
+}
+
+void test_resumable_download_partsize(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_partsize.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 1024 * 10, 3, AOS_FALSE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_partsize ok\n");
+}
+
+void test_resumable_download_threads(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_threads.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download with thread 1
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1, AOS_FALSE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_threads ok\n");
+}
+
+void test_resumable_download_with_checkpoint_format_invalid(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_with_checkpoint_format_invalid.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+    aos_string_t checkpoint_path;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // generate checkpoint
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    fill_test_file(p, checkpoint_path.data, "HiOSS");
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_with_checkpoint_format_invalid ok\n");
+}
+
+void test_resumable_download_with_checkpoint_path_invalid(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_with_checkpoint_format_invalid.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    char *cp_path = "/uvwxyz/abchij/test.udp";
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // generate checkpoint
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, cp_path);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertStrEquals(tc, "OpenFileFail", s->error_code);
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_with_checkpoint_path_invalid ok\n");
+}
+
+void test_resumable_download_without_checkpoint_object_not_found(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "/a/b/c/d/e/f/g/h/i/j/k/j/m/n.fake";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_without_checkpoint_object_not_found ok\n");
+}
+
+
+void test_resumable_download_with_checkpoint_object_not_found(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "/a/b/c/d/e/f/g/h/i/j/k/j/m/n.fake";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_with_checkpoint_object_not_found ok\n");
+}
+
+
+
+void test_resumable_download_progress_without_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_progress_without_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, percentage, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_progress_without_checkpoint ok\n");
+}
+
+void test_resumable_download_progress_with_checkpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_progress_with_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    unsigned long content_length;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    // download
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+        clt_params, percentage, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(filename.data));
+
+    remove(filename.data);
+    aos_pool_destroy(p);
+
+    printf("test_resumable_download_progress_with_checkpoint ok\n");
+}
+
 CuSuite *test_oss_resumable()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1430,6 +1816,16 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_resumable_upload_callback_with_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_upload_progress_with_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_upload_content_type);
+    SUITE_ADD_TEST(suite, test_resumable_download_without_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_download_partsize);
+    SUITE_ADD_TEST(suite, test_resumable_download_threads);
+    SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_format_invalid);
+    SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_path_invalid);
+    SUITE_ADD_TEST(suite, test_resumable_download_without_checkpoint_object_not_found);
+    SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_object_not_found);
+    SUITE_ADD_TEST(suite, test_resumable_download_progress_without_checkpoint);
+    SUITE_ADD_TEST(suite, test_resumable_download_progress_with_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;

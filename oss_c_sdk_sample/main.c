@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     crc_sample();
     image_sample();
     resumable_upload_sample();
+    resumable_download_sample();
 
     aos_http_io_deinitialize();
 
