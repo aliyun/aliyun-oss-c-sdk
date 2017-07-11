@@ -107,7 +107,7 @@ void oss_build_parts(int64_t file_size, int64_t part_size, oss_checkpoint_part_t
     }
 }
 
-void oss_build_thread_params(oss_upload_thread_params_t *thr_params, int part_num, 
+void oss_build_thread_params(oss_thread_params_t *thr_params, int part_num, 
                              aos_pool_t *parent_pool, oss_request_options_t *options, 
                              aos_string_t *bucket, aos_string_t *object, aos_string_t *filepath,
                              aos_string_t *upload_id, oss_checkpoint_part_t *parts,
@@ -138,7 +138,7 @@ void oss_build_thread_params(oss_upload_thread_params_t *thr_params, int part_nu
     }
 }
 
-void oss_destroy_thread_pool(oss_upload_thread_params_t *thr_params, int part_num) 
+void oss_destroy_thread_pool(oss_thread_params_t *thr_params, int part_num) 
 {
     int i = 0;
     for (; i < part_num; i++) {
@@ -146,7 +146,7 @@ void oss_destroy_thread_pool(oss_upload_thread_params_t *thr_params, int part_nu
     }
 }
 
-void oss_set_task_tracker(oss_upload_thread_params_t *thr_params, int part_num, 
+void oss_set_task_tracker(oss_thread_params_t *thr_params, int part_num, 
                           apr_uint32_t *launched, apr_uint32_t *failed, apr_uint32_t *completed,
                           apr_queue_t *failed_parts, apr_queue_t *completed_parts) 
 {
@@ -187,6 +187,32 @@ void oss_build_upload_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint,
     checkpoint->part_num = i;
 }
 
+void oss_build_download_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint, aos_string_t *file_path, 
+        const char *object_name, int64_t object_size, const char *object_last_modified, 
+        const char *object_etag, int64_t part_size) 
+{
+    int i = 0;
+
+    checkpoint->cp_type = OSS_CP_DOWNLOAD;
+    checkpoint->thefile = NULL;
+    aos_str_set(&checkpoint->file_path, aos_pstrdup(pool, file_path));
+    aos_str_set(&checkpoint->object_name, object_name);
+    checkpoint->object_size = object_size;
+    aos_str_set(&checkpoint->object_last_modified, object_last_modified);
+    aos_str_set(&checkpoint->object_etag, object_etag);
+
+    checkpoint->part_size = part_size;
+    for (; i * part_size < object_size; i++) {
+        checkpoint->parts[i].index = i;
+        checkpoint->parts[i].offset = i * part_size;
+        checkpoint->parts[i].size = aos_min(part_size, (object_size - i * part_size));
+        checkpoint->parts[i].completed = AOS_FALSE;
+        aos_str_set(&checkpoint->parts[i].etag , "");
+    }
+    checkpoint->part_num = i;
+}
+
+
 int oss_dump_checkpoint(aos_pool_t *pool, const oss_checkpoint_t *checkpoint) 
 {
     char *xml_body = NULL;
@@ -203,7 +229,7 @@ int oss_dump_checkpoint(aos_pool_t *pool, const oss_checkpoint_t *checkpoint)
     // truncate to empty
     s = apr_file_trunc(checkpoint->thefile, 0);
     if (s != APR_SUCCESS) {
-        aos_error_log("apr_file_write fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_write failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_TRUNC_ERROR;
     }
    
@@ -211,14 +237,14 @@ int oss_dump_checkpoint(aos_pool_t *pool, const oss_checkpoint_t *checkpoint)
     len = strlen(xml_body);
     s = apr_file_write(checkpoint->thefile, xml_body, &len);
     if (s != APR_SUCCESS) {
-        aos_error_log("apr_file_write fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_write failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_WRITE_ERROR;
     }
 
     // flush file
     s = apr_file_flush(checkpoint->thefile);
     if (s != APR_SUCCESS) {
-        aos_error_log("apr_file_flush fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_flush failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_FLUSH_ERROR;
     }
 
@@ -254,7 +280,7 @@ int oss_load_checkpoint(aos_pool_t *pool, const aos_string_t *filepath, oss_chec
     // read
     s = apr_file_read_full(thefile, xml_body, (apr_size_t)finfo.size, &len);
     if (s != APR_SUCCESS) {
-        aos_error_log("apr_file_read_full fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_read_full failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         apr_file_close(thefile);
         return AOSE_FILE_READ_ERROR;
     }
@@ -302,13 +328,13 @@ void oss_get_checkpoint_undo_parts(oss_checkpoint_t *checkpoint, int *part_num, 
 void * APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data) 
 {
     aos_status_t *s = NULL;
-    oss_upload_thread_params_t *params = NULL;
+    oss_thread_params_t *params = NULL;
     oss_upload_file_t *upload_file = NULL;
     aos_table_t *resp_headers = NULL;
     int part_num;
     char *etag;
     
-    params = (oss_upload_thread_params_t *)data;
+    params = (oss_thread_params_t *)data;
     if (apr_atomic_read32(params->failed) > 0) {
         apr_atomic_inc32(params->launched);
         return NULL;
@@ -359,7 +385,7 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
     oss_checkpoint_part_t *parts;
     oss_part_task_result_t *results;
     oss_part_task_result_t *task_res;
-    oss_upload_thread_params_t *thr_params;
+    oss_thread_params_t *thr_params;
     aos_table_t *cb_headers = NULL;
     apr_thread_pool_t *thrp;
     apr_uint32_t launched = 0;
@@ -383,7 +409,7 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
     parts = (oss_checkpoint_part_t *)aos_palloc(parent_pool, sizeof(oss_checkpoint_part_t) * part_num);
     oss_build_parts(finfo->size, part_size, parts);
     results = (oss_part_task_result_t *)aos_palloc(parent_pool, sizeof(oss_part_task_result_t) * part_num);
-    thr_params = (oss_upload_thread_params_t *)aos_palloc(parent_pool, sizeof(oss_upload_thread_params_t) * part_num);
+    thr_params = (oss_thread_params_t *)aos_palloc(parent_pool, sizeof(oss_thread_params_t) * part_num);
     oss_build_thread_params(thr_params, part_num, parent_pool, options, bucket, object, filepath, &upload_id, parts, results);
     
     // init upload
@@ -516,7 +542,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
     oss_checkpoint_part_t *parts;
     oss_part_task_result_t *results;
     oss_part_task_result_t *task_res;
-    oss_upload_thread_params_t *thr_params;
+    oss_thread_params_t *thr_params;
     aos_table_t *cb_headers = NULL;
     apr_thread_pool_t *thrp;
     apr_uint32_t launched = 0;
@@ -579,7 +605,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
     parts = (oss_checkpoint_part_t *)aos_palloc(parent_pool, sizeof(oss_checkpoint_part_t) * (checkpoint->part_num));
     oss_get_checkpoint_undo_parts(checkpoint, &part_num, parts);
     results = (oss_part_task_result_t *)aos_palloc(parent_pool, sizeof(oss_part_task_result_t) * part_num);
-    thr_params = (oss_upload_thread_params_t *)aos_palloc(parent_pool, sizeof(oss_upload_thread_params_t) * part_num);
+    thr_params = (oss_thread_params_t *)aos_palloc(parent_pool, sizeof(oss_thread_params_t) * part_num);
     oss_build_thread_params(thr_params, part_num, parent_pool, options, bucket, object, filepath, &upload_id, parts, results);
 
     // upload parts    
@@ -735,6 +761,317 @@ aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
     } else {
         s = oss_resumable_upload_file_without_cp(options, bucket, object, filepath, headers, params, thread_num, 
             part_size, &finfo, progress_callback, resp_headers, resp_body);
+    }
+
+    aos_pool_destroy(sub_pool);
+    return s;
+}
+
+
+
+
+static int oss_is_download_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *checkpoint, 
+        const char *object_name, int64_t object_size, const char *object_last_modified, const char *object_etag)
+{
+    if (oss_verify_checkpoint_md5(pool, checkpoint) && 
+            (checkpoint->object_size == object_size) && 
+            !strcmp(checkpoint->object_last_modified.data, object_last_modified) &&
+            !strcmp(checkpoint->object_etag.data, object_etag)) {
+        return AOS_TRUE;
+    }
+    return AOS_FALSE;
+}
+
+
+void *APR_THREAD_FUNC download_part(apr_thread_t *thd, void *data)
+{
+    aos_status_t *s = NULL;
+    oss_thread_params_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+
+    int rv;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *query_params = NULL;
+    
+    params = (oss_thread_params_t *)data;
+
+    if (apr_atomic_read32(params->failed) > 0) {
+        // skip following unstarted parts if parts failure happened
+        apr_queue_push(params->task_result_queue, NULL);
+        return NULL;
+    }
+
+    headers = aos_table_create_if_null(&params->options, headers, 0);
+    query_params = aos_table_create_if_null(&params->options, query_params, 0);
+
+    apr_table_set(headers, "Range", apr_psprintf(params->options.pool, "bytes=%ld-%ld", 
+                params->part->offset, params->part->offset + params->part->size - 1));
+
+    aos_file_buf_t *fb = aos_create_file_buf(params->options.pool);
+    
+
+    if ((rv = aos_open_file_for_write_notrunc(params->options.pool, 
+                    params->filepath->data, fb)) != AOSE_OK) {
+        aos_error_log("Open write file fail, filename:%s\n", params->filepath->data);
+        
+        params->result->s = aos_status_create(params->options.pool);
+        aos_file_error_status_set(params->result->s, rv);
+        apr_queue_push(params->task_result_queue, params->result);
+
+        return NULL;
+    }
+    apr_off_t offset = params->part->offset;
+    apr_file_seek(fb->file, APR_SET, &offset);
+
+    oss_init_object_request(&params->options, params->bucket, params->object, HTTP_GET,
+            &req, query_params, headers, NULL, 0, &resp);
+    oss_init_read_response_body_to_fb(fb, params->filepath, resp);
+
+    s = oss_process_request(&params->options, req, resp);
+
+    if (!aos_status_is_ok(s)) {
+        params->result->s = s; 
+        apr_queue_push(params->task_result_queue, params->result);
+    } else {
+        // success
+        oss_fill_read_response_header(resp, &resp_headers);
+        aos_str_set(&params->result->etag, apr_pstrdup(params->options.pool, 
+                    apr_table_get(resp_headers, "ETag")));
+
+        params->result->s = s;
+        apr_queue_push(params->task_result_queue, params->result);
+    }
+
+    return NULL;
+}
+
+aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
+                                            aos_string_t *bucket, 
+                                            aos_string_t *object, 
+                                            aos_string_t *filepath,                           
+                                            aos_table_t *headers,
+                                            aos_table_t *params,
+                                            int32_t thread_num,
+                                            int64_t part_size,
+                                            aos_string_t *checkpoint_path,
+                                            oss_progress_callback progress_callback,
+                                            aos_table_t **resp_headers)
+{
+    aos_status_t *s = NULL;
+    int need_init_download;
+    oss_checkpoint_t *checkpoint;
+
+    aos_table_t *head_resp_headers;
+    aos_string_t tmp_filename;
+    
+    int i;
+    int part_num;
+    int64_t object_size;
+    const char *object_last_modified;
+    const char *object_etag;
+    oss_checkpoint_part_t *parts;
+    oss_part_task_result_t *results;
+    oss_part_task_result_t *task_res;
+    oss_thread_params_t *thr_params;
+    apr_thread_pool_t *thrp;
+    apr_uint32_t failed = 0;
+    apr_queue_t *failed_parts;
+    apr_queue_t *completed_parts;
+    apr_queue_t *task_result_queue;
+    int64_t consume_bytes = 0;
+
+    int rv = AOSE_OK;
+    
+    oss_get_temporary_file_name(options->pool, filepath, &tmp_filename);
+
+    // head object info
+    s = oss_head_object(options, bucket, object, headers, &head_resp_headers);
+    *resp_headers = head_resp_headers;
+    if (!aos_status_is_ok(s))
+        return s;
+
+    object_size = atol(apr_table_get(head_resp_headers, OSS_CONTENT_LENGTH));
+    object_last_modified = apr_table_get(head_resp_headers, "Last-Modified");
+    object_etag = apr_table_get(head_resp_headers, "ETag");
+
+    need_init_download = AOS_TRUE;
+    checkpoint = oss_create_checkpoint_content(options->pool);
+    if (checkpoint_path) do {
+        if (!oss_does_file_exist(checkpoint_path, options->pool))
+            break;
+        if (!oss_does_file_exist(&tmp_filename, options->pool))
+            break;
+        apr_finfo_t tmp_finfo;
+        apr_stat(&tmp_finfo, tmp_filename.data, APR_FINFO_SIZE, options->pool);
+        if (object_size != tmp_finfo.size)
+            break;
+        if (AOSE_OK != oss_load_checkpoint(options->pool, checkpoint_path, checkpoint))
+            break;
+        if (!oss_is_download_checkpoint_valid(options->pool, checkpoint, object->data, 
+                    object_size, object_last_modified, object_etag))
+            break;
+        need_init_download = AOS_FALSE;
+    } while (0);
+
+    if (need_init_download) {
+        aos_debug_log("need init download\n");
+        // build checkpoint
+        oss_build_download_checkpoint(options->pool, checkpoint, filepath, object->data, 
+                object_size, object_last_modified, object_etag, part_size);
+    }
+
+    if (checkpoint_path) {
+        if ((rv = oss_open_checkpoint_file(options->pool, checkpoint_path, checkpoint)) != APR_SUCCESS) {
+            s = aos_status_create(options->pool);
+            aos_status_set(s, rv, AOS_OPEN_FILE_ERROR_CODE, NULL);
+            return s;
+        }
+    }
+    
+    // Open and truncate the tmp file.
+    aos_file_buf_t *fb = aos_create_file_buf(options->pool);
+    if ((rv = aos_open_file_for_write_notrunc(options->pool, tmp_filename.data, fb)) != AOSE_OK) {
+        aos_error_log("Open write file fail, filename:%s\n", tmp_filename.data);
+        aos_file_error_status_set(s, rv);
+        return s;
+    }
+    apr_file_trunc(fb->file, object_size);
+
+
+    parts = (oss_checkpoint_part_t *)aos_palloc(options->pool, sizeof(*parts) * checkpoint->part_num);
+    oss_get_checkpoint_undo_parts(checkpoint, &part_num, parts);
+    results = (oss_part_task_result_t *)aos_palloc(options->pool, sizeof(*results) * part_num);
+    thr_params = (oss_thread_params_t *)aos_palloc(options->pool, sizeof(*thr_params) * part_num);
+    oss_build_thread_params(thr_params, part_num, options->pool, options, bucket, object, &tmp_filename, NULL, parts, results);
+
+    aos_debug_log("object_size: %ld, total parts: %d, parts to download: %d\n", 
+            object_size, checkpoint->part_num, part_num);
+
+    // download parts    
+    rv = apr_thread_pool_create(&thrp, 0, thread_num, options->pool);
+    if (APR_SUCCESS != rv) {
+        s = aos_status_create(options->pool);
+        aos_status_set(s, rv, AOS_CREATE_THREAD_POOL_ERROR_CODE, NULL); 
+        return s;
+    }
+    if ((rv = apr_queue_create(&failed_parts, part_num, options->pool)) != APR_SUCCESS || 
+            (rv = apr_queue_create(&completed_parts, part_num, options->pool)) != APR_SUCCESS ||
+            (rv = apr_queue_create(&task_result_queue, part_num, options->pool)) != APR_SUCCESS) {
+        s = aos_status_create(options->pool);
+        aos_status_set(s, rv, AOS_CREATE_QUEUE_ERROR_CODE, NULL); 
+        return s;
+    }
+
+    // launch
+    for (i = 0; i < part_num; i++) {
+        thr_params[i].failed = &failed;
+        thr_params[i].task_result_queue = task_result_queue;
+    }
+    for (i = 0; i < part_num; i++) {
+        apr_thread_pool_push(thrp, download_part, thr_params + i, 0, NULL);
+    }
+
+    // wait until all tasks exit
+    for (i = 0 ; i < part_num; ) {
+        rv = apr_queue_pop(task_result_queue, (void **)&task_res);
+        if (APR_SUCCESS == rv) {
+            if (task_res && aos_status_is_ok(task_res->s) &&
+                    !strcmp(object_etag, task_res->etag.data)) {
+                // completed part
+                oss_checkpoint_t backup_checkpoint;
+                memcpy(&backup_checkpoint, checkpoint, sizeof(backup_checkpoint));
+
+                oss_update_checkpoint(options->pool, checkpoint, task_res->part->index, &task_res->etag);
+                    
+                rv = checkpoint->thefile ? oss_dump_checkpoint(options->pool, checkpoint) : AOSE_OK;
+
+                if (rv == AOSE_OK) {
+                    apr_queue_push(completed_parts, task_res);
+
+                    if (progress_callback) {
+                        consume_bytes += task_res->part->size;
+                        progress_callback(consume_bytes, object_size);
+                    }
+                } else {
+                    // downloaded but failed to dump checkpoint, 
+                    // also regarded as a failed part. 
+                    apr_atomic_inc32(&failed);
+                    apr_queue_push(failed_parts, task_res);
+                    
+                    // need to restore checkpoint
+                    memcpy(checkpoint, &backup_checkpoint, sizeof(*checkpoint));
+                }
+            } else if (task_res) {
+                // failed parts
+                apr_atomic_inc32(&failed);
+                apr_queue_push(failed_parts, task_res);
+            } else {
+                // skipped (early returned in task)
+            }
+            i++;
+        } else if (APR_EINTR == rv) {
+            apr_sleep(1000);
+        } else {
+            break;
+        }
+    }
+    if (checkpoint->thefile) {
+        apr_file_close(checkpoint->thefile);
+        checkpoint->thefile = NULL;
+    }
+
+    aos_debug_log("completed: %u, failed: %u, skipped: %u\n", 
+            apr_queue_size(completed_parts), apr_queue_size(failed_parts), 
+            part_num - apr_queue_size(completed_parts) - apr_queue_size(failed_parts));
+
+    // any parts failure
+    if (apr_atomic_read32(&failed) > 0) {
+        apr_queue_pop(failed_parts, (void **)&task_res);
+        s = aos_status_dup(options->pool, task_res->s);
+    } else {
+        // complete download for all parts
+        oss_temp_file_rename(s, tmp_filename.data, filepath->data, options->pool);
+        if (checkpoint_path)
+            apr_file_remove(checkpoint_path->data, options->pool);
+    }
+    oss_destroy_thread_pool(thr_params, part_num);
+
+    return s;
+}
+
+aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
+                                        aos_string_t *bucket, 
+                                        aos_string_t *object, 
+                                        aos_string_t *filepath,                           
+                                        aos_table_t *headers,
+                                        aos_table_t *params,
+                                        oss_resumable_clt_params_t *clt_params, 
+                                        oss_progress_callback progress_callback,
+                                        aos_table_t **resp_headers) 
+{
+    int32_t thread_num = 0;
+    int64_t part_size = 0;
+    aos_string_t checkpoint_path;
+    aos_pool_t *sub_pool;
+    apr_finfo_t finfo;
+    aos_status_t *s;
+
+    thread_num = oss_get_thread_num(clt_params);
+
+    aos_pool_create(&sub_pool, options->pool);
+
+    part_size = clt_params->part_size;
+    oss_get_part_size(finfo.size, &part_size);
+
+    if (NULL != clt_params && clt_params->enable_checkpoint) {
+        oss_get_checkpoint_path(clt_params, filepath, sub_pool, &checkpoint_path);
+        s = __oss_resumable_download_file(options, bucket, object, filepath, headers, params, thread_num, 
+            part_size, &checkpoint_path, progress_callback, resp_headers);
+    } else {
+        s = __oss_resumable_download_file(options, bucket, object, filepath, headers, params, thread_num, 
+            part_size, NULL, progress_callback, resp_headers);
     }
 
     aos_pool_destroy(sub_pool);

@@ -12,9 +12,15 @@ typedef struct {
 
 #define aos_string(str)     { sizeof(str) - 1, (char *) str }
 #define aos_null_string     { 0, NULL }
-#define aos_str_set(str, text)                                  \
-    (str)->len = strlen(text); (str)->data = (char *) text
-#define aos_str_null(str)   (str)->len = 0; (str)->data = NULL
+#define aos_str_set(str, text) do { \
+    (str)->len = strlen(text); \
+    (str)->data = (char *) text; \
+} while (0)
+
+#define aos_str_null(str) do { \
+    (str)->len = 0; \
+    (str)->data = NULL; \
+} while (0)
 
 #define aos_tolower(c)      (char) ((c >= 'A' && c <= 'Z') ? (c | 0x20) : c)
 #define aos_toupper(c)      (char) ((c >= 'a' && c <= 'z') ? (c & ~0x20) : c)
