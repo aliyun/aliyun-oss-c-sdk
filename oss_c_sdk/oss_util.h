@@ -151,6 +151,11 @@ void oss_fill_read_response_body(aos_http_response_t *resp, aos_list_t *buffer);
 int oss_init_read_response_body_to_file(aos_pool_t *p, const aos_string_t *filename, aos_http_response_t *resp);
 
 /**
+  * @brief  read body content from oss response body to file buffer
+**/
+int oss_init_read_response_body_to_fb(aos_file_buf_t *fb, const aos_string_t *filename, aos_http_response_t *resp);
+
+/**
   * @brief  read response header if headers is not null
 **/
 void oss_fill_read_response_header(aos_http_response_t *resp, aos_table_t **headers);
