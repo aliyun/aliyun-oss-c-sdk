@@ -115,7 +115,7 @@ void oss_update_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint, int32
 
 void oss_get_checkpoint_undo_parts(oss_checkpoint_t *checkpoint, int *part_num, oss_checkpoint_part_t *parts);
 
-void * APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data);
+void *APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data);
 
 aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *options,
                                                    aos_string_t *bucket, 
@@ -144,16 +144,21 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
                                                 aos_table_t **resp_headers,
                                                 aos_list_t *resp_body);
 
+void *download_part(apr_thread_t *thd, void *data);
 
-aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
-                                        aos_string_t *bucket, 
-                                        aos_string_t *object, 
-                                        aos_string_t *filepath,                           
-                                        aos_table_t *headers,
-                                        aos_table_t *params,
-                                        oss_resumable_clt_params_t *clt_params, 
-                                        oss_progress_callback progress_callback,
-                                        aos_table_t **resp_headers);
+void *APR_THREAD_FUNC download_part_thr(apr_thread_t *thd, void *data);
+
+aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *options,
+                                                   aos_string_t *bucket, 
+                                                   aos_string_t *object, 
+                                                   aos_string_t *filepath,                           
+                                                   aos_table_t *headers,
+                                                   aos_table_t *params,
+                                                   int32_t thread_num,
+                                                   int64_t part_size,
+                                                   aos_string_t *checkpoint_path,
+                                                   oss_progress_callback progress_callback,
+                                                   aos_table_t **resp_headers);
 
 AOS_CPP_END
 

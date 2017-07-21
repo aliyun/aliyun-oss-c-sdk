@@ -767,9 +767,6 @@ aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
     return s;
 }
 
-
-
-
 static int oss_is_download_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *checkpoint, 
         const char *object_name, int64_t object_size, const char *object_last_modified, const char *object_etag)
 {
@@ -782,8 +779,7 @@ static int oss_is_download_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *
     return AOS_FALSE;
 }
 
-
-void *APR_THREAD_FUNC download_part(apr_thread_t *thd, void *data)
+void *download_part(apr_thread_t *thd, void *data)
 {
     aos_status_t *s = NULL;
     oss_thread_params_t *params = NULL;
@@ -794,6 +790,9 @@ void *APR_THREAD_FUNC download_part(apr_thread_t *thd, void *data)
     aos_http_response_t *resp = NULL;
     aos_table_t *headers = NULL;
     aos_table_t *query_params = NULL;
+    aos_file_buf_t *fb = NULL;
+    apr_off_t offset = 0;
+    char *rangeInHeader = NULL;
     
     params = (oss_thread_params_t *)data;
 
@@ -806,12 +805,12 @@ void *APR_THREAD_FUNC download_part(apr_thread_t *thd, void *data)
     headers = aos_table_create_if_null(&params->options, headers, 0);
     query_params = aos_table_create_if_null(&params->options, query_params, 0);
 
-    apr_table_set(headers, "Range", apr_psprintf(params->options.pool, "bytes=%ld-%ld", 
-                params->part->offset, params->part->offset + params->part->size - 1));
+    rangeInHeader = apr_psprintf(params->options.pool, "bytes=%" APR_INT64_T_FMT "-%" APR_INT64_T_FMT, 
+        params->part->offset, params->part->offset + params->part->size - 1);
+    apr_table_set(headers, "Range", rangeInHeader);
 
-    aos_file_buf_t *fb = aos_create_file_buf(params->options.pool);
-    
-
+    fb = aos_create_file_buf(params->options.pool);
+   
     if ((rv = aos_open_file_for_write_notrunc(params->options.pool, 
                     params->filepath->data, fb)) != AOSE_OK) {
         aos_error_log("Open write file fail, filename:%s\n", params->filepath->data);
@@ -822,7 +821,7 @@ void *APR_THREAD_FUNC download_part(apr_thread_t *thd, void *data)
 
         return NULL;
     }
-    apr_off_t offset = params->part->offset;
+    offset = params->part->offset;
     apr_file_seek(fb->file, APR_SET, &offset);
 
     oss_init_object_request(&params->options, params->bucket, params->object, HTTP_GET,
@@ -847,7 +846,7 @@ void *APR_THREAD_FUNC download_part(apr_thread_t *thd, void *data)
     return NULL;
 }
 
-void *APR_THREAD_FUNC entry(apr_thread_t *thd, void *data)
+void *APR_THREAD_FUNC download_part_thr(apr_thread_t *thd, void *data)
 {
     apr_status_t status;
     apr_queue_t *task_queue = (apr_queue_t *)data;
@@ -863,18 +862,17 @@ void *APR_THREAD_FUNC entry(apr_thread_t *thd, void *data)
     return NULL;
 }
 
-
-aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
-                                            aos_string_t *bucket, 
-                                            aos_string_t *object, 
-                                            aos_string_t *filepath,                           
-                                            aos_table_t *headers,
-                                            aos_table_t *params,
-                                            int32_t thread_num,
-                                            int64_t part_size,
-                                            aos_string_t *checkpoint_path,
-                                            oss_progress_callback progress_callback,
-                                            aos_table_t **resp_headers)
+aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *options,
+                                                   aos_string_t *bucket, 
+                                                   aos_string_t *object, 
+                                                   aos_string_t *filepath,                           
+                                                   aos_table_t *headers,
+                                                   aos_table_t *params,
+                                                   int32_t thread_num,
+                                                   int64_t part_size,
+                                                   aos_string_t *checkpoint_path,
+                                                   oss_progress_callback progress_callback,
+                                                   aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     int need_init_download = AOS_TRUE;
@@ -892,14 +890,14 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
     oss_part_task_result_t *results;
     oss_part_task_result_t *task_res;
     oss_thread_params_t *thr_params;
-    apr_thread_pool_t *thrp;
     apr_uint32_t failed = 0;
     apr_queue_t *failed_parts;
     apr_queue_t *completed_parts;
     apr_queue_t *task_queue;
     apr_queue_t *task_result_queue;
     int64_t consume_bytes = 0;
-
+    aos_file_buf_t *fb = NULL;
+    apr_thread_t **thd_ids = NULL;
     int rv = AOSE_OK;
     
     oss_get_temporary_file_name(options->pool, filepath, &tmp_filename);
@@ -927,6 +925,8 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
     checkpoint = oss_create_checkpoint_content(options->pool);
     if (checkpoint_path) {
         do {
+            apr_finfo_t tmp_finfo;
+
             if (!oss_does_file_exist(checkpoint_path, options->pool))
                 break;
 
@@ -938,7 +938,7 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
 
             if (!oss_does_file_exist(&tmp_filename, options->pool))
                 break;
-            apr_finfo_t tmp_finfo;
+            
             apr_stat(&tmp_finfo, tmp_filename.data, APR_FINFO_SIZE, options->pool);
             if (object_size != tmp_finfo.size)
                 break;
@@ -964,7 +964,7 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
     }
     
     // Open and truncate the tmp file.
-    aos_file_buf_t *fb = aos_create_file_buf(options->pool);
+    fb = aos_create_file_buf(options->pool);
     if ((rv = aos_open_file_for_write_notrunc(options->pool, tmp_filename.data, fb)) != AOSE_OK) {
         aos_error_log("Open write file fail, filename:%s\n", tmp_filename.data);
         aos_file_error_status_set(s, rv);
@@ -977,8 +977,9 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
     results = (oss_part_task_result_t *)aos_palloc(options->pool, sizeof(*results) * part_num);
     thr_params = (oss_thread_params_t *)aos_palloc(options->pool, sizeof(*thr_params) * part_num);
     oss_build_thread_params(thr_params, part_num, options->pool, options, bucket, object, &tmp_filename, NULL, parts, results);
+    thd_ids = (apr_thread_t **)aos_palloc(options->pool, sizeof(*thd_ids) * thread_num);
 
-    aos_debug_log("object_size: %ld, total parts: %d, parts to download: %d\n", 
+    aos_debug_log("object_size: %" APR_INT64_T_FMT ", total parts: %d, parts to download: %d\n", 
             object_size, checkpoint->part_num, part_num);
 
     if ((rv = apr_queue_create(&failed_parts, part_num, options->pool)) != APR_SUCCESS || 
@@ -998,9 +999,8 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
     }
 
     // download parts    
-    apr_thread_t *tid[thread_num];
     for (i = 0; i < thread_num; i++) {
-        apr_thread_create(&tid[i], NULL, entry, (void *)task_queue, options->pool);
+        apr_thread_create(&thd_ids[i], NULL, download_part_thr, (void *)task_queue, options->pool);
     }
 
     // wait until all tasks exit
@@ -1062,7 +1062,7 @@ aos_status_t *__oss_resumable_download_file(oss_request_options_t *options,
     //apr_thread_pool_destroy(thrp);
     for (i = 0; i < thread_num; i++) {
         apr_status_t retval;
-        apr_thread_join(&retval, tid[i]);
+        apr_thread_join(&retval, thd_ids[i]);
     }
     oss_destroy_thread_pool(thr_params, part_num);
 
@@ -1092,10 +1092,10 @@ aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
     
     if (NULL != clt_params && clt_params->enable_checkpoint) {
         oss_get_checkpoint_path(clt_params, filepath, sub_pool, &checkpoint_path);
-        s = __oss_resumable_download_file(options, bucket, object, filepath, headers, params, thread_num, 
+        s = oss_resumable_download_file_internal(options, bucket, object, filepath, headers, params, thread_num, 
             part_size, &checkpoint_path, progress_callback, resp_headers);
     } else {
-        s = __oss_resumable_download_file(options, bucket, object, filepath, headers, params, thread_num, 
+        s = oss_resumable_download_file_internal(options, bucket, object, filepath, headers, params, thread_num, 
             part_size, NULL, progress_callback, resp_headers);
     }
 
