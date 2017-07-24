@@ -828,6 +828,8 @@ static oss_part_task_result_t *download_part(oss_thread_params_t *params)
 
         params->result->s = s;
     }
+    apr_file_close(fb->file);
+
     return params->result;
 }
 
@@ -973,6 +975,7 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
         return s;
     }
     apr_file_trunc(fb->file, object_size);
+    apr_file_close(fb->file);
 
     parts = (oss_checkpoint_part_t *)aos_palloc(options->pool, sizeof(*parts) * checkpoint->part_num);
     oss_get_checkpoint_todo_parts(checkpoint, &part_num, parts);
