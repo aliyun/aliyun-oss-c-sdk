@@ -113,7 +113,7 @@ int oss_is_upload_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *checkpoin
 
 void oss_update_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint, int32_t part_index, aos_string_t *etag);
 
-void oss_get_checkpoint_undo_parts(oss_checkpoint_t *checkpoint, int *part_num, oss_checkpoint_part_t *parts);
+void oss_get_checkpoint_todo_parts(oss_checkpoint_t *checkpoint, int *part_num, oss_checkpoint_part_t *parts);
 
 void *APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data);
 
@@ -144,9 +144,6 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
                                                 aos_table_t **resp_headers,
                                                 aos_list_t *resp_body);
 
-void *download_part(apr_thread_t *thd, void *data);
-
-void *APR_THREAD_FUNC download_part_thr(apr_thread_t *thd, void *data);
 
 aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *options,
                                                    aos_string_t *bucket, 

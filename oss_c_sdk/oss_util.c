@@ -786,6 +786,16 @@ int part_sort_cmp(const void *a, const void *b)
             ((oss_upload_part_t*)b)->part_num > 0 ? 1 : -1);
 }
 
+
+void oss_headers_add_range(apr_pool_t *pool, apr_table_t *headers, int64_t offset, int64_t size)
+{
+    char *range;
+    range = apr_psprintf(pool, "bytes=%" APR_INT64_T_FMT "-%" APR_INT64_T_FMT, 
+            offset, offset + size - 1);
+    apr_table_set(headers, "Range", range);
+}
+
+
 char *get_content_type_by_suffix(const char *suffix)
 {
     oss_content_type_t *content_type;

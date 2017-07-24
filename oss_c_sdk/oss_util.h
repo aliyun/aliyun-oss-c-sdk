@@ -257,6 +257,12 @@ void oss_get_part_size(int64_t filesize, int64_t *part_size);
 **/
 int part_sort_cmp(const void *a, const void *b);
 
+
+/**
+  * @brief  add range in http request
+**/
+void oss_headers_add_range(apr_pool_t *pool, apr_table_t *headers, int64_t offset, int64_t size);
+
 /**
   * @brief  set content type for object according to objectname
   * @return oss content type
