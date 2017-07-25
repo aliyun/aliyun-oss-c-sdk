@@ -102,6 +102,7 @@ typedef apr_array_header_t aos_array_header_t;
 
 #define AOS_MAX_XML_NODE_VALUE_LEN 1024
 #define AOS_MAX_INT64_STRING_LEN 64
+#define AOS_MAX_UINT64_STRING_LEN 64
 
 #define AOS_CONNECT_TIMEOUT 10
 #define AOS_DNS_CACHE_TIMOUT 60

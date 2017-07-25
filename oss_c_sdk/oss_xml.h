@@ -50,10 +50,12 @@ void build_delete_objects_body(aos_pool_t *p, aos_list_t *object_list, int is_qu
 mxml_node_t	*set_xmlnode_value_str(mxml_node_t *parent, const char *name, const aos_string_t *value);
 mxml_node_t	*set_xmlnode_value_int(mxml_node_t *parent, const char *name, int value);
 mxml_node_t	*set_xmlnode_value_int64(mxml_node_t *parent, const char *name, int64_t value);
+mxml_node_t	*set_xmlnode_value_uint64(mxml_node_t *parent, const char *name, uint64_t value);
 
 int get_xmlnode_value_str(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, aos_string_t *value);
 int get_xmlnode_value_int(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, int *value);
 int get_xmlnode_value_int64(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, int64_t *value);
+int get_xmlnode_value_uint64(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, uint64_t *value);
 
 /**
   * @brief  build xml for checkpoint

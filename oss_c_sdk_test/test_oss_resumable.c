@@ -69,6 +69,26 @@ void test_resumable_cleanup(CuTest *tc)
     aos_pool_destroy(p);
 }
 
+static int aos_curl_http_transport_perform_random_failure(aos_http_transport_t *t_)
+{
+    aos_curl_http_transport_t *t = (aos_curl_http_transport_t *)(t_);
+    int ret = aos_curl_http_transport_perform(t_);
+    if (rand() % 4 == 0) {
+        t->controller->error_code = AOSE_INTERNAL_ERROR;
+        t->controller->reason = "Internal error for test"; 
+        ret = t->controller->error_code;
+    }
+    return ret;
+}
+
+static int aos_curl_http_transport_perform_bad_crc64(aos_http_transport_t *t_)
+{
+    aos_curl_http_transport_t *t = (aos_curl_http_transport_t *)(t_);
+    int ret = aos_curl_http_transport_perform(t_);
+    t->resp->crc64 = rand();
+    return ret;
+}
+
 // ---------------------------- UT ----------------------------
 
 void test_resumable_oss_get_thread_num(CuTest *tc)
@@ -392,11 +412,11 @@ void test_resumable_checkpoint_xml(CuTest *tc)
         "<CPParts>"
         "<Number>5</Number><Size>102400</Size>"
         "<Parts>"
-        "<Part><Index>0</Index><Offset>0</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag></Part>"
-        "<Part><Index>1</Index><Offset>102400</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag></Part>"
-        "<Part><Index>2</Index><Offset>204800</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag></Part>"
-        "<Part><Index>3</Index><Offset>307200</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag></Part>"
-        "<Part><Index>4</Index><Offset>409600</Offset><Size>100998</Size><Completed>1</Completed><ETag></ETag></Part>"
+        "<Part><Index>0</Index><Offset>0</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag><Crc64>0</Crc64></Part>"
+        "<Part><Index>1</Index><Offset>102400</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag><Crc64>0</Crc64></Part>"
+        "<Part><Index>2</Index><Offset>204800</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag><Crc64>0</Crc64></Part>"
+        "<Part><Index>3</Index><Offset>307200</Offset><Size>102400</Size><Completed>1</Completed><ETag></ETag><Crc64>0</Crc64></Part>"
+        "<Part><Index>4</Index><Offset>409600</Offset><Size>100998</Size><Completed>1</Completed><ETag></ETag><Crc64>0</Crc64></Part>"
         "</Parts>"
         "</CPParts>"
         "</Checkpoint>\n";
@@ -1482,6 +1502,7 @@ void test_resumable_download_with_checkpoint(CuTest *tc)
     printf("test_resumable_download_with_checkpoint ok\n");
 }
 
+
 void test_resumable_download_without_checkpoint_target_invalid(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -2154,21 +2175,6 @@ void test_resumable_download_progress_with_checkpoint(CuTest *tc)
 }
 
 
-int aos_curl_http_transport_perform_random_failure(aos_http_transport_t *t_)
-{
-    aos_curl_http_transport_t *t = (aos_curl_http_transport_t *)(t_);
-
-    int ret = aos_curl_http_transport_perform(t_);
-
-    if (rand() % 4 == 0) {
-        t->controller->error_code = AOSE_INTERNAL_ERROR;;
-        t->controller->reason = "Internal error for test"; 
-
-        ret = t->controller->error_code;
-    }
-    return ret;
-}
-
 void test_resumable_download_without_checkpoint_random_failure(CuTest *tc)
 {
     int i;
@@ -2209,14 +2215,30 @@ void test_resumable_download_without_checkpoint_random_failure(CuTest *tc)
         }
         aos_pool_destroy(p);
     }
+    CuAssertTrue(tc, failed_count > 0);
     // restore mock
     aos_http_transport_perform = old;
+
+    // continue finish downloading
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    options->ctl->options->enable_crc = 1;
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+            clt_params, NULL, &resp_headers);
+    aos_pool_destroy(p);
+    CuAssertIntEquals(tc, 200, s->code);
 
     remove(filename.data);
 
     printf("test_resumable_download_without_checkpoint_random_failure ok\n");
 }
-
 
 void test_resumable_download_with_checkpoint_random_failure(CuTest *tc)
 {
@@ -2256,15 +2278,75 @@ void test_resumable_download_with_checkpoint_random_failure(CuTest *tc)
             CuAssertStrEquals(tc, "Internal error for test", s->error_msg);
             failed_count++;
         }
-    
         aos_pool_destroy(p);
     }
+    CuAssertTrue(tc, failed_count > 0);
+    // restore mock
+    aos_http_transport_perform = old;
+
+    // continue finish downloading
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    options->ctl->options->enable_crc = 1;
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+            clt_params, NULL, &resp_headers);
+    aos_pool_destroy(p);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    remove(filename.data);
+
+    printf("test_resumable_download_with_checkpoint_random_failure ok\n");
+}
+
+void test_resumable_download_with_checkpoint_crc64_mismatch(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_resumable_upload_with_checkpoint.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+
+    // mock
+    aos_http_transport_perform_pt old = aos_http_transport_perform;
+    aos_http_transport_perform = aos_curl_http_transport_perform_bad_crc64;
+
+    // download
+    aos_pool_create(&p, NULL);
+
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    options->ctl->options->enable_crc = 1;
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&filename, object_name);
+
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
+    s = oss_resumable_download_file(options, &bucket, &object, &filename, headers, NULL, 
+            clt_params, NULL, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_CRC_INCONSISTENT_ERROR, s->code);
+
+    aos_pool_destroy(p);
+    
     // restore mock
     aos_http_transport_perform = old;
 
     remove(filename.data);
 
-    printf("test_resumable_download_with_checkpoint_random_failure ok\n");
+    printf("test_resumable_download_with_checkpoint_crc64_mismatch ok\n");
 }
 
 CuSuite *test_oss_resumable()
@@ -2314,6 +2396,7 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_resumable_download_progress_with_checkpoint);
     SUITE_ADD_TEST(suite, test_resumable_download_without_checkpoint_random_failure);
     SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_random_failure);
+    SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_crc64_mismatch);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;

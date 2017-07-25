@@ -3,6 +3,7 @@
 #include "aos_util.h"
 #include "aos_string.h"
 #include "aos_status.h"
+#include "aos_crc64.h"
 #include "oss_auth.h"
 #include "oss_util.h"
 #include "oss_xml.h"
@@ -301,12 +302,14 @@ int oss_is_upload_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *checkpoin
     return AOS_FALSE;
 }
 
-void oss_update_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint, int32_t part_index, aos_string_t *etag) 
+void oss_update_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint, 
+        int32_t part_index, aos_string_t *etag, uint64_t crc64) 
 {
     char *p = NULL;
     checkpoint->parts[part_index].completed = AOS_TRUE;
     p = apr_pstrdup(pool, etag->data);
     aos_str_set(&checkpoint->parts[part_index].etag, p);
+    checkpoint->parts[part_index].crc64 = crc64;
 }
 
 void oss_get_checkpoint_todo_parts(oss_checkpoint_t *checkpoint, int *part_num, oss_checkpoint_part_t *parts)
@@ -319,6 +322,7 @@ void oss_get_checkpoint_todo_parts(oss_checkpoint_t *checkpoint, int *part_num, 
             parts[idx].offset = checkpoint->parts[i].offset;
             parts[idx].size = checkpoint->parts[i].size;
             parts[idx].completed = checkpoint->parts[i].completed;
+            parts[idx].crc64 = checkpoint->parts[i].crc64;
             idx++;
         }
     }
@@ -643,7 +647,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
             break;
         } else if(rv == APR_SUCCESS) {
             task_res = (oss_part_task_result_t*)task_result;
-            oss_update_checkpoint(parent_pool, checkpoint, task_res->part->index, &task_res->etag);
+            oss_update_checkpoint(parent_pool, checkpoint, task_res->part->index, &task_res->etag, 0);
             rv = oss_dump_checkpoint(parent_pool, checkpoint);
             if (rv != AOSE_OK) {
                 int idx = task_res->part->index;
@@ -663,7 +667,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
     // deal with left successful parts
     while(APR_SUCCESS == apr_queue_trypop(completed_parts, &task_result)) {
         task_res = (oss_part_task_result_t*)task_result;
-        oss_update_checkpoint(parent_pool, checkpoint, task_res->part->index, &task_res->etag);
+        oss_update_checkpoint(parent_pool, checkpoint, task_res->part->index, &task_res->etag, 0);
         consume_bytes += task_res->part->size;
         has_left_result = AOS_TRUE;
     }
@@ -822,10 +826,16 @@ static oss_part_task_result_t *download_part(oss_thread_params_t *params)
         params->result->s = s; 
     } else {
         // success
-        oss_fill_read_response_header(resp, &resp_headers);
-        aos_str_set(&params->result->etag, apr_pstrdup(params->options.pool, 
-                    apr_table_get(resp_headers, "ETag")));
+        const char *etag;
 
+        oss_fill_read_response_header(resp, &resp_headers);
+        
+        etag = apr_table_get(resp_headers, "Etag");
+        if (etag) {
+            aos_str_set(&params->result->etag, apr_pstrdup(params->options.pool, etag));
+        }
+
+        params->result->crc64 = resp->crc64;
         params->result->s = s;
     }
     apr_file_close(fb->file);
@@ -882,6 +892,7 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
     const char *object_size_str = NULL;
     const char *object_last_modified = NULL;
     const char *object_etag = NULL;
+    const char *crc64_str = NULL;
     oss_checkpoint_part_t *parts;
     oss_part_task_result_t *results;
     oss_part_task_result_t *task_res;
@@ -907,6 +918,7 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
     object_last_modified = apr_table_get(head_resp_headers, "Last-Modified");
     object_etag = apr_table_get(head_resp_headers, "ETag");
     object_size_str = apr_table_get(head_resp_headers, OSS_CONTENT_LENGTH);
+    crc64_str = apr_table_get(head_resp_headers, OSS_HASH_CRC64_ECMA);
 
     if (!object_last_modified || !object_etag || !object_size_str) {
         // Invalid http response header 
@@ -970,6 +982,9 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
     // Open and truncate the tmp file.
     fb = aos_create_file_buf(options->pool);
     if ((rv = aos_open_file_for_write_notrunc(options->pool, tmp_filename.data, fb)) != AOSE_OK) {
+        if (checkpoint->thefile)
+            apr_file_close(checkpoint->thefile);
+
         aos_error_log("Open write file fail, filename:%s\n", tmp_filename.data);
         aos_file_error_status_set(s, rv);
         return s;
@@ -991,6 +1006,9 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
             (rv = apr_queue_create(&completed_parts, part_num, options->pool)) != APR_SUCCESS ||
             (rv = apr_queue_create(&task_queue, part_num, options->pool)) != APR_SUCCESS ||
             (rv = apr_queue_create(&task_result_queue, part_num, options->pool)) != APR_SUCCESS) {
+        if (checkpoint->thefile)
+            apr_file_close(checkpoint->thefile);
+
         s = aos_status_create(options->pool);
         aos_status_set(s, rv, AOS_CREATE_QUEUE_ERROR_CODE, NULL); 
         return s;
@@ -1014,7 +1032,8 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
         if (task_res && aos_status_is_ok(task_res->s) &&
                 !strcasecmp(object_etag, task_res->etag.data)) {
             // completed part
-            oss_update_checkpoint(options->pool, checkpoint, task_res->part->index, &task_res->etag);
+            oss_update_checkpoint(options->pool, checkpoint, task_res->part->index, 
+                    &task_res->etag, task_res->crc64);
             if (checkpoint->thefile) {
                 if ((rv = oss_dump_checkpoint(options->pool, checkpoint)) != AOSE_OK) {
                     aos_warn_log("failed to persist checkpoint file %s: %d\n", 
@@ -1032,7 +1051,7 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
             apr_atomic_inc32(&failed);
             apr_queue_push(failed_parts, task_res);
         } else {
-            // skipped (early returned in task)
+            // skipped parts
         }
     }
     if (checkpoint->thefile) {
@@ -1044,20 +1063,42 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
             apr_queue_size(completed_parts), apr_queue_size(failed_parts), 
             part_num - apr_queue_size(completed_parts) - apr_queue_size(failed_parts));
 
-    // any parts failure
     if (apr_atomic_read32(&failed) > 0) {
+        // any parts failure
         apr_queue_pop(failed_parts, (void **)&task_res);
         s = aos_status_dup(options->pool, task_res->s);
     } else {
         // complete download for all parts
-        rv = oss_temp_file_rename(s, tmp_filename.data, filepath->data, options->pool);
-        if (rv == APR_SUCCESS) {
-            if (checkpoint_path) {
-                apr_file_remove(checkpoint_path->data, options->pool);
+        rv = AOSE_OK;
+
+        if (is_enable_crc(options) && crc64_str) {
+            uint64_t iter_crc64 = 0;
+            for (i = 0; i < checkpoint->part_num; i++) {
+                iter_crc64 = aos_crc64_combine(iter_crc64, checkpoint->parts[i].crc64,
+                        checkpoint->parts[i].size);
             }
-        } else {
-            s = aos_status_create(options->pool);
-            aos_status_set(s, rv, AOS_RENAME_FILE_ERROR_CODE, NULL);
+            if ((rv = oss_check_crc_consistent(iter_crc64, head_resp_headers, s)) != AOSE_OK) {
+                if (checkpoint_path) {
+                    // checkpoint file should be removed here, otherwise retry downloads will 
+                    // always be skipped and failed here in crc64 check
+                    if (apr_file_remove(checkpoint_path->data, options->pool) != APR_SUCCESS) {
+                        aos_warn_log("Failed to remove checkpoint file %s\n", 
+                                checkpoint_path->data);
+                    }
+                }
+                apr_file_remove(tmp_filename.data, options->pool);
+            }
+        }
+
+        if (rv == AOSE_OK) {
+            if (apr_file_rename(tmp_filename.data, filepath->data, options->pool) != APR_SUCCESS) {
+                s = aos_status_create(options->pool);
+                aos_status_set(s, rv, AOS_RENAME_FILE_ERROR_CODE, NULL);
+            } else {
+                if (checkpoint_path) {
+                    apr_file_remove(checkpoint_path->data, options->pool);
+                }
+            }
         }
     }
 
