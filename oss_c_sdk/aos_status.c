@@ -9,6 +9,7 @@ const char AOS_RENAME_FILE_ERROR_CODE[] = "RenameFileFail";
 const char AOS_HTTP_IO_ERROR_CODE[] = "HttpIoError";
 const char AOS_UNKNOWN_ERROR_CODE[] = "UnknownError";
 const char AOS_CLIENT_ERROR_CODE[] = "ClientError";
+const char AOS_SERVER_ERROR_CODE[] = "ServerError";
 const char AOS_UTF8_ENCODE_ERROR_CODE[] = "Utf8EncodeFail";
 const char AOS_URL_ENCODE_ERROR_CODE[] = "UrlEncodeFail";
 const char AOS_INCONSISTENT_ERROR_CODE[] = "InconsistentError";

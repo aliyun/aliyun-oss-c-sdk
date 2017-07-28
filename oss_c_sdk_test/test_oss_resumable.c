@@ -131,36 +131,56 @@ void test_resumable_oss_get_checkpoint_path(CuTest *tc)
 
     aos_str_set(&file_path, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg");
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_FALSE, NULL);
-    oss_get_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    oss_get_upload_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertTrue(tc, checkpoint_path.data == NULL);
+    CuAssertTrue(tc, checkpoint_path.len == 0);
+    oss_get_download_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
     CuAssertTrue(tc, checkpoint_path.data == NULL);
     CuAssertTrue(tc, checkpoint_path.len == 0);
 
-    aos_str_set(&checkpoint_path, "BingWallpaper-2017-01-19.jpg.ucp");
+    aos_str_set(&checkpoint_path, "BingWallpaper-2017-01-19.jpg.checkpoint");
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, checkpoint_path.data);
-    oss_get_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
-    CuAssertStrEquals(tc, "BingWallpaper-2017-01-19.jpg.ucp", checkpoint_path.data);
+    oss_get_upload_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "BingWallpaper-2017-01-19.jpg.checkpoint", checkpoint_path.data);
+    oss_get_download_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "BingWallpaper-2017-01-19.jpg.checkpoint", checkpoint_path.data);
 
     // win path
     aos_str_set(&file_path, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg");
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
-    CuAssertStrEquals(tc, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg.cp", checkpoint_path.data);
+    oss_get_upload_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg.ucp", checkpoint_path.data);
+    oss_get_download_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg.dcp", checkpoint_path.data);
 
     aos_str_set(&checkpoint_path, "");
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
-    CuAssertStrEquals(tc, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg.cp", checkpoint_path.data);
+    oss_get_upload_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg.ucp", checkpoint_path.data);
+
+    aos_str_set(&checkpoint_path, "");
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, NULL);
+    oss_get_download_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "D:\\work\\oss\\BingWallpaper-2017-01-19.jpg.dcp", checkpoint_path.data);
 
     // linux path
     aos_str_set(&file_path, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg");
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
-    CuAssertStrEquals(tc, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg.cp", checkpoint_path.data);
+    oss_get_upload_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg.ucp", checkpoint_path.data);
+    oss_get_download_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg.dcp", checkpoint_path.data);
 
     aos_str_set(&checkpoint_path, "");
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
-    CuAssertStrEquals(tc, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg.cp", checkpoint_path.data);
+    oss_get_upload_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg.ucp", checkpoint_path.data);
+
+    aos_str_set(&checkpoint_path, "");
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 1024, AOS_TRUE, NULL);
+    oss_get_download_checkpoint_path(clt_params, &file_path, p, &checkpoint_path);
+    CuAssertStrEquals(tc, "/home/tim/work/oss/BingWallpaper-2017-01-19.jpg.dcp", checkpoint_path.data);
+
 
     aos_pool_destroy(p);
 
@@ -782,7 +802,7 @@ void test_resumable_upload_with_checkpoint_format_invalid(CuTest *tc)
 
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_upload_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     fill_test_file(p, checkpoint_path.data, "HiOSS");
 
     // upload object
@@ -896,7 +916,7 @@ void test_resumable_upload_with_file_size_unavailable(CuTest *tc)
 
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_upload_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     fill_test_file(p, checkpoint_path.data, xml_doc);
 
     // upload object
@@ -1043,7 +1063,7 @@ void test_resumable_upload_with_uploadid_available(CuTest *tc)
     headers = aos_table_make(p, 0);
 
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_upload_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     fill_test_file(p, checkpoint_path.data, xml_doc);
 
     // upload object
@@ -1722,7 +1742,7 @@ void test_resumable_download_with_checkpoint_format_invalid(CuTest *tc)
  
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_download_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     fill_test_file(p, checkpoint_path.data, "HiOSS");
     oss_get_temporary_file_name(p, &filename, &tmp_filename);
     make_random_file(p, tmp_filename.data, content_length);
@@ -1777,7 +1797,7 @@ void test_resumable_download_with_checkpoint_info_invalid(CuTest *tc)
  
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_download_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     checkpoint = oss_create_checkpoint_content(p);
     oss_build_download_checkpoint(p, checkpoint, &filename, object.data, 
             content_length, object_last_modified, object_etag, 1024 * 99);
@@ -1841,7 +1861,7 @@ void test_resumable_download_with_checkpoint_info_valid(CuTest *tc)
  
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_download_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     checkpoint = oss_create_checkpoint_content(p);
     oss_build_download_checkpoint(p, checkpoint, &filename, object.data, 
             content_length, object_last_modified, object_etag, 1024 * 100);
@@ -1938,7 +1958,7 @@ void test_resumable_download_with_tmpfile_not_found(CuTest *tc)
  
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_download_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     checkpoint = oss_create_checkpoint_content(p);
     oss_build_download_checkpoint(p, checkpoint, &filename, object.data, 
             content_length, object_last_modified, object_etag, 1024 * 100);
@@ -1997,7 +2017,7 @@ void test_resumable_download_with_tmpfile_invalid(CuTest *tc)
 
     // generate checkpoint
     clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_TRUE, NULL);
-    oss_get_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
+    oss_get_download_checkpoint_path(clt_params, &filename, p, &checkpoint_path);
     checkpoint = oss_create_checkpoint_content(p);
     oss_build_download_checkpoint(p, checkpoint, &filename, object.data, 
             content_length, object_last_modified, object_etag, 1024 * 100);

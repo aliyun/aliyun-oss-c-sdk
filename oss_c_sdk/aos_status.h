@@ -48,6 +48,7 @@ extern const char AOS_RENAME_FILE_ERROR_CODE[];
 extern const char AOS_HTTP_IO_ERROR_CODE[];
 extern const char AOS_UNKNOWN_ERROR_CODE[];
 extern const char AOS_CLIENT_ERROR_CODE[];
+extern const char AOS_SERVER_ERROR_CODE[];
 extern const char AOS_UTF8_ENCODE_ERROR_CODE[];
 extern const char AOS_URL_ENCODE_ERROR_CODE[];
 extern const char AOS_INCONSISTENT_ERROR_CODE[];

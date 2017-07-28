@@ -71,7 +71,10 @@ typedef struct {
 
 int32_t oss_get_thread_num(oss_resumable_clt_params_t *clt_params);
 
-void oss_get_checkpoint_path(oss_resumable_clt_params_t *clt_params, const aos_string_t *filepath, 
+void oss_get_upload_checkpoint_path(oss_resumable_clt_params_t *clt_params, const aos_string_t *filepath, 
+                             aos_pool_t *pool, aos_string_t *checkpoint_path);
+
+void oss_get_download_checkpoint_path(oss_resumable_clt_params_t *clt_params, const aos_string_t *filepath, 
                              aos_pool_t *pool, aos_string_t *checkpoint_path);
 
 int oss_get_file_info(const aos_string_t *filepath, aos_pool_t *pool, apr_finfo_t *finfo);
