@@ -369,10 +369,10 @@ void test_aos_should_retry(CuTest *tc) {
     aos_status_set(&s, 400, "", "");
     CuAssertIntEquals(tc, 0, aos_should_retry(&s));
 
-    aos_status_set(&s, 0, "-995", "");
+    aos_status_set(&s, -995, "-995", "");
     CuAssertIntEquals(tc, 1, aos_should_retry(&s));
 
-    aos_status_set(&s, 0, "-993", "");
+    aos_status_set(&s, -993, "-993", "");
     CuAssertIntEquals(tc, 0, aos_should_retry(&s));
 
     aos_status_set(&s, 0, "0", "NULL");

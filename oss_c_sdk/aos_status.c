@@ -33,18 +33,20 @@ aos_status_t *aos_status_dup(aos_pool_t *p, aos_status_t *src)
 int aos_should_retry(aos_status_t *s) {
     int aos_error_code = 0;
 
+    // HTTP Error
     if (s == NULL || s->code / 100 == 2) {
         return AOS_FALSE;
     }
 
+    // OSS Error
     if (s->code / 100 == 5) {
         return AOS_TRUE;
     }
 
-    if (s->error_code != NULL) {
-        aos_error_code = atoi(s->error_code);
-        if (aos_error_code == AOSE_CONNECTION_FAILED || aos_error_code == AOSE_REQUEST_TIMEOUT || 
-            aos_error_code == AOSE_FAILED_CONNECT || aos_error_code == AOSE_SERVICE_ERROR) {
+    // Curl Error
+    if (s->code != AOSE_OK) {
+        if (s->code == AOSE_CONNECTION_FAILED || s->code == AOSE_REQUEST_TIMEOUT || 
+            s->code == AOSE_FAILED_CONNECT || s->code == AOSE_SERVICE_ERROR) {
             return AOS_TRUE;
         }
     }
