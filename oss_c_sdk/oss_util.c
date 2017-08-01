@@ -393,6 +393,20 @@ int oss_init_read_response_body_to_file(aos_pool_t *p,
     return res;
 }
 
+int oss_init_read_response_body_to_fb(aos_file_buf_t *fb,
+                                      const aos_string_t *filename,
+                                      aos_http_response_t *resp)
+{
+    int res = AOSE_OK;
+
+    resp->file_path = filename->data;
+    resp->file_buf = fb;
+    resp->write_body = aos_write_http_body_file;
+    resp->type = BODY_IN_FILE;
+
+    return res;
+}
+
 void oss_fill_read_response_header(aos_http_response_t *resp, 
                                    aos_table_t **headers)
 {
@@ -772,6 +786,16 @@ int part_sort_cmp(const void *a, const void *b)
             ((oss_upload_part_t*)b)->part_num > 0 ? 1 : -1);
 }
 
+
+void oss_headers_add_range(apr_pool_t *pool, apr_table_t *headers, int64_t offset, int64_t size)
+{
+    char *range;
+    range = apr_psprintf(pool, "bytes=%" APR_INT64_T_FMT "-%" APR_INT64_T_FMT, 
+            offset, offset + size - 1);
+    apr_table_set(headers, "Range", range);
+}
+
+
 char *get_content_type_by_suffix(const char *suffix)
 {
     oss_content_type_t *content_type;
@@ -840,6 +864,8 @@ int has_crc_in_response(const aos_http_response_t *resp)
 
     return AOS_FALSE;
 }
+
+
 
 int has_range_or_process_in_request(const aos_http_request_t *req) 
 {

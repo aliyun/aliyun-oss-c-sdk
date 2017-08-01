@@ -1253,6 +1253,15 @@ mxml_node_t	*set_xmlnode_value_int64(mxml_node_t *parent, const char *name, int6
     return mxmlNewText(node, 0, buff);
 }
 
+mxml_node_t	*set_xmlnode_value_uint64(mxml_node_t *parent, const char *name, uint64_t value)
+{
+    mxml_node_t *node;
+    char buff[AOS_MAX_UINT64_STRING_LEN];
+    node = mxmlNewElement(parent, name);
+    apr_snprintf(buff, AOS_MAX_UINT64_STRING_LEN, "%" APR_UINT64_T_FMT, value);
+    return mxmlNewText(node, 0, buff);
+}
+
 int get_xmlnode_value_str(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, aos_string_t *value)
 {
     char *node_content;
@@ -1283,6 +1292,17 @@ int get_xmlnode_value_int64(aos_pool_t *p, mxml_node_t *xml_node, const char *xm
         return AOS_FALSE;
     }
     *value = aos_atoi64(node_content);
+    return AOS_TRUE;
+}
+
+int get_xmlnode_value_uint64(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_path, uint64_t *value)
+{
+    char *node_content;
+    node_content = get_xmlnode_value(p, xml_node, xml_path);
+    if (NULL == node_content) {
+        return AOS_FALSE;
+    }
+    *value = aos_atoui64(node_content);
     return AOS_TRUE;
 }
 
@@ -1348,6 +1368,7 @@ char *oss_build_checkpoint_xml(aos_pool_t *p, const oss_checkpoint_t *checkpoint
         set_xmlnode_value_int64(part_node, "Size", checkpoint->parts[i].size);
         set_xmlnode_value_int(part_node, "Completed", checkpoint->parts[i].completed);
         set_xmlnode_value_str(part_node, "ETag", &checkpoint->parts[i].etag);
+        set_xmlnode_value_uint64(part_node, "Crc64", checkpoint->parts[i].crc64);
     }
 
     // dump
@@ -1426,6 +1447,7 @@ int oss_checkpoint_parse_from_body(aos_pool_t *p, const char *xml_body, oss_chec
         get_xmlnode_value_int64(p, node, "Size", &checkpoint->parts[index].size);
         get_xmlnode_value_int(p, node, "Completed", &checkpoint->parts[index].completed);
         get_xmlnode_value_str(p, node, "ETag", &checkpoint->parts[index].etag);
+        get_xmlnode_value_uint64(p, node, "Crc64", &checkpoint->parts[index].crc64);
         node = mxmlFindElement(node, parts_node, "Part", NULL, NULL, MXML_DESCEND);
     }
 

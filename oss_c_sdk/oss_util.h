@@ -151,6 +151,11 @@ void oss_fill_read_response_body(aos_http_response_t *resp, aos_list_t *buffer);
 int oss_init_read_response_body_to_file(aos_pool_t *p, const aos_string_t *filename, aos_http_response_t *resp);
 
 /**
+  * @brief  read body content from oss response body to file buffer
+**/
+int oss_init_read_response_body_to_fb(aos_file_buf_t *fb, const aos_string_t *filename, aos_http_response_t *resp);
+
+/**
   * @brief  read response header if headers is not null
 **/
 void oss_fill_read_response_header(aos_http_response_t *resp, aos_table_t **headers);
@@ -251,6 +256,12 @@ void oss_get_part_size(int64_t filesize, int64_t *part_size);
   * @brief  compare function for part sort
 **/
 int part_sort_cmp(const void *a, const void *b);
+
+
+/**
+  * @brief  add range in http request
+**/
+void oss_headers_add_range(apr_pool_t *pool, apr_table_t *headers, int64_t offset, int64_t size);
 
 /**
   * @brief  set content type for object according to objectname

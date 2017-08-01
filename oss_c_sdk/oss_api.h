@@ -769,7 +769,7 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
- * @param[in]   filename            the filename containing object content
+ * @param[in]   filepath            the filename containing object content
  * @param[in]   headers             the headers for request    
  * @param[in]   params              the params for request
  * @param[in]   clt_params          the control params of upload
@@ -788,6 +788,29 @@ aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
                                         oss_progress_callback progress_callback,
                                         aos_table_t **resp_headers,
                                         aos_list_t *resp_body);
+
+/*
+ * @brief  oss upload file with mulit-thread and resumable
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   filepath            download object to the file
+ * @param[in]   headers             the headers for request    
+ * @param[in]   params              the params for request
+ * @param[in]   clt_params          the control params of upload
+ * @param[in]   progress_callback   the progress callback function
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
+                                          aos_string_t *bucket, 
+                                          aos_string_t *object, 
+                                          aos_string_t *filepath,                           
+                                          aos_table_t *headers,
+                                          aos_table_t *params,
+                                          oss_resumable_clt_params_t *clt_params, 
+                                          oss_progress_callback progress_callback,
+                                          aos_table_t **resp_headers);
 
 /*
  * @brief  oss create live channel

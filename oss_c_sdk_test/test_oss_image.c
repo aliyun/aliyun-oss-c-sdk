@@ -321,7 +321,6 @@ void test_watermark_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 267, image_info.height);
     CuAssertIntEquals(tc, 400, image_info.width);
-    CuAssertIntEquals(tc, 26369, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
 
     printf("test_watermark_image ok\n");

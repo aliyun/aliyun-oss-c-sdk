@@ -5,9 +5,11 @@
 const char AOS_XML_PARSE_ERROR_CODE[] = "ParseXmlError";
 const char AOS_OPEN_FILE_ERROR_CODE[] = "OpenFileFail";
 const char AOS_WRITE_FILE_ERROR_CODE[] = "WriteFileFail";
+const char AOS_RENAME_FILE_ERROR_CODE[] = "RenameFileFail";
 const char AOS_HTTP_IO_ERROR_CODE[] = "HttpIoError";
 const char AOS_UNKNOWN_ERROR_CODE[] = "UnknownError";
 const char AOS_CLIENT_ERROR_CODE[] = "ClientError";
+const char AOS_SERVER_ERROR_CODE[] = "ServerError";
 const char AOS_UTF8_ENCODE_ERROR_CODE[] = "Utf8EncodeFail";
 const char AOS_URL_ENCODE_ERROR_CODE[] = "UrlEncodeFail";
 const char AOS_INCONSISTENT_ERROR_CODE[] = "InconsistentError";
@@ -31,18 +33,20 @@ aos_status_t *aos_status_dup(aos_pool_t *p, aos_status_t *src)
 int aos_should_retry(aos_status_t *s) {
     int aos_error_code = 0;
 
+    // HTTP Error
     if (s == NULL || s->code / 100 == 2) {
         return AOS_FALSE;
     }
 
+    // OSS Error
     if (s->code / 100 == 5) {
         return AOS_TRUE;
     }
 
-    if (s->error_code != NULL) {
-        aos_error_code = atoi(s->error_code);
-        if (aos_error_code == AOSE_CONNECTION_FAILED || aos_error_code == AOSE_REQUEST_TIMEOUT || 
-            aos_error_code == AOSE_FAILED_CONNECT || aos_error_code == AOSE_SERVICE_ERROR) {
+    // Curl Error
+    if (s->code != AOSE_OK) {
+        if (s->code == AOSE_CONNECTION_FAILED || s->code == AOSE_REQUEST_TIMEOUT || 
+            s->code == AOSE_FAILED_CONNECT || s->code == AOSE_SERVICE_ERROR) {
             return AOS_TRUE;
         }
     }

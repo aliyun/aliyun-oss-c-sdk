@@ -102,6 +102,7 @@ typedef apr_array_header_t aos_array_header_t;
 
 #define AOS_MAX_XML_NODE_VALUE_LEN 1024
 #define AOS_MAX_INT64_STRING_LEN 64
+#define AOS_MAX_UINT64_STRING_LEN 64
 
 #define AOS_CONNECT_TIMEOUT 10
 #define AOS_DNS_CACHE_TIMOUT 60
@@ -121,7 +122,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define AOS_VERSION    "3.4.3"
+#define AOS_VERSION    "3.5.0"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 
 #define AOS_HTTP_PREFIX   "http://"
