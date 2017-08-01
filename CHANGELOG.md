@@ -1,5 +1,10 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：3.5.0 日期：2017-08-01
+### 变更内容
+- 添加：支持并发断点续传下载`oss_resumable_download_file`
+- 修复：`aos_should_retry`重试判读错误的问题
+
 ## 版本号：3.4.3 日期：2017-04-26
 ### 变更内容
 - 修复：添加宏`ULLONG_MAX`的定义
