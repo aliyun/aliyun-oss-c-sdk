@@ -60,7 +60,7 @@ Notes:
 
 ##### Mini-XML (Version 2.8 or above is recommended)
 
-  Download from [here](http://www.msweet.org/downloads.php?L+Z3). A typical installation method is as follows:
+  Download from [here](http://michaelrsweet.github.io/mxml/). A typical installation method is as follows:
 ```shell
     ./configure
     make
