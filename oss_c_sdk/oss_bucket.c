@@ -334,6 +334,7 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
     aos_status_t *ret = NULL;
     oss_list_object_params_t *params = NULL;
     int list_object_count = 0;
+    const char *next_marker = NULL;
     
     parent_pool = options->pool;
     params = oss_create_list_object_params(parent_pool);
@@ -376,6 +377,11 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
             aos_pool_destroy(subpool);
             options->pool = parent_pool;
             return ret;
+        }
+        // swap pool
+        if (params->next_marker.data != NULL) {
+            next_marker = apr_pstrdup(parent_pool, params->next_marker.data);
+            aos_str_set(&params->next_marker, next_marker);
         }
         aos_pool_destroy(subpool);
 
