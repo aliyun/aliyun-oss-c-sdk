@@ -86,9 +86,9 @@ int aos_open_file_for_read(aos_pool_t *p, const char *path, aos_file_buf_t *fb)
         return AOSE_OPEN_FILE_ERROR;
     }
 
-    if ((s = apr_file_info_get(&finfo, APR_FINFO_NORM, fb->file)) != APR_SUCCESS) {
+    if ((s = apr_file_info_get(&finfo, APR_FINFO_SIZE, fb->file)) != APR_SUCCESS) {
         apr_file_close(fb->file);
-        aos_error_log("apr_file_open failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_info_get failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_INFO_ERROR;
     }
     fb->file_pos = 0;
