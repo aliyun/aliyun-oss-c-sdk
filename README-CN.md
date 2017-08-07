@@ -60,7 +60,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 
 ##### minixml （建议 2.8 及以上版本）
 
-  请从[这里](http://www.msweet.org/downloads.php?L+Z3)下载，典型的安装方式如下:
+  请从[这里](http://michaelrsweet.github.io/mxml/)下载，典型的安装方式如下:
 ```shell
     ./configure
     make
