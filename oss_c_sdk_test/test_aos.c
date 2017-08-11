@@ -445,9 +445,57 @@ void test_aos_strtoull(CuTest *tc)
     CuAssertTrue(tc, val == UINT64_MAX);
 }
 
+#if defined(WIN32)
+static char *test_local_file = "..\\oss_c_sdk_test\\BingWallpaper-2017-01-19.jpg";
+#else
+static char *test_local_file = "oss_c_sdk_test/BingWallpaper-2017-01-19.jpg";
+#endif
+
+void test_oss_get_file_info(CuTest *tc) {
+    aos_pool_t *p;
+    apr_finfo_t finfo;
+    aos_string_t filepath;
+    apr_status_t s;
+
+    aos_pool_create(&p, NULL);
+    aos_str_set(&filepath, test_local_file);
+
+    s = oss_get_file_info(&filepath, p, &finfo); 
+    CuAssertIntEquals(tc, AOSE_OK, s);
+
+    CuAssertTrue(tc, finfo.size == 769686);
+    CuAssertTrue(tc, finfo.mtime > 1484755200000000L);
+
+    // negative
+    aos_str_set(&filepath, "");
+
+    s = oss_get_file_info(&filepath, p, &finfo); 
+    CuAssertTrue(tc, AOSE_OK != s);
+
+    aos_pool_destroy(p);
+}
+
+void test_aos_open_file_for_read(CuTest *tc) {
+    aos_pool_t *p;
+    aos_file_buf_t *fb;
+    apr_status_t s;
+
+    aos_pool_create(&p, NULL);
+
+    fb = aos_create_file_buf(p);
+    s = aos_open_file_for_read(p, test_local_file, fb);
+    CuAssertIntEquals(tc, AOSE_OK, s);
+    CuAssertTrue(tc, fb->file_pos == 0);
+    CuAssertTrue(tc, fb->file_last == 769686);
+
+    apr_file_close(fb->file);
+
+    aos_pool_destroy(p);
+}
+
 CuSuite *test_aos()
 {
-    CuSuite* suite = CuSuiteNew();   
+    CuSuite* suite = CuSuiteNew();
 
     SUITE_ADD_TEST(suite, test_get_xml_doc_with_empty_aos_list);
     SUITE_ADD_TEST(suite, test_aos_list_movelist_with_empty_list);
@@ -472,6 +520,8 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_aos_should_retry);
     SUITE_ADD_TEST(suite, test_aos_strtoll);
     SUITE_ADD_TEST(suite, test_aos_strtoull);
+    SUITE_ADD_TEST(suite, test_oss_get_file_info); 
+    SUITE_ADD_TEST(suite, test_aos_open_file_for_read);
 
     return suite;
 }

@@ -30,9 +30,8 @@ aos_status_t *aos_status_dup(aos_pool_t *p, aos_status_t *src)
     return dst;
 }
 
-int aos_should_retry(aos_status_t *s) {
-    int aos_error_code = 0;
-
+int aos_should_retry(aos_status_t *s) 
+{
     // HTTP Error
     if (s == NULL || s->code / 100 == 2) {
         return AOS_FALSE;

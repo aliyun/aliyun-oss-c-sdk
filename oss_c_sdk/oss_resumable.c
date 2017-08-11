@@ -68,7 +68,7 @@ int oss_get_file_info(const aos_string_t *filepath, aos_pool_t *pool, apr_finfo_
         return s;
     }
 
-    s = apr_file_info_get(finfo, APR_FINFO_NORM, thefile);
+    s = apr_file_info_get(finfo, APR_FINFO_SIZE | APR_FINFO_MTIME, thefile);
     if (s != APR_SUCCESS) {
         apr_file_close(thefile);
         aos_error_log("apr_file_info_get failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
@@ -102,7 +102,7 @@ int oss_open_checkpoint_file(aos_pool_t *pool,  aos_string_t *checkpoint_path, o
     if (s == APR_SUCCESS) {
         checkpoint->thefile = thefile;
     } else {
-        aos_error_log("apr_file_info_get failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_open failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
     }
     return s;
 }
@@ -288,7 +288,7 @@ int oss_load_checkpoint(aos_pool_t *pool, const aos_string_t *filepath, oss_chec
     }
 
     // get file stat
-    s = apr_file_info_get(&finfo, APR_FINFO_NORM, thefile);
+    s = apr_file_info_get(&finfo, APR_FINFO_SIZE, thefile);
     if (s != APR_SUCCESS) {
         aos_error_log("apr_file_info_get failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         apr_file_close(thefile);

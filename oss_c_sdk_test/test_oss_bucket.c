@@ -29,7 +29,7 @@ void test_bucket_setup(CuTest *tc)
     aos_table_t *headers3 = NULL;
     aos_table_t *headers4 = NULL;
     aos_table_t *headers5 = NULL;
-    aos_table_t *headers6 = NULL;
+    int i = 0;
 
     //set log level, default AOS_LOG_WARN
     aos_log_set_level(AOS_LOG_WARN);
@@ -52,13 +52,15 @@ void test_bucket_setup(CuTest *tc)
     headers3 = aos_table_make(p, 0);
     headers4 = aos_table_make(p, 0);
     headers5 = aos_table_make(p, 0);
-    headers6 = aos_table_make(p, 0);
     create_test_object(options, TEST_BUCKET_NAME, object_name1, str, headers1);
     create_test_object(options, TEST_BUCKET_NAME, object_name2, str, headers2);
     create_test_object(options, TEST_BUCKET_NAME, object_name3, str, headers3);
     create_test_object(options, TEST_BUCKET_NAME, object_name4, str, headers4);
     create_test_object(options, TEST_BUCKET_NAME, object_name5, str, headers5);
-    create_test_object(options, TEST_BUCKET_NAME, object_name6, str, headers6);
+    for (i = 0; i < 1100; i++) {
+        char *obj_name = apr_psprintf(p, "%s/%d.txt", object_name6, i);
+        create_test_object(options, TEST_BUCKET_NAME, obj_name, str, NULL);
+    }
 
     aos_pool_destroy(p);
 }
@@ -260,7 +262,7 @@ void test_list_object_with_delimiter(CuTest *tc)
             CuAssertStrEquals(tc, "oss_tmp2/", prefix);
         }
     }
-    CuAssertIntEquals(tc, 2, size);
+    CuAssertIntEquals(tc, 3, size);
     aos_pool_destroy(p);
 
     printf("test_list_object_with_delimiter ok\n");
@@ -471,16 +473,30 @@ void test_delete_objects_by_prefix(CuTest *tc)
     aos_string_t bucket;
     aos_status_t *s = NULL;
     aos_string_t prefix;
-    char *prefix_str = "oss_tmp3";
     
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&prefix, prefix_str);
+
+    // delete none
+    aos_str_set(&prefix, "oss_tmp3/2");
 
     s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
     CuAssertIntEquals(tc, 200, s->code);
+
+    // delete one object
+    aos_str_set(&prefix, "oss_tmp3/1/0.txt");
+
+    s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    // delete multi-objects
+    aos_str_set(&prefix, "oss_tmp3/1");
+
+    s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    CuAssertIntEquals(tc, 200, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_delete_object_by_prefix ok\n");
