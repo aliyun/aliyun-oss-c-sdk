@@ -1,9 +1,10 @@
 # ChangeLog - Aliyun OSS SDK for C
 
-## 版本号：3.5.1 日期：2017-08-08
+## 版本号：3.5.1 日期：2017-08-11
 ### 变更内容
 - 修复：`apr_file_info_get`在特定文件系统下报`70008 APR_INCOMPLETE`错误的问题
 - 修复：`oss_delete_objects_by_prefix`在中的`params->next_marker`使用释放后的内存的问题
+- 修复：Windows的`minixml`库升级到2.9
 
 ## 版本号：3.5.0 日期：2017-08-01
 ### 变更内容
