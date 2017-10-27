@@ -50,6 +50,7 @@ extern const char OSS_LOCATION[];
 extern const char OSS_RESTORE[];
 extern const char OSS_SYMLINK[];
 extern const char OSS_QOS[];
+extern const char OSS_LOGGING[];
 extern const char OSS_PREFIX[];
 extern const char OSS_DELIMITER[];
 extern const char OSS_MARKER[];
@@ -76,7 +77,6 @@ extern const char OSS_CALLBACK[];
 extern const char OSS_CALLBACK_VAR[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
-extern const char OSS_LOGGING[];
 extern const char OSS_DELETE[];
 extern const char OSS_YES[];
 extern const char OSS_OBJECT_TYPE_NORMAL[];
@@ -217,7 +217,6 @@ typedef struct {
     PARAM_IN aos_string_t prefix;
     PARAM_IN aos_string_t marker;
     PARAM_IN int max_keys;
-
     PARAM_OUT int truncated;
     PARAM_OUT aos_string_t next_marker;
     PARAM_OUT aos_string_t owner_id;

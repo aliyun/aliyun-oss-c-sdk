@@ -120,7 +120,7 @@ aos_status_t * create_test_bucket(const oss_request_options_t *options,
 aos_status_t * create_test_bucket_with_storage_class(const oss_request_options_t *options,
                                   const char *bucket_name, 
                                   oss_acl_e oss_acl,
-                                  oss_storage_class_type_e storage_class_tp)
+                                  oss_storage_class_type_e storage_class)
 {
     aos_string_t bucket;
     aos_table_t *resp_headers;
@@ -128,7 +128,7 @@ aos_status_t * create_test_bucket_with_storage_class(const oss_request_options_t
 
     aos_str_set(&bucket, bucket_name);
 
-    s = oss_create_bucket_with_storage_class(options, &bucket, oss_acl, storage_class_tp, &resp_headers);
+    s = oss_create_bucket_with_storage_class(options, &bucket, oss_acl, storage_class, &resp_headers);
     return s;
 }
 
@@ -155,28 +155,6 @@ aos_status_t *create_test_object(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *restore_test_object(const oss_request_options_t *options, 
-                                 const char *bucket_name, 
-                                 const char *object_name, 
-                                 const char *data, 
-                                 aos_table_t *headers)
-{
-    aos_string_t bucket;
-    aos_string_t object;
-    aos_table_t *resp_headers;
-    aos_list_t buffer;
-    aos_buf_t *content;
-    aos_status_t * s;
-
-    test_object_base();
-    aos_list_init(&buffer);
-    content = aos_buf_pack(options->pool, data, strlen(data));
-    aos_list_add_tail(&content->node, &buffer);
-
-    s = oss_put_object_from_buffer(options, &bucket, &object, 
-                                   &buffer, headers, &resp_headers);
-    return s;
-}
 aos_status_t *create_test_object_from_file(const oss_request_options_t *options, 
                                           const char *bucket_name,
                                           const char *object_name, 
