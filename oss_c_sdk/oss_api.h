@@ -325,7 +325,7 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
                                        aos_table_t **resp_headers);
 
 /*
- * @brief  get oss object to buffer
+ * @brief  restore oss object from archive bucket
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
  * @param[in]   object              the oss object name
