@@ -161,6 +161,7 @@ aos_status_t *oss_get_bucket_logging(const oss_request_options_t *options,
                                  const aos_string_t *bucket, 
                                  oss_logging_rule_content_t *logging_content, 
                                  aos_table_t **resp_headers);
+
 /*
  * @brief  delete oss bucket logging
  * @param[in]   options             the oss request options
@@ -225,6 +226,7 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
 aos_status_t *oss_list_buckets(const oss_request_options_t *options,
                               oss_list_buckets_params_t *params, 
                               aos_table_t **resp_headers);
+
 /*
  * @brief  put oss object from buffer
  * @param[in]   options             the oss request options
@@ -332,7 +334,6 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
  * @param[out]  resp_headers  oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
-
 aos_status_t *oss_restore_object(const oss_request_options_t *options, 
                                           const aos_string_t *bucket, 
                                           const aos_string_t *object,
