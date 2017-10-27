@@ -235,6 +235,33 @@ void oss_get_object_uri(const oss_request_options_t *options,
 
 }
 
+void oss_get_service_uri(const oss_request_options_t *options, 
+                        aos_http_request_t *req)
+{
+    int32_t proto_len;
+    const char *raw_endpoint_str;
+    aos_string_t raw_endpoint;
+
+    generate_proto(options, req);
+
+    proto_len = strlen(req->proto);
+    raw_endpoint_str = aos_pstrdup(options->pool, 
+            &options->config->endpoint) + proto_len;
+    raw_endpoint.len = options->config->endpoint.len - proto_len;
+    raw_endpoint.data = options->config->endpoint.data + proto_len;
+
+    if (options->config->is_cname || 
+        is_valid_ip(raw_endpoint_str))
+    {
+        req->host = apr_psprintf(options->pool, "%.*s", 
+                raw_endpoint.len, raw_endpoint.data);
+    } else {
+        req->host = apr_psprintf(options->pool, "%.*s", 
+                raw_endpoint.len, raw_endpoint.data);
+    }
+    req->uri = apr_psprintf(options->pool, "%s", "");
+}
+
 void oss_get_bucket_uri(const oss_request_options_t *options, 
                         const aos_string_t *bucket,
                         aos_http_request_t *req)
@@ -427,6 +454,12 @@ void *oss_create_api_result_content(aos_pool_t *p, size_t size)
     return result_content;
 }
 
+oss_list_bucket_content_t *oss_create_list_bucket_content(aos_pool_t *p)
+{
+    return (oss_list_bucket_content_t *)oss_create_api_result_content(
+            p, sizeof(oss_list_bucket_content_t));
+}
+
 oss_list_object_content_t *oss_create_list_object_content(aos_pool_t *p)
 {
     return (oss_list_object_content_t *)oss_create_api_result_content(
@@ -478,6 +511,22 @@ oss_list_object_params_t *oss_create_list_object_params(aos_pool_t *p)
     return params;
 }
 
+oss_list_buckets_params_t *oss_create_list_buckets_params(aos_pool_t *p)
+{
+    oss_list_buckets_params_t * params;
+    params = (oss_list_buckets_params_t *)aos_pcalloc(
+            p, sizeof(oss_list_buckets_params_t));
+    aos_str_set(&params->prefix, "");
+    aos_str_set(&params->marker, "");
+    aos_str_set(&params->next_marker, "");
+    aos_str_set(&params->owner_id, "");
+    aos_str_set(&params->owner_name, "");
+    aos_list_init(&params->bucket_list);
+    params->truncated = 0;
+    params->max_keys= 0;
+    return params;
+}
+
 oss_list_upload_part_params_t *oss_create_list_upload_part_params(aos_pool_t *p)
 {
     oss_list_upload_part_params_t *params;
@@ -511,6 +560,24 @@ oss_upload_part_copy_params_t *oss_create_upload_part_copy_params(aos_pool_t *p)
             p, sizeof(oss_upload_part_copy_params_t));
 }
 
+static inline
+void oss_init_lifecycle_rule_date(oss_lifecycle_rule_date_t *date)
+{
+    date->days = INT_MAX;
+    aos_str_set(&date->created_before_date, "");
+}
+
+oss_logging_rule_content_t *oss_create_logging_rule_content(aos_pool_t *p)
+{
+    oss_logging_rule_content_t *rule;
+    rule = (oss_logging_rule_content_t *)aos_pcalloc(
+            p, sizeof(oss_logging_rule_content_t));
+    aos_str_set(&rule->prefix, "");
+    aos_str_set(&rule->target_bucket, "");
+    rule->logging_enabled = 0;
+    return rule;
+}
+
 oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p)
 {
     oss_lifecycle_rule_content_t *rule;
@@ -520,7 +587,9 @@ oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p)
     aos_str_set(&rule->prefix, "");
     aos_str_set(&rule->status, "");
     aos_str_set(&rule->date, "");
+    aos_str_set(&rule->created_before_date, "");
     rule->days = INT_MAX;
+    oss_init_lifecycle_rule_date(&rule->abort_multipart_upload_dt);
     return rule;
 }
 
@@ -635,6 +704,20 @@ const char *get_oss_acl_str(oss_acl_e oss_acl)
     }
 }
 
+const char *get_oss_storage_class_str(oss_storage_class_type_e storage_class)
+{
+    switch (storage_class) {
+        case OSS_STORAGE_CLASS_TYPE_STANDARD:
+            return  "Standard";
+        case OSS_STORAGE_CLASS_TYPE_IA:
+            return "IA";
+        case OSS_STORAGE_CLASS_TYPE_ARCHIVE:
+            return "Archive";
+        default:
+            return NULL;
+    }
+}
+
 void oss_init_request(const oss_request_options_t *options, 
                       http_method_e method,
                       aos_http_request_t **req, 
@@ -648,6 +731,17 @@ void oss_init_request(const oss_request_options_t *options,
     init_sts_token_header();
     (*req)->headers = headers;
     (*req)->query_params = params;
+}
+
+void oss_init_service_request(const oss_request_options_t *options, 
+                             http_method_e method, 
+                             aos_http_request_t **req, 
+                             aos_table_t *params, 
+                             aos_table_t *headers,
+                             aos_http_response_t **resp)
+{
+    oss_init_request(options, method, req, params, headers, resp);
+    oss_get_service_uri(options, *req);
 }
 
 void oss_init_bucket_request(const oss_request_options_t *options, 
@@ -864,8 +958,6 @@ int has_crc_in_response(const aos_http_response_t *resp)
 
     return AOS_FALSE;
 }
-
-
 
 int has_range_or_process_in_request(const aos_http_request_t *req) 
 {

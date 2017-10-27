@@ -19,6 +19,15 @@ typedef struct {
 #define aos_tolower(c)      (char) ((c >= 'A' && c <= 'Z') ? (c | 0x20) : c)
 #define aos_toupper(c)      (char) ((c >= 'a' && c <= 'z') ? (c & ~0x20) : c)
 
+static inline int aos_string_is_empty(aos_string_t *str)
+{
+    if (!str->len || !strcmp(str->data, "") || !str->data) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 static APR_INLINE void aos_string_tolower(aos_string_t *str)
 {
     int i = 0;
