@@ -97,6 +97,47 @@ void test_create_bucket(CuTest *tc)
     printf("test_create_bucket ok\n");
 }
 
+void test_create_bucket_with_storage_class(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    int is_cname = 0;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    aos_string_t bucket;
+    aos_table_t *resp_headers = NULL;
+    oss_acl_e oss_acl = OSS_ACL_PRIVATE;
+    oss_storage_class_type_e storage_class_tp = OSS_STORAGE_CLASS_TYPE_IA;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    //create the bucket with storage class
+    s = create_test_bucket_with_storage_class(options, TEST_BUCKET_NAME2, oss_acl, storage_class_tp);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+     //create the same bucket again with different storage class
+    s = create_test_bucket_with_storage_class(options, TEST_BUCKET_NAME2, 
+                                            oss_acl, OSS_STORAGE_CLASS_TYPE_ARCHIVE);
+    // 409: BucketAlreadyExists Cannot modify existing bucket's storage class
+    CuAssertIntEquals(tc, 409, s->code);
+
+     //create the same bucket again with different storage class
+    s = create_test_bucket_with_storage_class(options, TEST_BUCKET_NAME2, 
+                                            oss_acl, OSS_STORAGE_CLASS_TYPE_STANDARD);
+    // 409: BucketAlreadyExists Cannot modify existing bucket's storage class
+    CuAssertIntEquals(tc, 409, s->code);
+
+    //delete bucket 
+    aos_str_set(&bucket, TEST_BUCKET_NAME2);
+    s = oss_delete_bucket(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+
+    aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
+}
+
 void test_delete_bucket(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -172,6 +213,231 @@ void test_get_bucket_acl(CuTest *tc)
     printf("test_get_bucket_acl ok\n");
 }
 
+void test_get_bucket_location(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_location;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_get_bucket_location(options, &bucket, &oss_location, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    TEST_CASE_LOG("endpoint: %s, location: %s\n", TEST_OSS_ENDPOINT, oss_location.data);
+    CuAssertIntEquals(tc, 1, oss_location.len != 0);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_head_bucket(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    char *oss_location = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_head_bucket(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    oss_location = (char*)(apr_table_get(resp_headers, OSS_CANNONICALIZED_HEADER_REGION));
+    TEST_CASE_LOG("region is %s\n", oss_location);
+    CuAssertPtrNotNull(tc, oss_location);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_get_bucket_storage_capacity(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_storage_capacity;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_get_bucket_storage_capacity(options, &bucket, &oss_storage_capacity, &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s\n", s->error_msg, s->error_code);
+    }
+    printf("get storage capacity %s\n", oss_storage_capacity.data);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("test_get_bucket_storage_capacity ok\n");
+}
+
+void test_put_bucket_storage_capacity(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_storage_capacity;
+    int capacity = 100;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_put_bucket_storage_capacity(options, &bucket, capacity, &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s\n", s->error_msg, s->error_code);
+    }
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+    printf("set capacity done\n");
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_get_bucket_storage_capacity(options, &bucket, &oss_storage_capacity, &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s\n", s->error_msg, s->error_code);
+    }
+    printf("get storage capacity %s (%d)\n", oss_storage_capacity.data, atoi(oss_storage_capacity.data));
+    CuAssertIntEquals(tc, 200, s->code);
+    //CuAssertIntEquals(tc, capacity, atoi(oss_storage_capacity.data));
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_put_bucket_storage_capacity(options, &bucket, -1, &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s\n", s->error_msg, s->error_code);
+    }
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+
+    printf("test_put_bucket_storage_capacity ok\n");
+}
+
+void test_put_bucket_logging(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_logging_rule_content_t *content;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    content = oss_create_logging_rule_content(p);
+
+    aos_str_set(&content->target_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&content->prefix, "my-log-");
+    s = oss_put_bucket_logging(options, &bucket, content, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_get_bucket_logging(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_logging_rule_content_t *content = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    content = oss_create_logging_rule_content(p);
+
+    s = oss_get_bucket_logging(options, &bucket, content, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    CuAssertStrEquals(tc, TEST_BUCKET_NAME, content->target_bucket.data);
+    CuAssertStrEquals(tc, "my-log-", content->prefix.data);
+
+    TEST_CASE_LOG("%s: bucket:%s, prefix:%s\n", __FUNCTION__, 
+                content->target_bucket.data, content->prefix.data);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_delete_bucket_logging(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_logging_rule_content_t *content = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+    s = oss_delete_bucket_logging(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    content = oss_create_logging_rule_content(p);
+
+    s = oss_get_bucket_logging(options, &bucket, content, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    CuAssertStrEquals(tc, "", content->target_bucket.data);
+    CuAssertStrEquals(tc, "", content->prefix.data);
+
+    TEST_CASE_LOG("%s: bucket:%s, prefix:%s\n", __FUNCTION__, 
+                content->target_bucket.data, content->prefix.data);
+ 
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 void test_list_object(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -223,6 +489,129 @@ void test_list_object(CuTest *tc)
     aos_pool_destroy(p);
 
     printf("test_list_object ok\n");
+}
+
+void test_list_buckets(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_buckets_params_t *params = NULL;
+    oss_list_bucket_content_t *content = NULL;
+    int size = 0;
+
+    /* list all buckets */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    params = oss_create_list_buckets_params(p);
+    s = oss_list_buckets(options, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
+        ++size;
+    }
+    CuAssertIntEquals(tc, 1 , size > 0);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_list_buckets_with_invalid_prefix(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_buckets_params_t *params = NULL;
+
+    /* list bucket one by one */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    params = oss_create_list_buckets_params(p);
+    params->max_keys = 1;
+    aos_str_set(&params->prefix, "impossibleMatch");
+
+    s = oss_list_buckets(options, params, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_list_buckets_with_iterator(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_buckets_params_t *params = NULL;
+    oss_list_bucket_content_t *content = NULL;
+    oss_acl_e oss_acl;
+    int match_num = 0;
+    int size = 0;
+    aos_string_t bucket;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    oss_acl = OSS_ACL_PRIVATE;
+    //create the second bucket to iterate
+    s = create_test_bucket(options, TEST_BUCKET_NAME2, oss_acl);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    /* list bucket one by one */
+    params = oss_create_list_buckets_params(p);
+    params->max_keys = 1;
+
+    s = oss_list_buckets(options, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
+        printf("%s: get bucket %s\n", __FUNCTION__, content->name.data);
+        if (!strcmp(content->name.data, TEST_BUCKET_NAME)
+                || !strcmp(content->name.data, TEST_BUCKET_NAME2) ) {
+            match_num++;
+        }
+        size++;
+    }
+    CuAssertIntEquals(tc, 1, size);
+
+    while (params->truncated) {
+        aos_list_init(&params->bucket_list);
+        aos_str_set(&params->marker, params->next_marker.data);
+        size = 0;
+        s = oss_list_buckets(options, params, &resp_headers);
+        CuAssertIntEquals(tc, 200, s->code);
+        aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
+            printf("%s: get bucket %s\n", __FUNCTION__, content->name.data);
+            if (!strcmp(content->name.data, TEST_BUCKET_NAME)
+                    || !strcmp(content->name.data, TEST_BUCKET_NAME2) ) {
+                match_num++;
+            }
+            size++;
+        }
+        CuAssertIntEquals(tc, 1, size);
+    }
+
+    CuAssertIntEquals(tc, 2, match_num);
+
+    //delete bucket 
+    aos_str_set(&bucket, TEST_BUCKET_NAME2);
+    s = oss_delete_bucket(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
 }
 
 void test_list_object_with_delimiter(CuTest *tc)
@@ -281,12 +670,15 @@ void test_lifecycle(CuTest *tc)
     oss_lifecycle_rule_content_t *rule_content = NULL;
     oss_lifecycle_rule_content_t *rule_content1 = NULL;
     oss_lifecycle_rule_content_t *rule_content2 = NULL;
+    oss_lifecycle_rule_content_t *rule_content3 = NULL;
+    oss_lifecycle_rule_content_t *rule_content4 = NULL;
     int size = 0;
     char *rule_id = NULL;
     char *prefix = NULL;
     char *status = NULL;
     int days = INT_MAX;
     char* date = NULL;
+    char* created_before_date = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -312,16 +704,37 @@ void test_lifecycle(CuTest *tc)
     aos_str_set(&rule_content1->prefix, "pre1");
     aos_str_set(&rule_content1->status, "Enabled");
     rule_content1->days = 1;
+
     rule_content2 = oss_create_lifecycle_rule_content(p);
     aos_str_set(&rule_content2->id, "2");
     aos_str_set(&rule_content2->prefix, "pre2");
     aos_str_set(&rule_content2->status, "Enabled");
     aos_str_set(&rule_content2->date, "2022-10-11T00:00:00.000Z");
+
+    rule_content3 = oss_create_lifecycle_rule_content(p);
+    aos_str_set(&rule_content3->id, "3");
+    aos_str_set(&rule_content3->prefix, "pre3");
+    aos_str_set(&rule_content3->status, "Enabled");
+    aos_str_set(&rule_content3->created_before_date, "2017-10-11T00:00:00.000Z");
+    rule_content3->abort_multipart_upload_dt.days=1;
+
+    rule_content4 = oss_create_lifecycle_rule_content(p);
+    aos_str_set(&rule_content4->id, "4");
+    aos_str_set(&rule_content4->prefix, "pre4");
+    aos_str_set(&rule_content4->status, "Enabled");
+    aos_str_set(&rule_content4->created_before_date, "2017-10-11T00:00:00.000Z");
+    aos_str_set(&rule_content4->abort_multipart_upload_dt.created_before_date, "2012-10-11T00:00:00.000Z");
+ 
     aos_list_add_tail(&rule_content1->node, &lifecycle_rule_list);
     aos_list_add_tail(&rule_content2->node, &lifecycle_rule_list);
+    aos_list_add_tail(&rule_content3->node, &lifecycle_rule_list);
+    aos_list_add_tail(&rule_content4->node, &lifecycle_rule_list);
 
     s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
                                  &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s", s->error_msg, s->error_code);
+    }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -365,10 +778,62 @@ void test_lifecycle(CuTest *tc)
             CuAssertStrEquals(tc, "Enabled", status);
             days = rule_content->days;
             CuAssertIntEquals(tc, INT_MAX, days);
+        } else if (size == 2) {
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len, 
+                    rule_content->id.data);
+            CuAssertStrEquals(tc, "3", rule_id);
+
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len, 
+                    rule_content->prefix.data);
+            CuAssertStrEquals(tc, "pre3", prefix);
+
+            date = apr_psprintf(p, "%.*s", rule_content->date.len, 
+                    rule_content->date.data);
+            CuAssertStrEquals(tc, "", date);
+
+            created_before_date = apr_psprintf(p, "%.*s", rule_content->created_before_date.len, 
+                    rule_content->created_before_date.data);
+            CuAssertStrEquals(tc, "2017-10-11T00:00:00.000Z", created_before_date);
+
+            days = rule_content->abort_multipart_upload_dt.days;
+            CuAssertIntEquals(tc, 1, days);
+
+            status = apr_psprintf(p, "%.*s", rule_content->status.len, 
+                    rule_content->status.data);
+            CuAssertStrEquals(tc, "Enabled", status);
+            days = rule_content->days;
+            CuAssertIntEquals(tc, INT_MAX, days);
+        } else if (size == 3) {
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len, 
+                    rule_content->id.data);
+            CuAssertStrEquals(tc, "4", rule_id);
+
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len, 
+                    rule_content->prefix.data);
+            CuAssertStrEquals(tc, "pre4", prefix);
+
+            created_before_date = apr_psprintf(p, "%.*s", rule_content->created_before_date.len, 
+                    rule_content->created_before_date.data);
+            CuAssertStrEquals(tc, "2017-10-11T00:00:00.000Z", created_before_date);
+
+            created_before_date = apr_psprintf(p, "%.*s", 
+                    rule_content->abort_multipart_upload_dt.created_before_date.len, 
+                    rule_content->abort_multipart_upload_dt.created_before_date.data);
+            CuAssertStrEquals(tc, "2012-10-11T00:00:00.000Z", created_before_date);
+
+            days = rule_content->abort_multipart_upload_dt.days;
+            CuAssertIntEquals(tc, INT_MAX, days);
+
+            status = apr_psprintf(p, "%.*s", rule_content->status.len, 
+                    rule_content->status.data);
+            CuAssertStrEquals(tc, "Enabled", status);
+            days = rule_content->days;
+            CuAssertIntEquals(tc, INT_MAX, days);
         }
+
         ++size;
     }
-    CuAssertIntEquals(tc, 2 ,size);
+    CuAssertIntEquals(tc, 4 ,size);
 
     //delete lifecycle
     resp_headers = NULL;
@@ -508,6 +973,16 @@ CuSuite *test_oss_bucket()
 
     SUITE_ADD_TEST(suite, test_bucket_setup);
     SUITE_ADD_TEST(suite, test_create_bucket);
+    SUITE_ADD_TEST(suite, test_put_bucket_logging);
+    SUITE_ADD_TEST(suite, test_get_bucket_logging);
+    SUITE_ADD_TEST(suite, test_delete_bucket_logging);
+    SUITE_ADD_TEST(suite, test_get_bucket_location);
+    SUITE_ADD_TEST(suite, test_head_bucket);
+    SUITE_ADD_TEST(suite, test_put_bucket_storage_capacity);
+    SUITE_ADD_TEST(suite, test_get_bucket_storage_capacity);
+    SUITE_ADD_TEST(suite, test_list_buckets);
+    SUITE_ADD_TEST(suite, test_list_buckets_with_invalid_prefix);
+    SUITE_ADD_TEST(suite, test_list_buckets_with_iterator);
     SUITE_ADD_TEST(suite, test_put_bucket_acl);
     SUITE_ADD_TEST(suite, test_get_bucket_acl);
     SUITE_ADD_TEST(suite, test_delete_objects_by_prefix);
@@ -517,6 +992,7 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_lifecycle);
     SUITE_ADD_TEST(suite, test_delete_objects_quiet);
     SUITE_ADD_TEST(suite, test_delete_objects_not_quiet);
+    SUITE_ADD_TEST(suite, test_create_bucket_with_storage_class);
     SUITE_ADD_TEST(suite, test_bucket_cleanup);
 
     return suite;

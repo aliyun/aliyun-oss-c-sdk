@@ -320,7 +320,200 @@ void test_put_object_from_file_with_content_type(CuTest *tc)
     content_type = (char*)(apr_table_get(head_resp_headers, OSS_CONTENT_TYPE));
     CuAssertStrEquals(tc, "image/jpeg", content_type);
 
+    aos_pool_destroy(p);
+
     printf("test_put_object_from_file ok\n");
+}
+
+void test_put_symlink_for_obj(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "oss.jpg";
+    char *link_object_name = "link-to-oss.jpg";
+    char *filename = __FILE__;
+    aos_string_t bucket;
+    aos_string_t link_object;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(options->pool, 1);
+    apr_table_set(headers, OSS_CONTENT_TYPE, "image/jpeg");
+    s = create_test_object_from_file(options, TEST_BUCKET_NAME, 
+            object_name, filename, headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, headers);
+    aos_pool_destroy(p);
+
+    /* link object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&link_object, link_object_name);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(options->pool, 1);
+    apr_table_set(headers, OSS_CANNONICALIZED_HEADER_SYMLINK, object_name);
+    s = oss_put_symlink_object(options, &bucket, &link_object, 
+                        headers, &head_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+    aos_pool_destroy(p);
+    
+    printf("test_put_object_link ok\n");
+}
+
+void test_get_symlink_for_obj(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *link_object_name = "link-to-oss.jpg";
+    char *target_link_name = NULL;
+    aos_string_t bucket;
+    aos_string_t link_object;
+    aos_string_t object;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *head_resp_headers = NULL;
+
+    /*get target link object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&link_object, link_object_name);
+    init_test_request_options(options, is_cname);
+    s = oss_get_symlink_object(options, &bucket, &link_object, 
+                        headers, &head_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+    
+    target_link_name = (char*)(apr_table_get(head_resp_headers, OSS_CANNONICALIZED_HEADER_SYMLINK));
+    CuAssertStrEquals(tc, "oss.jpg", target_link_name);
+    TEST_CASE_LOG("link_obj_name %s\n", target_link_name);
+
+    aos_pool_destroy(p);
+
+    aos_pool_create(&p, NULL);
+    target_link_name = NULL;
+    options = oss_request_options_create(p);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&link_object, "testasfadf");
+    init_test_request_options(options, is_cname);
+    headers = NULL;
+    s = oss_get_symlink_object(options, &bucket, &link_object, 
+            headers, &head_resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+
+    /* delete object */
+    aos_str_set(&object, "oss.jpg");
+    s = oss_delete_object(options, &bucket, &object, &head_resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+
+    /* delete link object */
+    aos_str_set(&object, "link-to-oss.jpg");
+    s = oss_delete_object(options, &bucket, &object, &head_resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+    CuAssertPtrNotNull(tc, head_resp_headers);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_restore_obj(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    int is_cname = 0;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    oss_acl_e oss_acl = OSS_ACL_PRIVATE;
+    char *object_name1 = "oss_test_object1";
+    char *str = "test c oss sdk";
+    aos_table_t *headers1 = NULL;
+    aos_list_t buffer;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+
+    //setup: create archive bucket
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME2);
+
+    s = create_test_bucket_with_storage_class(options, bucket.data, 
+                                            oss_acl, OSS_STORAGE_CLASS_TYPE_ARCHIVE);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    //create test object
+    headers1 = aos_table_make(p, 0);
+    s = create_test_object(options, bucket.data, object_name1, str, headers1);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    aos_str_set(&object, object_name1);
+    aos_list_init(&buffer);
+    headers1 = NULL;
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers1,
+            params, &buffer, &resp_headers);
+    /* expect fail because it's archive bucket */
+    TEST_CASE_LOG("errcode[%d] %s %s\n", s->code, s->error_msg, s->error_code);
+    CuAssertIntEquals(tc, -978, s->code);
+
+    TEST_CASE_LOG("restore object begin.\n");
+    headers1 = aos_table_make(p, 0);
+    s = oss_restore_object(options, &bucket, &object, headers1, &resp_headers);
+    CuAssertIntEquals(tc, 202, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    do {
+        headers1 = aos_table_make(p, 0);
+        s = oss_restore_object(options, &bucket, &object, headers1, &resp_headers);
+        if (s->code != 409) {
+            break;
+        } else {
+            sleep(5);
+        }
+    } while (1);
+    TEST_CASE_LOG("\nrestore object done.\n");
+
+    CuAssertIntEquals(tc, 200,  s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    // restore the object 
+    aos_list_init(&buffer);
+    headers1 = NULL;
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers1,
+            params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 200,  s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    // restore the object again to verify the data no need thaw 
+    aos_list_init(&buffer);
+    headers1 = NULL;
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers1,
+            params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 200,  s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    //cleanup: delete archive bucket 
+    delete_test_object(options, bucket.data, object_name1);
+    s = oss_delete_bucket(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
 }
 
 void test_get_object_to_buffer(CuTest *tc)
@@ -938,13 +1131,16 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_object_to_buffer);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_range);
     SUITE_ADD_TEST(suite, test_put_object_from_file_with_content_type);
+    SUITE_ADD_TEST(suite, test_put_symlink_for_obj);
+    SUITE_ADD_TEST(suite, test_get_symlink_for_obj);
+    SUITE_ADD_TEST(suite, test_restore_obj);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
     SUITE_ADD_TEST(suite, test_put_object_with_large_length_header);
     SUITE_ADD_TEST(suite, test_get_object_to_file);
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
     SUITE_ADD_TEST(suite, test_copy_object);
-	SUITE_ADD_TEST(suite, test_copy_object_with_source_url_encode);
+    SUITE_ADD_TEST(suite, test_copy_object_with_source_url_encode);
     SUITE_ADD_TEST(suite, test_copy_object_negative);
     SUITE_ADD_TEST(suite, test_object_by_url);
     SUITE_ADD_TEST(suite, test_delete_object);

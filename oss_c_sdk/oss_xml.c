@@ -96,6 +96,84 @@ int oss_acl_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_acl
     return res;
 }
 
+int oss_location_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_location)
+{
+    int res;
+    mxml_node_t *doc = NULL;
+    const char xml_path[] = "LocationConstraint";
+    char *location;
+
+    res = get_xmldoc(bc, &doc);
+    if (res == AOSE_OK) {
+        location = get_xmlnode_value(p, doc, xml_path);
+        if (location) {
+            aos_str_set(oss_location, location);
+        }
+        mxmlDelete(doc);
+    }
+
+    return res;
+}
+
+int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_storage_capacity)
+{
+    int res;
+    mxml_node_t *doc = NULL;
+    const char xml_path[] = "StorageCapacity";
+    char *capacity_str;
+
+    res = get_xmldoc(bc, &doc);
+    if (res == AOSE_OK) {
+        capacity_str = get_xmlnode_value(p, doc, xml_path);
+        if (capacity_str) {
+            aos_str_set(oss_storage_capacity, capacity_str);
+        }
+        mxmlDelete(doc);
+    }
+
+    return res;
+}
+
+int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_rule_content_t *rule_content)
+{
+    const char xml_logging_status_path[] = "BucketLoggingStatus";
+    const char xml_logging_state_path[] = "LoggingEnabled";
+    const char xml_target_bucket_path[] = "TargetBucket";
+    const char xml_log_prefix_path[] = "TargetPrefix";
+    mxml_node_t *doc = NULL;
+    mxml_node_t *logging_node;
+    mxml_node_t *enabled_node;
+    int res;
+
+    res = get_xmldoc(bc, &doc);
+    if (res == AOSE_OK) {
+        logging_node = mxmlFindElement(doc, doc, xml_logging_status_path, NULL, NULL, MXML_DESCEND);
+
+        if (logging_node) {
+            enabled_node = mxmlFindElement(logging_node, doc, xml_logging_state_path, NULL, NULL, MXML_DESCEND);
+
+            if (enabled_node) {
+                char *prefix = NULL;
+                char *target_bucket = NULL;
+                rule_content->logging_enabled = 1;
+                target_bucket = get_xmlnode_value(p, enabled_node, xml_target_bucket_path);
+                if (target_bucket) {
+                    aos_str_set(&rule_content->target_bucket, target_bucket);
+                }
+
+                prefix =  get_xmlnode_value(p, enabled_node, xml_log_prefix_path);
+                if (prefix) {
+                    aos_str_set(&rule_content->prefix, prefix);
+                }
+            }
+        }
+    }
+
+    mxmlDelete(doc);
+    return res;
+}
+
+
 void oss_list_objects_owner_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_list_object_content_t *content)
 {
     mxml_node_t *node;
@@ -231,6 +309,112 @@ int oss_list_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc,
         mxmlDelete(root);
     }
     
+    return res;
+}
+
+void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list)
+{
+    char *value, *xml_value;
+    mxml_node_t *node; 
+    oss_list_bucket_content_t *content;
+    content = oss_create_list_bucket_content(p);
+    node = mxmlFindElement(xml_node, xml_node, "Name", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)xml_value);
+        aos_str_set(&content->name, value);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "CreationDate", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)xml_value);
+        aos_str_set(&content->create_date, value);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "ExtranetEndpoint", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)xml_value);
+        aos_str_set(&content->extranet_endpoint, value);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "IntranetEndpoint", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)xml_value);
+        aos_str_set(&content->intranet_endpoint, value);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Location", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)xml_value);
+        aos_str_set(&content->location, value);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "StorageClass", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)xml_value);
+        aos_str_set(&content->storage_class, value);
+    }
+
+    aos_list_add_tail(&content->node, node_list);
+}
+
+void oss_list_node_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    aos_list_t *node_list, NODE_PARSE_FUN parse_funptr)
+{
+    mxml_node_t *content_node;
+    content_node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
+    for ( ; content_node != NULL; ) {
+        parse_funptr(p, content_node, node_list);
+        content_node = mxmlFindElement(content_node, root, xml_path, NULL, NULL, MXML_DESCEND);
+    }
+}
+
+void oss_list_buckets_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+    aos_list_t *buckets_list)
+{
+    oss_list_node_contents_parse(p, root, xml_path, buckets_list, oss_list_buckets_content_parse);
+}
+
+int oss_list_buckets_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_list_buckets_params_t *params)
+{
+    int res = AOSE_OK;
+    mxml_node_t *root;
+    const char next_marker_xml_path[] = "NextMarker";
+    const char truncated_xml_path[] = "IsTruncated";
+    const char owner_id_xml_path[] = "ID";
+    const char owner_name_xml_path[] = "DisplayName";
+    const char buckets_xml_path[] = "Bucket";
+    char *next_marker, *owner_id, *owner_name;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        next_marker = get_xmlnode_value(p, root, next_marker_xml_path);
+        if (next_marker) {
+            aos_str_set(&params->next_marker, next_marker);
+        }
+
+        params->truncated = get_truncated_from_xml(p, root, truncated_xml_path);
+
+        owner_id = get_xmlnode_value(p, root, owner_id_xml_path);
+        if (owner_id) {
+            aos_str_set(&params->owner_id, owner_id);
+        }
+
+        owner_name = get_xmlnode_value(p, root, owner_name_xml_path);
+        if (owner_name) {
+            aos_str_set(&params->owner_name, owner_name);
+        }
+        
+        oss_list_buckets_contents_parse(p, root, buckets_xml_path, &params->bucket_list);
+        mxmlDelete(root);
+    }
+ 
     return res;
 }
 
@@ -458,6 +642,50 @@ void build_complete_multipart_upload_body(aos_pool_t *p, aos_list_t *part_list, 
     aos_list_add_tail(&b->node, body);
 }
 
+char *build_bucket_logging_xml(aos_pool_t *p, oss_logging_rule_content_t *content)
+{
+    char *logging_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node, *log_node;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "BucketLoggingStatus");
+    log_node = mxmlNewElement(root_node, "LoggingEnabled");
+    if (!aos_string_is_empty(&content->target_bucket)) {
+        mxml_node_t *target_bucket_node = mxmlNewElement(log_node, "TargetBucket");
+        mxmlNewText(target_bucket_node, 0, content->target_bucket.data);
+    }
+
+    if (!aos_string_is_empty(&content->prefix)) {
+        mxml_node_t *prefix_node = mxmlNewElement(log_node, "TargetPrefix");
+        mxmlNewText(prefix_node, 0, content->prefix.data);
+    }
+    
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    logging_xml = aos_pstrdup(p, &xml_doc);
+    
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return logging_xml;
+}
+
+void build_bucket_logging_body(aos_pool_t *p, oss_logging_rule_content_t *content, aos_list_t *body)
+{
+    char *logging_xml;
+    aos_buf_t *b;
+    logging_xml = build_bucket_logging_xml(p, content);
+    aos_list_init(body);
+    b = aos_buf_pack(p, logging_xml, strlen(logging_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
 char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list)
 {
     char *lifecycle_xml;
@@ -486,6 +714,21 @@ char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list)
         } else if (content->date.len != 0 && strcmp(content->date.data, "") != 0) {
             mxml_node_t *date_node = mxmlNewElement(expire_node, "Date");
             mxmlNewText(date_node, 0, content->date.data);
+        } else if (content->created_before_date.len != 0 && strcmp(content->created_before_date.data, "") != 0) {
+            mxml_node_t *cbd_node = mxmlNewElement(expire_node, "CreatedBeforeDate");
+            mxmlNewText(cbd_node, 0, content->created_before_date.data);
+        }
+
+        if (content->abort_multipart_upload_dt.days != INT_MAX) {
+            char value_str[64];
+            mxml_node_t *abort_mulpart_node = mxmlNewElement(rule_node, "AbortMultipartUpload");
+            mxml_node_t *abort_days_node = mxmlNewElement(abort_mulpart_node, "Days");
+            apr_snprintf(value_str, sizeof(value_str), "%d", content->abort_multipart_upload_dt.days);
+            mxmlNewText(abort_days_node, 0, value_str);
+        } else if (!aos_string_is_empty(&content->abort_multipart_upload_dt.created_before_date)) {
+            mxml_node_t *abort_mulpart_node = mxmlNewElement(rule_node, "AbortMultipartUpload");
+            mxml_node_t *abort_date_node = mxmlNewElement(abort_mulpart_node, "CreatedBeforeDate");
+            mxmlNewText(abort_date_node, 0, content->abort_multipart_upload_dt.created_before_date.data);
         }
     }
     
@@ -510,6 +753,93 @@ void build_lifecycle_body(aos_pool_t *p, aos_list_t *lifecycle_rule_list, aos_li
     aos_list_init(body);
     b = aos_buf_pack(p, lifecycle_xml, strlen(lifecycle_xml));
     aos_list_add_tail(&b->node, body);
+}
+
+char *build_bucket_storage_class_xml(aos_pool_t *p, oss_storage_class_type_e storage_class)
+{
+    char *bucket_storage_class_xml;
+    char *xml_buff;
+    const char *storage_class_str;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+
+    storage_class_str = get_oss_storage_class_str(storage_class);
+    if (!storage_class_str)
+    {
+        return NULL;
+    }
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "CreateBucketConfiguration");
+    mxml_node_t *storage_node = mxmlNewElement(root_node, "StorageClass");
+    mxmlNewText(storage_node, 0, storage_class_str);
+    
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    bucket_storage_class_xml = aos_pstrdup(p, &xml_doc);
+    
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return bucket_storage_class_xml;
+}
+
+void build_bucket_storage_class(aos_pool_t *p, oss_storage_class_type_e storage_class, aos_list_t *body)
+{
+    char *bucket_storage_class_xml;
+    aos_buf_t *b;
+    bucket_storage_class_xml = build_bucket_storage_class_xml(p, storage_class);
+    if (bucket_storage_class_xml)
+    {
+        aos_list_init(body);
+        b = aos_buf_pack(p, bucket_storage_class_xml, strlen(bucket_storage_class_xml));
+        aos_list_add_tail(&b->node, body);
+    }
+}
+
+char *build_bucket_storage_capacity_xml(aos_pool_t *p, int storage_capacity)
+{
+    char *bucket_storage_capacity_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    char value_str[64];
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "BucketUserQos");
+    apr_snprintf(value_str, sizeof(value_str), "%d", storage_capacity);
+    mxml_node_t *storage_node = mxmlNewElement(root_node, "StorageCapacity");
+    mxmlNewText(storage_node, 0, value_str);
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    bucket_storage_capacity_xml = aos_pstrdup(p, &xml_doc);
+    
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return bucket_storage_capacity_xml;
+}
+
+void build_bucket_storage_capacity(aos_pool_t *p, int storage_capacity, aos_list_t *body)
+{
+    char *bucket_storage_capacity_xml;
+    aos_buf_t *b;
+    bucket_storage_capacity_xml = build_bucket_storage_capacity_xml(p, storage_capacity);
+    if (bucket_storage_capacity_xml)
+    {
+        aos_list_init(body);
+        b = aos_buf_pack(p, bucket_storage_capacity_xml, strlen(bucket_storage_capacity_xml));
+        aos_list_add_tail(&b->node, body);
+    }
 }
 
 int oss_lifecycle_rules_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *lifecycle_rule_list)
@@ -576,13 +906,43 @@ void oss_lifecycle_rule_content_parse(aos_pool_t *p, mxml_node_t * xml_node,
     if (NULL != node) {
         oss_lifecycle_rule_expire_parse(p, node, content);
     }
+
+    node = mxmlFindElement(xml_node, xml_node, "AbortMultipartUpload",NULL, NULL,MXML_DESCEND);
+    if (NULL != node) {
+        oss_lifecycle_rule_date_parse(p, node, &content->abort_multipart_upload_dt);
+    }
 }
+
+void oss_lifecycle_rule_date_parse(aos_pool_t *p, mxml_node_t * xml_node,
+    oss_lifecycle_rule_date_t *rule_date)
+{
+    char* days;
+    char *created_before_date;
+    mxml_node_t *node;
+    char *node_content;
+
+    node = mxmlFindElement(xml_node, xml_node, "Days", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        days = apr_pstrdup(p, (char *)node_content);
+        rule_date->days = atoi(days);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "CreatedBeforeDate", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        created_before_date = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&rule_date->created_before_date, created_before_date);
+    } 
+}
+
 
 void oss_lifecycle_rule_expire_parse(aos_pool_t *p, mxml_node_t * xml_node,
     oss_lifecycle_rule_content_t *content)
 {
     char* days;
     char *date;
+    char *created_before_date;
     mxml_node_t *node;
     char *node_content;
 
@@ -599,6 +959,13 @@ void oss_lifecycle_rule_expire_parse(aos_pool_t *p, mxml_node_t * xml_node,
         date = apr_pstrdup(p, (char *)node_content);
         aos_str_set(&content->date, date);
     }
+
+    node = mxmlFindElement(xml_node, xml_node, "CreatedBeforeDate", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        created_before_date = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->created_before_date, created_before_date);
+    } 
 }
 
 void oss_delete_objects_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
