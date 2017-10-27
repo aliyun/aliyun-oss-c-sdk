@@ -189,8 +189,8 @@ oss_complete_part_content_t *oss_create_complete_part_content(aos_pool_t *p);
 
 
 /**
-  * @brief  create oss api bucket result content
-  * @return oss api bucket result content
+  * @brief  create oss api bucket list result content
+  * @return oss api bucket list result content
 **/
 oss_list_bucket_content_t *oss_create_list_bucket_content(aos_pool_t *p);
 

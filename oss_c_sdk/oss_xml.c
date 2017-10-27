@@ -148,14 +148,13 @@ int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_rule_
     res = get_xmldoc(bc, &doc);
     if (res == AOSE_OK) {
         logging_node = mxmlFindElement(doc, doc, xml_logging_status_path, NULL, NULL, MXML_DESCEND);
-
         if (logging_node) {
             enabled_node = mxmlFindElement(logging_node, doc, xml_logging_state_path, NULL, NULL, MXML_DESCEND);
-
             if (enabled_node) {
                 char *prefix = NULL;
                 char *target_bucket = NULL;
                 rule_content->logging_enabled = 1;
+
                 target_bucket = get_xmlnode_value(p, enabled_node, xml_target_bucket_path);
                 if (target_bucket) {
                     aos_str_set(&rule_content->target_bucket, target_bucket);

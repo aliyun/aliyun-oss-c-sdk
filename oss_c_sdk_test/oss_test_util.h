@@ -15,7 +15,7 @@ OSS_CPP_START
         aos_str_set(&object, object_name);                              \
     } while(0)
 
-#define TEST_CASE_LOG_OPEN
+//#define TEST_CASE_LOG_OPEN
 #ifdef TEST_CASE_LOG_OPEN
 #define TEST_CASE_LOG(fmt,...)  do { printf("%s:%d "fmt,__FUNCTION__,__LINE__,##__VA_ARGS__); fflush (stdout); } while (0)
 #else
