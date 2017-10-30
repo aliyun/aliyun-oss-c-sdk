@@ -441,12 +441,14 @@ void test_restore_obj(CuTest *tc)
     aos_string_t object;
     aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
+    char IA_BUCKET_NAME[128] = {0};
+    snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
 
     //setup: create archive bucket
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
-    aos_str_set(&bucket, TEST_BUCKET_NAME2);
+    aos_str_set(&bucket, IA_BUCKET_NAME);
 
     s = create_test_bucket_with_storage_class(options, bucket.data, 
                                             oss_acl, OSS_STORAGE_CLASS_TYPE_ARCHIVE);
