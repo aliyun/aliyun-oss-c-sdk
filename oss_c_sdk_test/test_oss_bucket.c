@@ -107,30 +107,32 @@ void test_create_bucket_with_storage_class(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
     oss_storage_class_type_e storage_class_tp = OSS_STORAGE_CLASS_TYPE_IA;
+    char IA_BUCKET_NAME[128] = {0};
+    snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
 
     //create the bucket with storage class
-    s = create_test_bucket_with_storage_class(options, TEST_BUCKET_NAME2, oss_acl, storage_class_tp);
+    s = create_test_bucket_with_storage_class(options, IA_BUCKET_NAME, oss_acl, storage_class_tp);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, NULL, s->error_code);
 
      //create the same bucket again with different storage class
-    s = create_test_bucket_with_storage_class(options, TEST_BUCKET_NAME2, 
+    s = create_test_bucket_with_storage_class(options, IA_BUCKET_NAME, 
                                             oss_acl, OSS_STORAGE_CLASS_TYPE_ARCHIVE);
     // 409: BucketAlreadyExists Cannot modify existing bucket's storage class
     CuAssertIntEquals(tc, 409, s->code);
 
      //create the same bucket again with different storage class
-    s = create_test_bucket_with_storage_class(options, TEST_BUCKET_NAME2, 
+    s = create_test_bucket_with_storage_class(options, IA_BUCKET_NAME, 
                                             oss_acl, OSS_STORAGE_CLASS_TYPE_STANDARD);
     // 409: BucketAlreadyExists Cannot modify existing bucket's storage class
     CuAssertIntEquals(tc, 409, s->code);
 
     //delete bucket 
-    aos_str_set(&bucket, TEST_BUCKET_NAME2);
+    aos_str_set(&bucket, IA_BUCKET_NAME);
     s = oss_delete_bucket(options, &bucket, &resp_headers);
     CuAssertIntEquals(tc, 204, s->code);
 
@@ -551,13 +553,18 @@ void test_list_buckets_with_iterator(CuTest *tc)
     int match_num = 0;
     int size = 0;
     aos_string_t bucket;
+    char BUCKET_NAME2[128] = {0};
+    snprintf(BUCKET_NAME2, 127, "%s-test-itor", TEST_BUCKET_NAME);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     oss_acl = OSS_ACL_PRIVATE;
     //create the second bucket to iterate
-    s = create_test_bucket(options, TEST_BUCKET_NAME2, oss_acl);
+    s = create_test_bucket(options, BUCKET_NAME2, oss_acl);
+    if (s->error_code) {
+        printf("bucket name %s, %s %s\n", BUCKET_NAME2, s->error_code, s->error_msg);
+    }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, NULL, s->error_code);
 
@@ -570,7 +577,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
     aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
         TEST_CASE_LOG("Get bucket %s\n", content->name.data);
         if (!strcmp(content->name.data, TEST_BUCKET_NAME)
-                || !strcmp(content->name.data, TEST_BUCKET_NAME2) ) {
+                || !strcmp(content->name.data, BUCKET_NAME2) ) {
             match_num++;
         }
         size++;
@@ -586,7 +593,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
         aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
             TEST_CASE_LOG("Get bucket %s\n", content->name.data);
             if (!strcmp(content->name.data, TEST_BUCKET_NAME)
-                    || !strcmp(content->name.data, TEST_BUCKET_NAME2) ) {
+                    || !strcmp(content->name.data, BUCKET_NAME2) ) {
                 match_num++;
             }
             size++;
@@ -597,7 +604,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
     CuAssertIntEquals(tc, 2, match_num);
 
     //delete bucket 
-    aos_str_set(&bucket, TEST_BUCKET_NAME2);
+    aos_str_set(&bucket, BUCKET_NAME2);
     s = oss_delete_bucket(options, &bucket, &resp_headers);
     CuAssertIntEquals(tc, 204, s->code);
 
@@ -725,7 +732,7 @@ void test_lifecycle(CuTest *tc)
     s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
                                  &resp_headers);
     if (s->error_msg) {
-        printf("%s %s", s->error_msg, s->error_code);
+        TEST_CASE_LOG("%s %s", s->error_msg, s->error_code);
     }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
@@ -735,6 +742,9 @@ void test_lifecycle(CuTest *tc)
     aos_list_init(&lifecycle_rule_list);
     s = oss_get_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
                                  &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s", s->error_msg, s->error_code);
+    }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
