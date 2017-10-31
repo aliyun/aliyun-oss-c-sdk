@@ -566,7 +566,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
     //create the second bucket to iterate
     s = create_test_bucket(options, BUCKET_NAME2, oss_acl);
     if (s->error_code) {
-        printf("bucket name %s, %s %s\n", BUCKET_NAME2, s->error_code, s->error_msg);
+        TEST_CASE_LOG("bucket name %s, %s %s\n", BUCKET_NAME2, s->error_code, s->error_msg);
     }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, NULL, s->error_code);
@@ -591,7 +591,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
         aos_list_init(&params->bucket_list);
         aos_str_set(&params->marker, params->next_marker.data);
         params->max_keys = 100;
-        TEST_CASE_LOG("marker:%s, next marker: %s\n", params->marker.data, params->next_marker.data);
+        // TEST_CASE_LOG("marker:%s, next marker: %s\n", params->marker.data, params->next_marker.data);
         size = 0;
         s = oss_list_buckets(options, params, &resp_headers);
         CuAssertIntEquals(tc, 200, s->code);
