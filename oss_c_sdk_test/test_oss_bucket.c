@@ -498,6 +498,7 @@ void test_list_buckets(CuTest *tc)
     oss_list_bucket_content_t *content = NULL;
     int size = 0;
 
+    TEST_CASE_LOG("begin test\n");
     /* list all buckets */
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -591,7 +592,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
         aos_list_init(&params->bucket_list);
         aos_str_set(&params->marker, params->next_marker.data);
         params->max_keys = 100;
-        // TEST_CASE_LOG("marker:%s, next marker: %s\n", params->marker.data, params->next_marker.data);
+        TEST_CASE_LOG("marker:%s, next marker: %s\n", params->marker.data, params->next_marker.data);
         size = 0;
         s = oss_list_buckets(options, params, &resp_headers);
         CuAssertIntEquals(tc, 200, s->code);
