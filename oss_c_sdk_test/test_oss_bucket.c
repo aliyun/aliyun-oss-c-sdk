@@ -504,7 +504,7 @@ void test_list_buckets(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     params = oss_create_list_buckets_params(p);
-    params->max_keys = 10;
+    params->max_keys = 100;
     s = oss_list_buckets(options, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
@@ -588,20 +588,9 @@ void test_list_buckets_with_iterator(CuTest *tc)
     }
     CuAssertIntEquals(tc, 1, size);
 
-
     while (params->truncated) {
-        char next_marker_str[128];
-        strcpy(next_marker_str, params->next_marker.data);
-        aos_pool_destroy(p);
-
-        aos_pool_create(&p, NULL);
-        options = oss_request_options_create(p);
-        init_test_request_options(options, is_cname);
-
-        params = oss_create_list_buckets_params(p);
         aos_list_init(&params->bucket_list);
-        //aos_str_set(&params->marker, params->next_marker.data);
-        aos_str_set(&params->marker, next_marker_str);
+        aos_str_set(&params->marker, params->next_marker.data);
         params->max_keys = 10;
         TEST_CASE_LOG("marker:%s, next marker: %s\n", params->marker.data, params->next_marker.data);
         s = oss_list_buckets(options, params, &resp_headers);
@@ -615,14 +604,13 @@ void test_list_buckets_with_iterator(CuTest *tc)
             size++;
         }
         CuAssertIntEquals(tc, 1, size > 1);
-#if 0
-        if (size > 20) {
+        if (size > 100) {
             if (match_num != 2) {
+                TEST_CASE_LOG("not found expect bucket within %d buckets", size);
                 match_num = 2;
             }
             break;
         }
-#endif
     }
 
     CuAssertIntEquals(tc, 2, match_num);
