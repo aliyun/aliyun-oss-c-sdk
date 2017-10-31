@@ -45,6 +45,7 @@ void test_bucket_setup(CuTest *tc)
 
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, NULL, s->error_code);
+    TEST_CASE_LOG("create test bucket success!\n");
 
     //create test object
     headers1 = aos_table_make(p, 0);
@@ -63,6 +64,7 @@ void test_bucket_setup(CuTest *tc)
     }
 
     aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
 }
 
 void test_bucket_cleanup(CuTest *tc)
