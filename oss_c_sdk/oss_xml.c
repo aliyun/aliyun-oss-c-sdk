@@ -764,8 +764,7 @@ char *build_bucket_storage_class_xml(aos_pool_t *p, oss_storage_class_type_e sto
     mxml_node_t *root_node;
 
     storage_class_str = get_oss_storage_class_str(storage_class);
-    if (!storage_class_str)
-    {
+    if (!storage_class_str) {
         return NULL;
     }
 

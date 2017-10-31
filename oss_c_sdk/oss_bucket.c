@@ -13,6 +13,7 @@ aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *options
                                 aos_table_t **resp_headers)
 {
     const char *oss_acl_str = NULL;
+    const char *oss_storage_class_str = NULL;
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
@@ -31,8 +32,8 @@ aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *options
     oss_init_bucket_request(options, bucket, HTTP_PUT, &req, 
                             query_params, headers, &resp);
 
-    if (get_oss_storage_class_str(params->storage_class))
-    {
+    oss_storage_class_str = get_oss_storage_class_str(params->storage_class);
+    if (oss_storage_class_str != NULL) {
         aos_list_t body;
         build_bucket_storage_class(options->pool, params->storage_class, &body);
         oss_write_request_body_from_buffer(&body, req); 
