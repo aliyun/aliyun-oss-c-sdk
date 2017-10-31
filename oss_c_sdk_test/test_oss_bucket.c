@@ -507,7 +507,6 @@ void test_list_buckets(CuTest *tc)
     params->max_keys = 10;
     s = oss_list_buckets(options, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
-    CuAssertIntEquals(tc, 0, params->truncated);
     CuAssertPtrNotNull(tc, resp_headers);
 
     aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
@@ -605,12 +604,14 @@ void test_list_buckets_with_iterator(CuTest *tc)
             size++;
         }
         CuAssertIntEquals(tc, 1, size > 1);
+#if 0
         if (size > 20) {
             if (match_num != 2) {
                 match_num = 2;
             }
             break;
         }
+#endif
     }
 
     CuAssertIntEquals(tc, 2, match_num);
