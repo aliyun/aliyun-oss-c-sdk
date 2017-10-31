@@ -63,6 +63,7 @@ void test_bucket_setup(CuTest *tc)
     }
 
     aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
 }
 
 void test_bucket_cleanup(CuTest *tc)
