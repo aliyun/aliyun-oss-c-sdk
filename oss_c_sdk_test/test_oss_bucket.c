@@ -737,7 +737,7 @@ void test_lifecycle(CuTest *tc)
     s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list, 
                                  &resp_headers);
     if (s->error_msg) {
-        TEST_CASE_LOG("%s %s", s->error_msg, s->error_code);
+        TEST_CASE_LOG("%s %s\n", s->error_msg, s->error_code);
     }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
