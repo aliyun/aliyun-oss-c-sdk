@@ -317,10 +317,17 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     mxml_node_t *node; 
     oss_list_bucket_content_t *content;
     content = oss_create_list_bucket_content(p);
+    if (content == NULL) {
+        aos_error_log("malloc memory for list bucket failed\n");
+        printf("malloc memory for list bucket failed\n");
+        return;
+    }
+
     node = mxmlFindElement(xml_node, xml_node, "Name", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
+        if (value == NULL) printf("bug!!!\n");
         aos_str_set(&content->name, value);
     }
 
@@ -328,6 +335,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
+        if (value == NULL) printf("bug!!!\n");
         aos_str_set(&content->create_date, value);
     }
 
@@ -335,6 +343,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
+        if (value == NULL) printf("bug!!!\n");
         aos_str_set(&content->extranet_endpoint, value);
     }
 
@@ -342,6 +351,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
+        if (value == NULL) printf("bug!!!\n");
         aos_str_set(&content->intranet_endpoint, value);
     }
 
@@ -349,6 +359,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
+        if (value == NULL) printf("bug!!!\n");
         aos_str_set(&content->location, value);
     }
 
@@ -356,9 +367,11 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
+        if (value == NULL) printf("bug!!!\n");
         aos_str_set(&content->storage_class, value);
     }
 
+    printf("add node %s success\n", content->name);
     aos_list_add_tail(&content->node, node_list);
 }
 
