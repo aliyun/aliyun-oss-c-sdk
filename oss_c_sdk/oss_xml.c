@@ -327,7 +327,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
-        if (value == NULL) printf("bug!!!\n");
+        if (value == NULL) { printf("%d bug!!!\n", __LINE__); fflush(stdout); }
         aos_str_set(&content->name, value);
     }
 
@@ -335,8 +335,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
-        if (value == NULL) printf("bug!!!\n");
-        assert(value != NULL);
+        if (value == NULL) { printf("%d bug!!!\n", __LINE__); fflush(stdout); }
         aos_str_set(&content->create_date, value);
     }
 
@@ -344,8 +343,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
-        if (value == NULL) printf("bug!!!\n");
-        assert(value != NULL);
+        if (value == NULL) { printf("%d bug!!!\n", __LINE__); fflush(stdout); }
         aos_str_set(&content->extranet_endpoint, value);
     }
 
@@ -353,8 +351,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
-        if (value == NULL) printf("bug!!!\n");
-        assert(value != NULL);
+        if (value == NULL) { printf("%d bug!!!\n", __LINE__); fflush(stdout); }
         aos_str_set(&content->intranet_endpoint, value);
     }
 
@@ -362,8 +359,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
-        if (value == NULL) printf("bug!!!\n");
-        assert(value != NULL);
+        if (value == NULL) { printf("%d bug!!!\n", __LINE__); fflush(stdout); }
         aos_str_set(&content->location, value);
     }
 
@@ -371,8 +367,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     if (NULL != node) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
-        if (value == NULL) printf("bug!!!\n");
-        assert(value != NULL);
+        if (value == NULL) { printf("%d bug!!!\n", __LINE__); fflush(stdout); }
         aos_str_set(&content->storage_class, value);
     }
 
