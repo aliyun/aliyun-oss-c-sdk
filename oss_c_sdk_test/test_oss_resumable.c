@@ -1147,7 +1147,7 @@ void test_resumable_upload_callback_without_checkpoint(CuTest *tc)
     int64_t size = 0;
     int64_t pos = 0;
     char *callback =  "{"
-        "\"callbackUrl\":\"http://callback.oss-demo.com:23450\","
+        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
@@ -1280,7 +1280,7 @@ void test_resumable_upload_callback_with_checkpoint(CuTest *tc)
     int64_t size = 0;
     int64_t pos = 0;
     char *callback =  "{"
-        "\"callbackUrl\":\"http://callback.oss-demo.com:23450\","
+        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
