@@ -376,7 +376,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
         aos_str_set(&content->storage_class, value);
     }
 
-    printf("add node %s success\n", content->name);
+    printf("add node %s success\n", content->name.data);
     fflush(stdout);
     aos_list_add_tail(&content->node, node_list);
 }
