@@ -242,7 +242,7 @@ void test_get_bucket_location(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
-void _test_head_bucket(CuTest *tc)
+void test_head_bucket(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
@@ -991,7 +991,7 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_get_bucket_logging);
     SUITE_ADD_TEST(suite, test_delete_bucket_logging);
     SUITE_ADD_TEST(suite, test_get_bucket_location);
-    SUITE_ADD_TEST(suite, _test_head_bucket);
+    //SUITE_ADD_TEST(suite, test_head_bucket);
     SUITE_ADD_TEST(suite, test_put_bucket_storage_capacity);
     SUITE_ADD_TEST(suite, test_get_bucket_storage_capacity);
     SUITE_ADD_TEST(suite, test_list_buckets);
