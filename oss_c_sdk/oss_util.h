@@ -232,7 +232,7 @@ oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p);
   * @brief  create logging rule content
   * @return logging rule content
 **/
-oss_logging_rule_content_t *oss_create_logging_rule_content(aos_pool_t *p);
+oss_logging_config_content_t *oss_create_logging_rule_content(aos_pool_t *p);
 
 /**
   * @brief  create oss object content for delete objects

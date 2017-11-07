@@ -286,23 +286,26 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *oss_put_symlink_object(const oss_request_options_t *options, 
+aos_status_t *oss_put_symlink(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
-                              const aos_string_t *object,
-                              aos_table_t *headers, 
+                              const aos_string_t *sym_object,
+                              const aos_string_t *target_object,
                               aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
 
+    headers = aos_table_make(options->pool, 1);
+    apr_table_set(headers, OSS_CANNONICALIZED_HEADER_SYMLINK, target_object->data);
     headers = aos_table_create_if_null(options, headers, 0);    
 
     query_params = aos_table_create_if_null(options, query_params, 0);
     apr_table_add(query_params, OSS_SYMLINK, "");
 
-    oss_init_object_request(options, bucket, object, HTTP_PUT, 
+    oss_init_object_request(options, bucket, sym_object, HTTP_PUT, 
                             &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);
@@ -313,21 +316,21 @@ aos_status_t *oss_put_symlink_object(const oss_request_options_t *options,
 
 aos_status_t *oss_get_symlink_object(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
-                              const aos_string_t *object,
-                              aos_table_t *headers, 
+                              const aos_string_t *sym_object,
                               aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL; 
 
     headers = aos_table_create_if_null(options, headers, 0);    
 
     query_params = aos_table_create_if_null(options, query_params, 0);
     apr_table_add(query_params, OSS_SYMLINK, "");
 
-    oss_init_object_request(options, bucket, object, HTTP_GET, 
+    oss_init_object_request(options, bucket, sym_object, HTTP_GET, 
                             &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);

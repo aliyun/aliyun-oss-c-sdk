@@ -7,7 +7,6 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include <unistd.h>
 
 #include <apr_time.h>
 #include <apr_strings.h>

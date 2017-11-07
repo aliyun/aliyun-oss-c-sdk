@@ -115,7 +115,7 @@ int oss_location_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *os
     return res;
 }
 
-int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_storage_capacity)
+int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *oss_storage_capacity)
 {
     int res;
     mxml_node_t *doc = NULL;
@@ -126,7 +126,7 @@ int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_stri
     if (res == AOSE_OK) {
         capacity_str = get_xmlnode_value(p, doc, xml_path);
         if (capacity_str) {
-            aos_str_set(oss_storage_capacity, capacity_str);
+            *oss_storage_capacity = atol(capacity_str);
         }
         mxmlDelete(doc);
     }
@@ -134,7 +134,7 @@ int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_stri
     return res;
 }
 
-int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_rule_content_t *rule_content)
+int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_config_content_t *rule_content)
 {
     const char xml_logging_status_path[] = "BucketLoggingStatus";
     const char xml_logging_state_path[] = "LoggingEnabled";
@@ -646,7 +646,7 @@ void build_complete_multipart_upload_body(aos_pool_t *p, aos_list_t *part_list, 
     aos_list_add_tail(&b->node, body);
 }
 
-char *build_bucket_logging_xml(aos_pool_t *p, oss_logging_rule_content_t *content)
+char *build_bucket_logging_xml(aos_pool_t *p, oss_logging_config_content_t *content)
 {
     char *logging_xml;
     char *xml_buff;
@@ -680,7 +680,7 @@ char *build_bucket_logging_xml(aos_pool_t *p, oss_logging_rule_content_t *conten
     return logging_xml;
 }
 
-void build_bucket_logging_body(aos_pool_t *p, oss_logging_rule_content_t *content, aos_list_t *body)
+void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body)
 {
     char *logging_xml;
     aos_buf_t *b;
@@ -804,7 +804,7 @@ void build_bucket_storage_class(aos_pool_t *p, oss_storage_class_type_e storage_
     }
 }
 
-char *build_bucket_storage_capacity_xml(aos_pool_t *p, int storage_capacity)
+char *build_bucket_storage_capacity_xml(aos_pool_t *p, long storage_capacity)
 {
     char *bucket_storage_capacity_xml;
     char *xml_buff;
@@ -815,7 +815,7 @@ char *build_bucket_storage_capacity_xml(aos_pool_t *p, int storage_capacity)
 
     doc = mxmlNewXML("1.0");
     root_node = mxmlNewElement(doc, "BucketUserQos");
-    apr_snprintf(value_str, sizeof(value_str), "%d", storage_capacity);
+    apr_snprintf(value_str, sizeof(value_str), "%ld", storage_capacity);
     mxml_node_t *storage_node = mxmlNewElement(root_node, "StorageCapacity");
     mxmlNewText(storage_node, 0, value_str);
 
@@ -832,7 +832,7 @@ char *build_bucket_storage_capacity_xml(aos_pool_t *p, int storage_capacity)
     return bucket_storage_capacity_xml;
 }
 
-void build_bucket_storage_capacity(aos_pool_t *p, int storage_capacity, aos_list_t *body)
+void build_bucket_storage_capacity(aos_pool_t *p, long storage_capacity, aos_list_t *body)
 {
     char *bucket_storage_capacity_xml;
     aos_buf_t *b;
