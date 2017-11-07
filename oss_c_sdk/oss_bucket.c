@@ -7,10 +7,10 @@
 #include "oss_util.h"
 #include "oss_xml.h"
 #include "oss_api.h"
-aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *options, 
-                                const aos_string_t *bucket, 
-                                oss_create_bucket_params_t *params, 
-                                aos_table_t **resp_headers)
+static aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *options, 
+                                                   const aos_string_t *bucket, 
+                                                   oss_create_bucket_params_t *params, 
+                                                   aos_table_t **resp_headers)
 {
     const char *oss_acl_str = NULL;
     const char *oss_storage_class_str = NULL;
@@ -167,8 +167,8 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
 }
 
 aos_status_t *oss_head_bucket(const oss_request_options_t *options, 
-                                 const aos_string_t *bucket, 
-                                 aos_table_t **resp_headers)
+                              const aos_string_t *bucket, 
+                              aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
@@ -192,9 +192,9 @@ aos_status_t *oss_head_bucket(const oss_request_options_t *options,
 }
 
 aos_status_t *oss_get_bucket_location(const oss_request_options_t *options, 
-                                 const aos_string_t *bucket, 
-                                 aos_string_t *oss_location, 
-                                 aos_table_t **resp_headers)
+                                      const aos_string_t *bucket, 
+                                      aos_string_t *oss_location, 
+                                      aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     int res;
@@ -226,9 +226,9 @@ aos_status_t *oss_get_bucket_location(const oss_request_options_t *options,
 }
 
 aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *options, 
-                                 const aos_string_t *bucket, 
-                                 int storage_capacity, 
-                                 aos_table_t **resp_headers)
+                                              const aos_string_t *bucket, 
+                                              long storage_capacity, 
+                                              aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
@@ -250,17 +250,14 @@ aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *optio
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
-    }
 
     return s;
 }
 
 aos_status_t *oss_get_bucket_storage_capacity(const oss_request_options_t *options, 
-                                 const aos_string_t *bucket, 
-                                 aos_string_t *oss_storage_capacity, 
-                                 aos_table_t **resp_headers)
+                                              const aos_string_t *bucket, 
+                                              long *oss_storage_capacity, 
+                                              aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     int res;
@@ -380,7 +377,7 @@ aos_status_t *oss_list_buckets(const oss_request_options_t *options,
 
 aos_status_t *oss_put_bucket_logging(const oss_request_options_t *options,
                                        const aos_string_t *bucket, 
-                                       oss_logging_rule_content_t *content, 
+                                       oss_logging_config_content_t *content, 
                                        aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
@@ -411,7 +408,7 @@ aos_status_t *oss_put_bucket_logging(const oss_request_options_t *options,
 
 aos_status_t *oss_get_bucket_logging(const oss_request_options_t *options, 
                                  const aos_string_t *bucket, 
-                                 oss_logging_rule_content_t *content, 
+                                 oss_logging_config_content_t *content, 
                                  aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
@@ -463,9 +460,6 @@ aos_status_t *oss_delete_bucket_logging(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
-    }
 
     return s;
 }

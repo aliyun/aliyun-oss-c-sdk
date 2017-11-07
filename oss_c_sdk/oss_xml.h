@@ -42,7 +42,7 @@ void build_lifecycle_body(aos_pool_t *p, aos_list_t *lifecycle_rule_list, aos_li
 /**
   * @brief  build body for put bucket logging
 **/
-void build_bucket_logging_body(aos_pool_t *p, oss_logging_rule_content_t *content, aos_list_t *body);
+void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body);
 
 /**
   * @brief  build body for put storage class
@@ -52,7 +52,7 @@ void build_bucket_storage_class(aos_pool_t *p, oss_storage_class_type_e storage_
 /**
   * @brief  build body for put storage capacity
 **/
-void build_bucket_storage_capacity(aos_pool_t *p, int storage_capacity, aos_list_t *body);
+void build_bucket_storage_capacity(aos_pool_t *p, long storage_capacity, aos_list_t *body);
 
 /**
   * @brief  build xml body for delete objects
@@ -98,12 +98,12 @@ int oss_location_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *os
 /**
   * @bried  parse storage capacity from xml body for get_bucket_storage_capacity
 **/
-int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_storage_capacity);
+int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *oss_storage_capacity);
 
 /**
   * @bried  parse logging info from xml body for get_bucket_logging
 **/
-int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_rule_content_t *logging_content);
+int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_config_content_t *logging_content);
 
 /**
   * @brief parse upload_id from xml body for init multipart upload

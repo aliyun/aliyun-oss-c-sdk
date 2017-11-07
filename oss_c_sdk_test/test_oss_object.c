@@ -332,7 +332,8 @@ void test_put_symlink_for_obj(CuTest *tc)
     char *link_object_name = "link-to-oss.jpg";
     char *filename = __FILE__;
     aos_string_t bucket;
-    aos_string_t link_object;
+    aos_string_t sym_object;
+    aos_string_t target_object;
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     int is_cname = 0;
@@ -354,12 +355,11 @@ void test_put_symlink_for_obj(CuTest *tc)
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&link_object, link_object_name);
+    aos_str_set(&sym_object, link_object_name);
+    aos_str_set(&target_object, object_name);
     init_test_request_options(options, is_cname);
-    headers = aos_table_make(options->pool, 1);
-    apr_table_set(headers, OSS_CANNONICALIZED_HEADER_SYMLINK, object_name);
-    s = oss_put_symlink_object(options, &bucket, &link_object, 
-                        headers, &head_resp_headers);
+    s = oss_put_symlink(options, &bucket, &sym_object, 
+                        &target_object, &head_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
     aos_pool_destroy(p);
@@ -378,7 +378,6 @@ void test_get_symlink_for_obj(CuTest *tc)
     aos_status_t *s = NULL;
     oss_request_options_t *options = NULL;
     int is_cname = 0;
-    aos_table_t *headers = NULL;
     aos_table_t *head_resp_headers = NULL;
 
     /*get target link object */
@@ -387,8 +386,7 @@ void test_get_symlink_for_obj(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&link_object, link_object_name);
     init_test_request_options(options, is_cname);
-    s = oss_get_symlink_object(options, &bucket, &link_object, 
-                        headers, &head_resp_headers);
+    s = oss_get_symlink_object(options, &bucket, &link_object, &head_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
     
@@ -404,9 +402,7 @@ void test_get_symlink_for_obj(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&link_object, "testasfadf");
     init_test_request_options(options, is_cname);
-    headers = NULL;
-    s = oss_get_symlink_object(options, &bucket, &link_object, 
-            headers, &head_resp_headers);
+    s = oss_get_symlink_object(options, &bucket, &link_object, &head_resp_headers);
     CuAssertIntEquals(tc, 404, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
 
@@ -483,7 +479,7 @@ void test_restore_obj(CuTest *tc)
         if (s->code != 409) {
             break;
         } else {
-            sleep(5);
+            apr_sleep(5000);
         }
     } while (1);
     TEST_CASE_LOG("\nrestore object done.\n");
@@ -512,6 +508,7 @@ void test_restore_obj(CuTest *tc)
     //cleanup: delete archive bucket 
     delete_test_object(options, bucket.data, object_name1);
     s = oss_delete_bucket(options, &bucket, &resp_headers);
+    TEST_CASE_LOG("errcode[%d] %s %s\n", s->code, s->error_msg, s->error_code);
     CuAssertIntEquals(tc, 204, s->code);
     aos_pool_destroy(p);
 

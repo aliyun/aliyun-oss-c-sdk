@@ -277,14 +277,14 @@ void test_get_bucket_storage_capacity(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    aos_string_t oss_storage_capacity;
+    long oss_storage_capacity = 0;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_get_bucket_storage_capacity(options, &bucket, &oss_storage_capacity, &resp_headers);
-    TEST_CASE_LOG("get storage capacity %s\n", oss_storage_capacity.data);
+    TEST_CASE_LOG("get storage capacity %ld\n", oss_storage_capacity);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -301,9 +301,8 @@ void test_put_bucket_storage_capacity(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    aos_string_t oss_storage_capacity;
-    int capacity = 100;
-    int get_capacity = -1;
+    long oss_storage_capacity = 0;
+    long capacity = 100;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -313,17 +312,16 @@ void test_put_bucket_storage_capacity(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
     aos_pool_destroy(p);
-    TEST_CASE_LOG("set capacity %d success\n", capacity);
+    TEST_CASE_LOG("set capacity %ld success\n", capacity);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_get_bucket_storage_capacity(options, &bucket, &oss_storage_capacity, &resp_headers);
-    get_capacity = atoi(oss_storage_capacity.data);
-    TEST_CASE_LOG("get storage capacity %s (%d)\n", oss_storage_capacity.data, get_capacity);
+    TEST_CASE_LOG("get storage capacity %ld\n", oss_storage_capacity);
     CuAssertIntEquals(tc, 200, s->code);
-    CuAssertIntEquals(tc, capacity, get_capacity);
+    CuAssertIntEquals(tc, capacity, oss_storage_capacity);
     CuAssertPtrNotNull(tc, resp_headers);
     aos_pool_destroy(p);
 
@@ -347,7 +345,7 @@ void test_put_bucket_logging(CuTest *tc)
     aos_pool_t *p = NULL;
     aos_string_t bucket;
     int is_cname = 0;
-    oss_logging_rule_content_t *content;
+    oss_logging_config_content_t *content;
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
@@ -361,6 +359,9 @@ void test_put_bucket_logging(CuTest *tc)
     aos_str_set(&content->target_bucket, TEST_BUCKET_NAME);
     aos_str_set(&content->prefix, "my-log-");
     s = oss_put_bucket_logging(options, &bucket, content, &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s\n", s->error_msg, s->error_code);
+    }
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
     aos_pool_destroy(p);
@@ -376,7 +377,7 @@ void test_get_bucket_logging(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    oss_logging_rule_content_t *content = NULL;
+    oss_logging_config_content_t *content = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -405,7 +406,7 @@ void test_delete_bucket_logging(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    oss_logging_rule_content_t *content = NULL;
+    oss_logging_config_content_t *content = NULL;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

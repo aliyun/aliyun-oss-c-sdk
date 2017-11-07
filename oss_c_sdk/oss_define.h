@@ -282,7 +282,7 @@ typedef struct {
     aos_string_t target_bucket;
     aos_string_t prefix;
     int logging_enabled;
-} oss_logging_rule_content_t;
+} oss_logging_config_content_t;
 
 typedef struct {
     aos_list_t node;

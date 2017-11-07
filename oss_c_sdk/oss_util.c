@@ -567,11 +567,11 @@ void oss_init_lifecycle_rule_date(oss_lifecycle_rule_date_t *date)
     aos_str_set(&date->created_before_date, "");
 }
 
-oss_logging_rule_content_t *oss_create_logging_rule_content(aos_pool_t *p)
+oss_logging_config_content_t *oss_create_logging_rule_content(aos_pool_t *p)
 {
-    oss_logging_rule_content_t *rule;
-    rule = (oss_logging_rule_content_t *)aos_pcalloc(
-            p, sizeof(oss_logging_rule_content_t));
+    oss_logging_config_content_t *rule;
+    rule = (oss_logging_config_content_t *)aos_pcalloc(
+            p, sizeof(oss_logging_config_content_t));
     aos_str_set(&rule->prefix, "");
     aos_str_set(&rule->target_bucket, "");
     rule->logging_enabled = 0;
