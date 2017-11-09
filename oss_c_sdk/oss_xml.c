@@ -502,6 +502,31 @@ int oss_get_bucket_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     return res;
 }
 
+int oss_get_bucket_website_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_website_config_t *website_config)
+{
+    int res = AOSE_OK;
+    mxml_node_t *root;
+    char *value;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        value = get_xmlnode_value(p, root, "Suffix");
+        if (NULL != value) {
+            aos_str_set(&website_config->suffix_str, value);
+        }
+
+        value = get_xmlnode_value(p, root, "Key");
+        if (NULL != value) {
+            aos_str_set(&website_config->key_str, value);
+        }
+
+        mxmlDelete(root);
+    }
+ 
+    return res;
+}
+
 void parse_referer_str(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *referer_config_ptr)
 {
     char *value, *node_content;
@@ -917,6 +942,49 @@ void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_conf
     referer_config_xml = build_referer_config_xml(p, referer_config);
     aos_list_init(body);
     b = aos_buf_pack(p, referer_config_xml, strlen(referer_config_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+char *build_website_config_xml(aos_pool_t *p, oss_website_config_t *website_config)
+{
+    char *website_config_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *sub_node, *suffix_node, *key_node;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "WebsiteConfiguration");
+    sub_node = mxmlNewElement(root_node, "IndexDocument");
+    suffix_node = mxmlNewElement(sub_node, "Suffix");
+    mxmlNewText(suffix_node, 0, website_config->suffix_str.data);
+    if (!aos_string_is_empty(&website_config->key_str)) {
+        sub_node = mxmlNewElement(root_node, "ErrorDocument");
+        key_node = mxmlNewElement(sub_node, "Key");
+        mxmlNewText(key_node, 0, website_config->key_str.data);
+    }
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    website_config_xml = aos_pstrdup(p, &xml_doc);
+    
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return website_config_xml;
+}
+
+void build_website_config_body(aos_pool_t *p, oss_website_config_t *website_config, aos_list_t *body)
+{
+    char *website_config_xml;
+    aos_buf_t *b;
+    website_config_xml = build_website_config_xml(p, website_config);
+    aos_list_init(body);
+    b = aos_buf_pack(p, website_config_xml, strlen(website_config_xml));
     aos_list_add_tail(&b->node, body);
 }
 

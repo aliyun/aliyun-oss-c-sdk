@@ -8,6 +8,7 @@ static const char *g_s_oss_sub_resource_list[] = {
     "bucketInfo",
     "stat",
     "referer",
+    "website",
     "restore",
     "logging",
     "symlink",
