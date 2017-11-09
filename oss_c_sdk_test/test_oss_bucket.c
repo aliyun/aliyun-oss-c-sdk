@@ -242,6 +242,62 @@ void test_get_bucket_location(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
+void test_get_bucket_info(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_bucket_info_t bucket_info;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_get_bucket_info(options, &bucket, &bucket_info, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    TEST_CASE_LOG("endpoint: %s, location: %s\n", TEST_OSS_ENDPOINT, bucket_info.location.data);
+    TEST_CASE_LOG("user id %s, name %s, \n", bucket_info.owner_id.data, bucket_info.owner_name.data);
+    CuAssertIntEquals(tc, 1, bucket_info.location.len != 0);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_str_set(&bucket, "impossibleexistbucket");
+    s = oss_get_bucket_info(options, &bucket, &bucket_info, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_get_bucket_stat(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_bucket_stat_t bucket_stat;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_get_bucket_stat(options, &bucket, &bucket_stat, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    TEST_CASE_LOG("storage %d, object count %d, multipart upload count %d\n", \
+            (int)bucket_stat.storage_in_bytes, (int)bucket_stat.object_count, (int)bucket_stat.multipart_upload_count);
+    CuAssertIntEquals(tc, 1, bucket_stat.object_count != 0);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 void test_head_bucket(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -860,6 +916,78 @@ void test_lifecycle(CuTest *tc)
     printf("test_lifecycle ok\n");
 }
 
+void test_put_bucket_referer(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_referer_config_t referer_config;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+    aos_list_init(&referer_config.referer_list);
+    oss_create_and_add_refer(p, &referer_config, "http://www.aliyun.com");
+    oss_create_and_add_refer(p, &referer_config, "https://www.aliyun.com");
+    referer_config.allow_empty_referer = 1;
+
+    s = oss_put_bucket_referer(options, &bucket, &referer_config, 
+                               &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    referer_config.allow_empty_referer = 0;
+    s = oss_put_bucket_referer(options, &bucket, &referer_config, 
+                               &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_get_bucket_referer(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_referer_config_t referer_config;
+    oss_referer_t *referer;
+    int match_num = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_list_init(&referer_config.referer_list);
+    s = oss_get_bucket_referer(options, &bucket, &referer_config, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, referer_config.allow_empty_referer);
+    aos_list_for_each_entry(oss_referer_t, referer, &referer_config.referer_list, node) {
+        TEST_CASE_LOG("get referer %s\n", referer->referer.data);
+        if (!strcmp(referer->referer.data, "http://www.aliyun.com") 
+            || !strcmp(referer->referer.data, "https://www.aliyun.com")) {
+            match_num++;
+        }
+    }
+
+    CuAssertIntEquals(tc, 2, match_num);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 void test_delete_objects_quiet(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -988,6 +1116,10 @@ CuSuite *test_oss_bucket()
 
     SUITE_ADD_TEST(suite, test_bucket_setup);
     SUITE_ADD_TEST(suite, test_create_bucket);
+    SUITE_ADD_TEST(suite, test_get_bucket_info);
+    SUITE_ADD_TEST(suite, test_get_bucket_stat);
+    SUITE_ADD_TEST(suite, test_put_bucket_referer);
+    SUITE_ADD_TEST(suite, test_get_bucket_referer);
     SUITE_ADD_TEST(suite, test_put_bucket_logging);
     SUITE_ADD_TEST(suite, test_get_bucket_logging);
     SUITE_ADD_TEST(suite, test_delete_bucket_logging);

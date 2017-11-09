@@ -368,7 +368,7 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
 }
 
 void oss_list_node_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
-    aos_list_t *node_list, NODE_PARSE_FUN parse_funptr)
+     aos_list_t *node_list, NODE_PARSE_FUN parse_funptr)
 {
     mxml_node_t *content_node;
     content_node = mxmlFindElement(root, root, xml_path, NULL, NULL, MXML_DESCEND);
@@ -379,7 +379,7 @@ void oss_list_node_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *
 }
 
 void oss_list_buckets_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
-    aos_list_t *buckets_list)
+     aos_list_t *buckets_list)
 {
     oss_list_node_contents_parse(p, root, xml_path, buckets_list, oss_list_buckets_content_parse);
 }
@@ -416,6 +416,123 @@ int oss_list_buckets_parse_from_body(aos_pool_t *p, aos_list_t *bc,
         }
         
         oss_list_buckets_contents_parse(p, root, buckets_xml_path, &params->bucket_list);
+        mxmlDelete(root);
+    }
+ 
+    return res;
+}
+
+int oss_get_bucket_info_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_bucket_info_t *bucket_info)
+{
+    int res = AOSE_OK;
+    mxml_node_t *root;
+    char *value;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        value = get_xmlnode_value(p, root, "CreationDate");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->created_date, value);
+        }
+
+        value = get_xmlnode_value(p, root, "ExtranetEndpoint");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->extranet_endpoint, value);
+        }
+
+        value = get_xmlnode_value(p, root, "IntranetEndpoint");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->intranet_endpoint, value);
+        }
+
+        value = get_xmlnode_value(p, root, "Location");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->location, value);
+        }
+        
+        value = get_xmlnode_value(p, root, "DisplayName");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->owner_name, value);
+        }
+
+        value = get_xmlnode_value(p, root, "ID");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->owner_id, value);
+        }
+ 
+        value = get_xmlnode_value(p, root, "Grant");
+        if (NULL != value) {
+            aos_str_set(&bucket_info->acl, value);
+        }
+
+        mxmlDelete(root);
+    }
+ 
+    return res;
+}
+
+int oss_get_bucket_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_bucket_stat_t *bucket_stat)
+{
+    int res = AOSE_OK;
+    mxml_node_t *root;
+    char *value;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        value = get_xmlnode_value(p, root, "Storage");
+        if (NULL != value) {
+            bucket_stat->storage_in_bytes = aos_atoui64(value);
+        }
+
+        value = get_xmlnode_value(p, root, "ObjectCount");
+        if (NULL != value) {
+            bucket_stat->object_count = aos_atoui64(value);
+        }
+
+        value = get_xmlnode_value(p, root, "MultipartUploadCount");
+        if (NULL != value) {
+            bucket_stat->multipart_upload_count = aos_atoui64(value);
+        }
+
+        mxmlDelete(root);
+    }
+ 
+    return res;
+}
+
+void parse_referer_str(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *referer_config_ptr)
+{
+    char *value, *node_content;
+    oss_referer_config_t *referer_config = (oss_referer_config_t *)referer_config_ptr;
+    node_content = xml_node->child->value.opaque;
+    value = apr_pstrdup(p, (char *)node_content);
+    if (NULL != value) {
+        oss_create_and_add_refer(p, referer_config, value);
+    }
+}
+
+int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_referer_config_t *referer_config)
+{
+    int res = AOSE_OK;
+    mxml_node_t *root;
+    char *value;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        value = get_xmlnode_value(p, root, "AllowEmptyReferer");
+        if (NULL != value) {
+            if (!strncmp(value, "true", 4)) {
+                referer_config->allow_empty_referer = 1;
+            } else {
+                referer_config->allow_empty_referer = 0;
+            }
+        }
+
+        oss_list_node_contents_parse(p, root, "Referer", (aos_list_t *)referer_config, 
+                                     parse_referer_str);
         mxmlDelete(root);
     }
  
@@ -756,6 +873,50 @@ void build_lifecycle_body(aos_pool_t *p, aos_list_t *lifecycle_rule_list, aos_li
     lifecycle_xml = build_lifecycle_xml(p, lifecycle_rule_list);
     aos_list_init(body);
     b = aos_buf_pack(p, lifecycle_xml, strlen(lifecycle_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+char *build_referer_config_xml(aos_pool_t *p, oss_referer_config_t *referer_config)
+{
+    char *referer_config_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *sub_node;
+    oss_referer_t *referer;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "RefererConfiguration");
+    sub_node = mxmlNewElement(root_node, "AllowEmptyReferer");
+    mxmlNewText(sub_node, 0, referer_config->allow_empty_referer ? "true" : "false");
+    sub_node = mxmlNewElement(root_node, "RefererList");
+
+    aos_list_for_each_entry(oss_referer_t, referer, &referer_config->referer_list, node) {
+        mxml_node_t *referer_node = mxmlNewElement(sub_node, "Referer");
+        mxmlNewText(referer_node, 0, referer->referer.data);
+    }
+    
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    referer_config_xml = aos_pstrdup(p, &xml_doc);
+    
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return referer_config_xml;
+}
+
+void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_config, aos_list_t *body)
+{
+    char *referer_config_xml;
+    aos_buf_t *b;
+    referer_config_xml = build_referer_config_xml(p, referer_config);
+    aos_list_init(body);
+    b = aos_buf_pack(p, referer_config_xml, strlen(referer_config_xml));
     aos_list_add_tail(&b->node, body);
 }
 
