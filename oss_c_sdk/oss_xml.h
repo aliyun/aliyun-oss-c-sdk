@@ -45,6 +45,11 @@ void build_lifecycle_body(aos_pool_t *p, aos_list_t *lifecycle_rule_list, aos_li
 void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_config, aos_list_t *body);
 
 /**
+  * @brief  build body for put website 
+**/
+void build_website_config_body(aos_pool_t *p, oss_website_config_t *website_config, aos_list_t *body);
+
+/**
   * @brief  build body for put bucket logging
 **/
 void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body);
@@ -117,10 +122,16 @@ int oss_get_bucket_info_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     oss_bucket_info_t *bucket_info);
 
 /**
-  * @bried  parse bucket stat from xml body for get_bucket_logging
+  * @bried  parse bucket stat from xml body for get_bucket_stat
 **/
 int oss_get_bucket_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     oss_bucket_stat_t *bucket_stat);
+
+/**
+  * @bried  parse bucket website info from xml body for get_bucket_website
+**/
+int oss_get_bucket_website_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_website_config_t *website_config);
 
 /**
   * @bried  parse bucket referer configuration from xml body for get_bucket_logging

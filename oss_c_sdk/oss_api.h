@@ -189,6 +189,43 @@ aos_status_t *oss_put_bucket_referer(const oss_request_options_t *options,
                                      aos_table_t **resp_headers);
 
 /*
+ * @brief  put oss bucket website
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   website_config      the oss bucket website config 
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_website(const oss_request_options_t *options,
+                                     const aos_string_t *bucket, 
+                                     oss_website_config_t *website_config,
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket website
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]   website_config      the oss bucket website config 
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_website(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     oss_website_config_t *website_config, 
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  delete oss bucket website
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_delete_bucket_website(const oss_request_options_t *options, 
+                                        const aos_string_t *bucket, 
+                                        aos_table_t **resp_headers);
+
+/*
  * @brief  put oss bucket logging
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
