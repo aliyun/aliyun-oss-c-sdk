@@ -195,6 +195,12 @@ oss_complete_part_content_t *oss_create_complete_part_content(aos_pool_t *p);
 oss_list_bucket_content_t *oss_create_list_bucket_content(aos_pool_t *p);
 
 /**
+  * @brief  create oss api bucket info result 
+  * @return oss api bucket info result 
+**/
+oss_bucket_info_t *oss_create_bucket_info(aos_pool_t *p);
+
+/**
   * @brief  create oss api list parameters
   * @return oss api list parameters
 **/
@@ -227,6 +233,12 @@ oss_upload_file_t *oss_create_upload_file(aos_pool_t *p);
   * @return lifecycle rule content
 **/
 oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p);
+
+/**
+  * @brief  create and add refer
+  * @return new refer
+**/
+oss_referer_t * oss_create_and_add_refer(aos_pool_t *p, oss_referer_config_t *refer_config, char *refer_str);
 
 /**
   * @brief  create logging rule content

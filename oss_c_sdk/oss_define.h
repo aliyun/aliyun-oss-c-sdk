@@ -47,6 +47,8 @@ extern const char OSS_EXPIRES[];
 extern const char OSS_SIGNATURE[];
 extern const char OSS_ACL[];
 extern const char OSS_LOCATION[];
+extern const char OSS_BUCKETINFO[];
+extern const char OSS_BUCKETSTAT[];
 extern const char OSS_RESTORE[];
 extern const char OSS_SYMLINK[];
 extern const char OSS_QOS[];
@@ -77,6 +79,7 @@ extern const char OSS_CALLBACK[];
 extern const char OSS_CALLBACK_VAR[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
+extern const char OSS_REFERER[];
 extern const char OSS_DELETE[];
 extern const char OSS_YES[];
 extern const char OSS_OBJECT_TYPE_NORMAL[];
@@ -278,11 +281,37 @@ typedef struct {
 } oss_lifecycle_rule_content_t;
 
 typedef struct {
-    aos_list_t node;
+    aos_list_t   node;
+    aos_string_t referer;
+} oss_referer_t;
+
+typedef struct {
+    aos_list_t   referer_list;
+    int allow_empty_referer;
+} oss_referer_config_t;
+
+typedef struct {
+    aos_list_t   node;
     aos_string_t target_bucket;
     aos_string_t prefix;
     int logging_enabled;
 } oss_logging_config_content_t;
+
+typedef struct {
+    aos_string_t created_date;
+    aos_string_t extranet_endpoint;
+    aos_string_t intranet_endpoint;
+    aos_string_t location;
+    aos_string_t owner_id;
+    aos_string_t owner_name;
+    aos_string_t acl;
+} oss_bucket_info_t;
+
+typedef struct {
+    uint64_t storage_in_bytes;
+    uint64_t object_count;
+    uint64_t multipart_upload_count;
+} oss_bucket_stat_t;
 
 typedef struct {
     aos_list_t node;
