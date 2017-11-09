@@ -40,6 +40,11 @@ char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list);
 void build_lifecycle_body(aos_pool_t *p, aos_list_t *lifecycle_rule_list, aos_list_t *body);
 
 /**
+  * @brief  build body for put referer 
+**/
+void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_config, aos_list_t *body);
+
+/**
   * @brief  build body for put bucket logging
 **/
 void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body);
@@ -106,6 +111,24 @@ int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *os
 int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_config_content_t *logging_content);
 
 /**
+  * @bried  parse bucket info from xml body for get_bucket_logging
+**/
+int oss_get_bucket_info_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_bucket_info_t *bucket_info);
+
+/**
+  * @bried  parse bucket stat from xml body for get_bucket_logging
+**/
+int oss_get_bucket_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_bucket_stat_t *bucket_stat);
+
+/**
+  * @bried  parse bucket referer configuration from xml body for get_bucket_logging
+**/
+int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_referer_config_t *referer_config);
+
+/**
   * @brief parse upload_id from xml body for init multipart upload
 **/
 int oss_upload_id_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *upload_id);
@@ -114,6 +137,8 @@ int oss_upload_id_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *u
 /**
   * @brief parse objects from xml body for list buckets
 **/
+void oss_list_node_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+     aos_list_t *node_list, NODE_PARSE_FUN parse_funptr);
 int oss_list_buckets_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     oss_list_buckets_params_t *params);
 

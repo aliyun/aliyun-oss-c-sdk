@@ -460,6 +460,12 @@ oss_list_bucket_content_t *oss_create_list_bucket_content(aos_pool_t *p)
             p, sizeof(oss_list_bucket_content_t));
 }
 
+oss_bucket_info_t *oss_create_bucket_info(aos_pool_t *p)
+{
+    return (oss_bucket_info_t *)oss_create_api_result_content(
+            p, sizeof(oss_bucket_info_t));
+}
+
 oss_list_object_content_t *oss_create_list_object_content(aos_pool_t *p)
 {
     return (oss_list_object_content_t *)oss_create_api_result_content(
@@ -591,6 +597,20 @@ oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p)
     rule->days = INT_MAX;
     oss_init_lifecycle_rule_date(&rule->abort_multipart_upload_dt);
     return rule;
+}
+
+oss_referer_t * oss_create_and_add_refer(aos_pool_t *p, oss_referer_config_t *refer_config, char *refer_str)
+{
+    oss_referer_t *refer;
+    refer = (oss_referer_t *)aos_pcalloc(
+            p, sizeof(oss_referer_t));
+    if (!refer) {
+        return refer;
+    }
+
+    aos_str_set(&refer->referer, refer_str);
+    aos_list_add_tail(&refer->node, &refer_config->referer_list);
+    return refer;
 }
 
 oss_upload_file_t *oss_create_upload_file(aos_pool_t *p)

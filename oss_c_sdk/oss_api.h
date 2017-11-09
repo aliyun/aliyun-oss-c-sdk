@@ -84,6 +84,7 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
 aos_status_t *oss_head_bucket(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               aos_table_t **resp_headers);
+
 /*
  * @brief  get oss bucket location
  * @param[in]   options       the oss request options
@@ -97,6 +98,44 @@ aos_status_t *oss_get_bucket_location(const oss_request_options_t *options,
                                       aos_string_t *oss_location, 
                                       aos_table_t **resp_headers);
 
+/*
+ * @brief  get oss bucket info
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  bucket_info   the oss bucket info
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_info(const oss_request_options_t *options, 
+                                  const aos_string_t *bucket, 
+                                  oss_bucket_info_t *bucket_info, 
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket stat
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  bucket_stat   the oss bucket stat
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_stat(const oss_request_options_t *options, 
+                                  const aos_string_t *bucket, 
+                                  oss_bucket_stat_t *bucket_stat, 
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket referer
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  referer_config the oss bucket referer config
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_referer(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     oss_referer_config_t *referer_config, 
+                                     aos_table_t **resp_headers);
 /*
  * @brief  put oss bucket storage capacity
  * @param[in]   options       the oss request options
@@ -135,6 +174,19 @@ aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
                                        const aos_string_t *bucket, 
                                        aos_list_t *lifecycle_rule_list, 
                                        aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss bucket referer 
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   referer_config      the oss bucket referer_config 
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_referer(const oss_request_options_t *options,
+                                     const aos_string_t *bucket, 
+                                     oss_referer_config_t *referer_config,
+                                     aos_table_t **resp_headers);
 
 /*
  * @brief  put oss bucket logging
