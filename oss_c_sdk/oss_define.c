@@ -50,6 +50,7 @@ const char OSS_CALLBACK_VAR[] = "x-oss-callback-var";
 const char OSS_PROCESS[] = "x-oss-process";
 const char OSS_LIFECYCLE[] = "lifecycle";
 const char OSS_REFERER[] = "referer";
+const char OSS_WEBSITE[] = "website";
 const char OSS_LOGGING[] = "logging";
 const char OSS_DELETE[] = "delete";
 const char OSS_YES[] = "yes";

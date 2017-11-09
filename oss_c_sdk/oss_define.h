@@ -80,6 +80,7 @@ extern const char OSS_CALLBACK_VAR[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_REFERER[];
+extern const char OSS_WEBSITE[];
 extern const char OSS_DELETE[];
 extern const char OSS_YES[];
 extern const char OSS_OBJECT_TYPE_NORMAL[];
@@ -289,6 +290,11 @@ typedef struct {
     aos_list_t   referer_list;
     int allow_empty_referer;
 } oss_referer_config_t;
+
+typedef struct {
+    aos_string_t suffix_str;
+    aos_string_t key_str;
+} oss_website_config_t;
 
 typedef struct {
     aos_list_t   node;
