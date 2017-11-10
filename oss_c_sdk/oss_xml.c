@@ -564,6 +564,64 @@ int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     return res;
 }
 
+void parse_sub_ctors_rule(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *sub_rule_list)
+{
+    char *value, *node_content;
+    node_content = xml_node->child->value.opaque;
+    value = apr_pstrdup(p, (char *)node_content);
+    if (NULL != value) {
+        oss_create_sub_cors_rule(p, sub_rule_list, value);
+    }
+}
+
+void oss_cors_rule_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list)
+{
+    char *xml_value;
+    mxml_node_t *node; 
+    oss_cors_rule_t *content;
+    content = oss_create_cors_rule(p);
+    if (content == NULL) {
+        aos_error_log("malloc memory for list bucket failed\n");
+        return;
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "MaxAgeSeconds", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        xml_value = node->child->value.opaque;
+        content->max_age_seconds = atoi(xml_value);
+    }
+
+    oss_list_node_contents_parse(p, xml_node, "AllowedOrigin", &content->allowed_origin_list, 
+                                     parse_sub_ctors_rule);
+    
+    oss_list_node_contents_parse(p, xml_node, "AllowedMethod", &content->allowed_method_list, 
+                                     parse_sub_ctors_rule);
+
+    oss_list_node_contents_parse(p, xml_node, "AllowedHeader", &content->allowed_head_list, 
+                                     parse_sub_ctors_rule);
+
+    oss_list_node_contents_parse(p, xml_node, "ExposeHeader", &content->expose_head_list, 
+                                     parse_sub_ctors_rule);
+
+    aos_list_add_tail(&content->node, node_list);
+}
+
+int oss_get_bucket_cors_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    aos_list_t *rule_list)
+{
+    int res = AOSE_OK;
+    mxml_node_t *root;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        oss_list_node_contents_parse(p, root, "CORSRule", rule_list,
+                                     oss_cors_rule_content_parse);
+        mxmlDelete(root);
+    }
+ 
+    return res;
+}
+
 int oss_upload_id_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *upload_id)
 {
     int res;
@@ -942,6 +1000,73 @@ void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_conf
     referer_config_xml = build_referer_config_xml(p, referer_config);
     aos_list_init(body);
     b = aos_buf_pack(p, referer_config_xml, strlen(referer_config_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+char *build_cors_rule_xml(aos_pool_t *p, aos_list_t *rule_list)
+{
+    char *cors_rule_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *sub_node;
+    oss_cors_rule_t *cors_rule;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "CORSConfiguration");
+    aos_list_for_each_entry(oss_cors_rule_t, cors_rule, rule_list, node) {
+        oss_sub_cors_rule_t *sub_cors_rule;
+        sub_node = mxmlNewElement(root_node, "CORSRule");
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->allowed_origin_list, node) {
+            mxml_node_t *list_node = mxmlNewElement(sub_node, "AllowedOrigin");
+            mxmlNewText(list_node, 0, sub_cors_rule->rule.data);
+        }
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->allowed_method_list, node) {
+            mxml_node_t *list_node = mxmlNewElement(sub_node, "AllowedMethod");
+            mxmlNewText(list_node, 0, sub_cors_rule->rule.data);
+        }
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->allowed_head_list, node) {
+            mxml_node_t *list_node = mxmlNewElement(sub_node, "AllowedHeader");
+            mxmlNewText(list_node, 0, sub_cors_rule->rule.data);
+        }
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->expose_head_list, node) {
+            mxml_node_t *list_node = mxmlNewElement(sub_node, "ExposeHeader");
+            mxmlNewText(list_node, 0, sub_cors_rule->rule.data);
+        }
+
+        if (cors_rule->max_age_seconds != INT_MAX) {
+            char value_str[64];
+            mxml_node_t *list_node = mxmlNewElement(sub_node, "MaxAgeSeconds");
+            apr_snprintf(value_str, sizeof(value_str), "%d", cors_rule->max_age_seconds);
+            mxmlNewText(list_node, 0, value_str);
+        }
+    }
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    cors_rule_xml = aos_pstrdup(p, &xml_doc);
+    
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return cors_rule_xml;
+}
+
+void build_cors_rule_body(aos_pool_t *p, aos_list_t *rule_list, aos_list_t *body)
+{
+    char *cors_rule_xml;
+    aos_buf_t *b;
+    cors_rule_xml = build_cors_rule_xml(p, rule_list);
+    aos_list_init(body);
+    b = aos_buf_pack(p, cors_rule_xml, strlen(cors_rule_xml));
     aos_list_add_tail(&b->node, body);
 }
 

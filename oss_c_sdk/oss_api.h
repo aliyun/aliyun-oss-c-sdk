@@ -125,6 +125,30 @@ aos_status_t *oss_get_bucket_stat(const oss_request_options_t *options,
                                   aos_table_t **resp_headers);
 
 /*
+ * @brief  get oss bucket cors
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  rule_list     the oss bucket cors rule list
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_cors(const oss_request_options_t *options, 
+                                  const aos_string_t *bucket, 
+                                  aos_list_t *rule_list, 
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  delete oss bucket cors
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_delete_bucket_cors(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     aos_table_t **resp_headers);
+
+/*
  * @brief  get oss bucket referer
  * @param[in]   options       the oss request options
  * @param[in]   bucket        the oss bucket name
@@ -187,6 +211,19 @@ aos_status_t *oss_put_bucket_referer(const oss_request_options_t *options,
                                      const aos_string_t *bucket, 
                                      oss_referer_config_t *referer_config,
                                      aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss bucket cors 
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   rule_list           the oss bucket ocor rule list
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_cors(const oss_request_options_t *options,
+                                  const aos_string_t *bucket, 
+                                  aos_list_t *rule_list,
+                                  aos_table_t **resp_headers);
 
 /*
  * @brief  put oss bucket website

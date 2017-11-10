@@ -234,6 +234,14 @@ oss_upload_file_t *oss_create_upload_file(aos_pool_t *p);
 **/
 oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p);
 
+
+/**
+  * @brief  create cors rule content
+  * @return cors rule content
+**/
+void oss_create_sub_cors_rule(aos_pool_t *p, aos_list_t *list, char *rule_content);
+oss_cors_rule_t *oss_create_cors_rule(aos_pool_t *p);
+
 /**
   * @brief  create and add refer
   * @return new refer
