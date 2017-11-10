@@ -1069,6 +1069,146 @@ void test_get_bucket_referer(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
+void test_put_bucket_cors(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t cors_rule_list;
+    oss_cors_rule_t *cors_rule1 = NULL, *cors_rule2 = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+    aos_list_init(&cors_rule_list);
+
+    cors_rule1 = oss_create_cors_rule(p);
+    aos_list_add_tail(&cors_rule1->node, &cors_rule_list);
+
+    oss_create_sub_cors_rule(p, &cors_rule1->allowed_origin_list, "allowed_origin_1_1");
+    oss_create_sub_cors_rule(p, &cors_rule1->allowed_origin_list, "allowed_origin_2_1");
+
+    oss_create_sub_cors_rule(p, &cors_rule1->allowed_method_list, "PUT");
+    oss_create_sub_cors_rule(p, &cors_rule1->allowed_method_list, "GET");
+
+    oss_create_sub_cors_rule(p, &cors_rule1->allowed_head_list, "Authorization");
+
+    oss_create_sub_cors_rule(p, &cors_rule1->expose_head_list, "expose_head_1_1");
+    oss_create_sub_cors_rule(p, &cors_rule1->expose_head_list, "expose_head_2_1");
+
+    cors_rule2 = oss_create_cors_rule(p);
+    aos_list_add_tail(&cors_rule2->node, &cors_rule_list);
+
+    oss_create_sub_cors_rule(p, &cors_rule2->allowed_origin_list, "allowed_origin_2_1");
+    oss_create_sub_cors_rule(p, &cors_rule2->allowed_origin_list, "allowed_origin_2_2");
+
+    oss_create_sub_cors_rule(p, &cors_rule2->allowed_method_list, "PUT");
+    oss_create_sub_cors_rule(p, &cors_rule2->allowed_method_list, "GET");
+
+    oss_create_sub_cors_rule(p, &cors_rule2->allowed_head_list, "Authorization");
+
+    oss_create_sub_cors_rule(p, &cors_rule2->expose_head_list, "expose_head_2_1");
+    oss_create_sub_cors_rule(p, &cors_rule2->expose_head_list, "expose_head_2_2");
+
+    s = oss_put_bucket_cors(options, &bucket, &cors_rule_list, 
+                                 &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    cors_rule1->max_age_seconds = 100000;
+    s = oss_put_bucket_cors(options, &bucket, &cors_rule_list, 
+                                 &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_get_bucket_cors(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t cors_rule_list;
+    oss_cors_rule_t *cors_rule = NULL;
+    oss_sub_cors_rule_t *sub_cors_rule = NULL;
+    int size = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_list_init(&cors_rule_list);
+    s = oss_get_bucket_cors(options, &bucket, &cors_rule_list, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    aos_list_for_each_entry(oss_cors_rule_t, cors_rule, &cors_rule_list, node) {
+        TEST_CASE_LOG("%d\n", cors_rule->max_age_seconds);
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->allowed_origin_list, node) {
+            int is_match_put_before = !strncmp("allowed_origin", sub_cors_rule->rule.data, 14);
+            CuAssertIntEquals(tc, 1, is_match_put_before);
+            TEST_CASE_LOG("%s\n", sub_cors_rule->rule.data);
+        }
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->allowed_method_list, node) {
+            int is_match_put_before = strcmp("PUT", sub_cors_rule->rule.data) 
+                            || strcmp("GET", sub_cors_rule->rule.data);
+            CuAssertIntEquals(tc, 1, is_match_put_before);
+            TEST_CASE_LOG("%s\n", sub_cors_rule->rule.data);
+        }
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->allowed_head_list, node) {
+            CuAssertStrEquals(tc, "authorization", sub_cors_rule->rule.data);
+            TEST_CASE_LOG("%s\n", sub_cors_rule->rule.data);
+        }
+
+        aos_list_for_each_entry(oss_sub_cors_rule_t, sub_cors_rule, &cors_rule->expose_head_list, node) {
+            int is_match_put_before = !strncmp("expose_head", sub_cors_rule->rule.data, 11);
+            CuAssertIntEquals(tc, 1, is_match_put_before);
+            TEST_CASE_LOG("%s\n", sub_cors_rule->rule.data);
+        }
+        size++;
+    }
+
+    CuAssertIntEquals(tc, 2, size);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_delete_bucket_cors(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_delete_bucket_cors(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 void test_delete_objects_quiet(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -1207,6 +1347,9 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_put_bucket_logging);
     SUITE_ADD_TEST(suite, test_get_bucket_logging);
     SUITE_ADD_TEST(suite, test_delete_bucket_logging);
+    SUITE_ADD_TEST(suite, test_put_bucket_cors);
+    SUITE_ADD_TEST(suite, test_get_bucket_cors);
+    SUITE_ADD_TEST(suite, test_delete_bucket_cors);
     SUITE_ADD_TEST(suite, test_get_bucket_location);
     //SUITE_ADD_TEST(suite, test_head_bucket);
     SUITE_ADD_TEST(suite, test_put_bucket_storage_capacity);

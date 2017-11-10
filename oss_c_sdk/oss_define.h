@@ -80,6 +80,7 @@ extern const char OSS_CALLBACK_VAR[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
 extern const char OSS_REFERER[];
+extern const char OSS_CORS[];
 extern const char OSS_WEBSITE[];
 extern const char OSS_DELETE[];
 extern const char OSS_YES[];
@@ -280,6 +281,20 @@ typedef struct {
     aos_string_t created_before_date;
     oss_lifecycle_rule_date_t abort_multipart_upload_dt;
 } oss_lifecycle_rule_content_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t rule;
+} oss_sub_cors_rule_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_list_t allowed_origin_list;
+    aos_list_t allowed_method_list;
+    aos_list_t allowed_head_list;
+    aos_list_t expose_head_list;
+    int max_age_seconds;     // INT_MAX means no value
+} oss_cors_rule_t;
 
 typedef struct {
     aos_list_t   node;
