@@ -50,6 +50,11 @@ void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_conf
 void build_website_config_body(aos_pool_t *p, oss_website_config_t *website_config, aos_list_t *body);
 
 /**
+  * @brief  build body for put cors 
+**/
+void build_cors_rule_body(aos_pool_t *p, aos_list_t *rule_list, aos_list_t *body);
+
+/**
   * @brief  build body for put bucket logging
 **/
 void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body);
@@ -140,10 +145,15 @@ int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     oss_referer_config_t *referer_config);
 
 /**
+  * @bried  parse bucket cors from xml body for get_bucket_cors
+**/
+int oss_get_bucket_cors_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    aos_list_t *rule_list);
+
+/**
   * @brief parse upload_id from xml body for init multipart upload
 **/
 int oss_upload_id_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *upload_id);
-
 
 /**
   * @brief parse objects from xml body for list buckets

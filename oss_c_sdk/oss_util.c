@@ -599,6 +599,26 @@ oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p)
     return rule;
 }
 
+void oss_create_sub_cors_rule(aos_pool_t *p, aos_list_t *list, char *rule_content)
+{
+    oss_sub_cors_rule_t *sub_rule;
+    sub_rule = (oss_sub_cors_rule_t *)aos_pcalloc(p, sizeof(oss_sub_cors_rule_t));
+    aos_str_set(&sub_rule->rule, rule_content); 
+    aos_list_add_tail(&sub_rule->node, list);
+}
+
+oss_cors_rule_t *oss_create_cors_rule(aos_pool_t *p)
+{
+    oss_cors_rule_t *rule;
+    rule = (oss_cors_rule_t *)aos_pcalloc(p, sizeof(oss_cors_rule_t));
+    aos_list_init(&rule->allowed_origin_list);
+    aos_list_init(&rule->allowed_method_list);
+    aos_list_init(&rule->allowed_head_list);
+    aos_list_init(&rule->expose_head_list);
+    rule->max_age_seconds = INT_MAX;
+    return rule;
+}
+
 oss_referer_t * oss_create_and_add_refer(aos_pool_t *p, oss_referer_config_t *refer_config, char *refer_str)
 {
     oss_referer_t *refer;
