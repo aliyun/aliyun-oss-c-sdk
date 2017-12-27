@@ -1121,6 +1121,7 @@ char *build_bucket_storage_class_xml(aos_pool_t *p, oss_storage_class_type_e sto
     aos_string_t xml_doc;
     mxml_node_t *doc;
     mxml_node_t *root_node;
+    mxml_node_t *storage_node;
 
     storage_class_str = get_oss_storage_class_str(storage_class);
     if (!storage_class_str) {
@@ -1129,7 +1130,7 @@ char *build_bucket_storage_class_xml(aos_pool_t *p, oss_storage_class_type_e sto
 
     doc = mxmlNewXML("1.0");
     root_node = mxmlNewElement(doc, "CreateBucketConfiguration");
-    mxml_node_t *storage_node = mxmlNewElement(root_node, "StorageClass");
+    storage_node = mxmlNewElement(root_node, "StorageClass");
     mxmlNewText(storage_node, 0, storage_class_str);
     
     xml_buff = new_xml_buff(doc);
@@ -1165,12 +1166,13 @@ char *build_bucket_storage_capacity_xml(aos_pool_t *p, long storage_capacity)
     aos_string_t xml_doc;
     mxml_node_t *doc;
     mxml_node_t *root_node;
+    mxml_node_t *storage_node;
     char value_str[64];
 
     doc = mxmlNewXML("1.0");
     root_node = mxmlNewElement(doc, "BucketUserQos");
     apr_snprintf(value_str, sizeof(value_str), "%ld", storage_capacity);
-    mxml_node_t *storage_node = mxmlNewElement(root_node, "StorageCapacity");
+    storage_node = mxmlNewElement(root_node, "StorageCapacity");
     mxmlNewText(storage_node, 0, value_str);
 
     xml_buff = new_xml_buff(doc);

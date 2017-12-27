@@ -438,7 +438,7 @@ void test_restore_obj(CuTest *tc)
     aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     char IA_BUCKET_NAME[128] = {0};
-    snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
+    apr_snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
 
     //setup: create archive bucket
     aos_pool_create(&p, NULL);
