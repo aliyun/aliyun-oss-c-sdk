@@ -110,7 +110,7 @@ void test_create_bucket_with_storage_class(CuTest *tc)
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
     oss_storage_class_type_e storage_class_tp = OSS_STORAGE_CLASS_TYPE_IA;
     char IA_BUCKET_NAME[128] = {0};
-    snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
+    apr_snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -615,7 +615,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
     int size = 0;
     aos_string_t bucket;
     char BUCKET_NAME2[128] = {0};
-    snprintf(BUCKET_NAME2, 127, "%s-test-itor", TEST_BUCKET_NAME);
+    apr_snprintf(BUCKET_NAME2, 127, "%s-test-itor", TEST_BUCKET_NAME);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

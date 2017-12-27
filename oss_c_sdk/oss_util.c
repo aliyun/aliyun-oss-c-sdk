@@ -566,8 +566,7 @@ oss_upload_part_copy_params_t *oss_create_upload_part_copy_params(aos_pool_t *p)
             p, sizeof(oss_upload_part_copy_params_t));
 }
 
-static inline
-void oss_init_lifecycle_rule_date(oss_lifecycle_rule_date_t *date)
+static APR_INLINE void oss_init_lifecycle_rule_date(oss_lifecycle_rule_date_t *date)
 {
     date->days = INT_MAX;
     aos_str_set(&date->created_before_date, "");
