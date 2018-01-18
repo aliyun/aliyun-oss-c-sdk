@@ -34,6 +34,7 @@ struct aos_http_request_options_s {
     int enable_crc;
     char *proxy_host;
     char *proxy_auth;
+    int enable_accept_encoding;  //enable accept-encoding
 };
 
 struct aos_http_transport_options_s {

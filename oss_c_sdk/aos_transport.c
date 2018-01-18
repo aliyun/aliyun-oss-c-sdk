@@ -241,8 +241,8 @@ size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, voi
         aos_move_transport_state(t, TRANS_STATE_BODY_IN);
         return bytes;
     }
-
-    if (t->resp->type == BODY_IN_MEMORY && t->resp->body_len >= (int64_t)t->controller->options->max_memory_size) {
+    
+    if (t->resp->type == BODY_IN_MEMORY && t->resp->body_len >= (int64_t)t->controller->options->max_memory_size) { 
         t->controller->reason = apr_psprintf(t->pool,
              "receive body too big, current body size: %" APR_INT64_T_FMT ", max memory size: %" APR_INT64_T_FMT,
               t->resp->body_len, t->controller->options->max_memory_size);
@@ -384,6 +384,11 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
     curl_easy_setopt_safe(CURLOPT_CONNECTTIMEOUT, t->controller->options->connect_timeout);
     curl_easy_setopt_safe(CURLOPT_LOW_SPEED_LIMIT, t->controller->options->speed_limit);
     curl_easy_setopt_safe(CURLOPT_LOW_SPEED_TIME, t->controller->options->speed_time);
+
+    if (t->controller->options->enable_accept_encoding)
+    {
+        curl_easy_setopt_safe(CURLOPT_ACCEPT_ENCODING, "");
+    }
 
     aos_init_curl_headers(t);
     curl_easy_setopt_safe(CURLOPT_HTTPHEADER, t->headers);
