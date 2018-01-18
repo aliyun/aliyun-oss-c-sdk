@@ -121,7 +121,7 @@ void get_object_to_buffer_with_range()
     aos_list_init(&buffer);
     headers = aos_table_make(p, 1);
 
-    /* ����Range����ȡ�ļ���ָ����Χ��bytes=20-100������20�͵�100���ַ� */
+    /* Set range for reading the data. bytes=20-100 means reading the data from the offset 20 to 100 of the file */
     apr_table_set(headers, "Range", "bytes=20-100");
 
     s = oss_get_object_to_buffer(options, &bucket, &object, 
@@ -174,7 +174,7 @@ void get_object_to_local_file_with_range()
     aos_str_set(&file, download_filename);
     headers = aos_table_make(p, 1);
 
-    /* ����Range����ȡ�ļ���ָ����Χ��bytes=20-100������20�͵�100���ַ� */
+    /* Set range for reading the data. bytes=20-100 means reading the data from the offset 20 to 100 of the file */
     apr_table_set(headers, "Range", "bytes=20-100");
 
     s = oss_get_object_to_file(options, &bucket, &object, headers, 
