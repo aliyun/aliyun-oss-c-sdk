@@ -201,8 +201,8 @@ aos_status_t *oss_do_select_object_to_buffer(const oss_request_options_t *option
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
 
-    apr_table_add(query_params, "x-oss-process", "csv/selcet");
-    apr_table_add(query_params, "sql", sql);
+    apr_table_add(params, "x-oss-process", "csv/selcet");
+    apr_table_add(params, "sql", sql);
 
     oss_init_object_request(options, bucket, object, HTTP_GET, 
                             &req, params, headers, progress_callback, 0, &resp);
