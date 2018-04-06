@@ -211,6 +211,14 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
                                        aos_list_t *buffer, 
                                        aos_table_t **resp_headers);
 
+aos_status_t *oss_select_object_to_buffer(const oss_request_options_t *options, 
+                                       const aos_string_t *bucket, 
+                                       const aos_string_t *object,
+                                       const aos_string_t *sql,
+                                       aos_table_t *headers, 
+                                       aos_table_t *params,
+                                       aos_list_t *buffer, 
+                                       aos_table_t **resp_headers);
 /*
  * @brief  get oss object to buffer
  * @param[in]   options             the oss request options
@@ -227,7 +235,15 @@ aos_status_t *oss_do_get_object_to_buffer(const oss_request_options_t *options,
                                           const aos_string_t *bucket, 
                                           const aos_string_t *object,
                                           aos_table_t *headers, 
-                                          aos_table_t *params,
+                                          aos_list_t *buffer,
+                                          oss_progress_callback progress_callback, 
+                                          aos_table_t **resp_headers);
+
+aos_status_t *oss_do_select_object_to_buffer(const oss_request_options_t *options, 
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object,
+                                          const aos_string_t *sql,
+                                          aos_table_t *headers, 
                                           aos_list_t *buffer,
                                           oss_progress_callback progress_callback, 
                                           aos_table_t **resp_headers);
@@ -282,6 +298,12 @@ aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
  * @return  aos_status_t, code is 2xx success, other failure
  */
 aos_status_t *oss_head_object(const oss_request_options_t *options, 
+                              const aos_string_t *bucket, 
+                              const aos_string_t *object,
+                              aos_table_t *headers, 
+                              aos_table_t **resp_headers);
+
+aos_status_t *oss_head_csv_object(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               const aos_string_t *object,
                               aos_table_t *headers, 
