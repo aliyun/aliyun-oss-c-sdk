@@ -386,7 +386,7 @@ void test_get_symlink_for_obj(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&link_object, link_object_name);
     init_test_request_options(options, is_cname);
-    s = oss_get_symlink_object(options, &bucket, &link_object, &head_resp_headers);
+    s = oss_get_symlink(options, &bucket, &link_object, &head_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
     
@@ -402,7 +402,7 @@ void test_get_symlink_for_obj(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&link_object, "testasfadf");
     init_test_request_options(options, is_cname);
-    s = oss_get_symlink_object(options, &bucket, &link_object, &head_resp_headers);
+    s = oss_get_symlink(options, &bucket, &link_object, &head_resp_headers);
     CuAssertIntEquals(tc, 404, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
 
@@ -447,7 +447,7 @@ void test_restore_obj(CuTest *tc)
     aos_str_set(&bucket, IA_BUCKET_NAME);
 
     s = create_test_bucket_with_storage_class(options, bucket.data, 
-                                            oss_acl, OSS_STORAGE_CLASS_TYPE_ARCHIVE);
+                                            oss_acl, OSS_STORAGE_CLASS_ARCHIVE);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, NULL, s->error_code);
 

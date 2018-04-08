@@ -67,7 +67,7 @@ void build_bucket_storage_class(aos_pool_t *p, oss_storage_class_type_e storage_
 /**
   * @brief  build body for put storage capacity
 **/
-void build_bucket_storage_capacity(aos_pool_t *p, long storage_capacity, aos_list_t *body);
+void build_bucket_storage_capacity_body(aos_pool_t *p, long storage_capacity, aos_list_t *body);
 
 /**
   * @brief  build xml body for delete objects
@@ -113,7 +113,7 @@ int oss_location_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *os
 /**
   * @bried  parse storage capacity from xml body for get_bucket_storage_capacity
 **/
-int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *oss_storage_capacity);
+int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *storage_capacity);
 
 /**
   * @bried  parse logging info from xml body for get_bucket_logging

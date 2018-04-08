@@ -746,11 +746,11 @@ const char *get_oss_acl_str(oss_acl_e oss_acl)
 const char *get_oss_storage_class_str(oss_storage_class_type_e storage_class)
 {
     switch (storage_class) {
-        case OSS_STORAGE_CLASS_TYPE_STANDARD:
+        case OSS_STORAGE_CLASS_STANDARD:
             return  "Standard";
-        case OSS_STORAGE_CLASS_TYPE_IA:
+        case OSS_STORAGE_CLASS_IA:
             return "IA";
-        case OSS_STORAGE_CLASS_TYPE_ARCHIVE:
+        case OSS_STORAGE_CLASS_ARCHIVE:
             return "Archive";
         default:
             return NULL;

@@ -7,6 +7,7 @@
 #include "oss_util.h"
 #include "oss_xml.h"
 #include "oss_api.h"
+
 static aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *options, 
                                                    const aos_string_t *bucket, 
                                                    oss_create_bucket_params_t *params, 
@@ -53,7 +54,7 @@ aos_status_t *oss_create_bucket(const oss_request_options_t *options,
     aos_status_t *s = NULL;
     oss_create_bucket_params_t params;
     params.acl = oss_acl;
-    params.storage_class = OSS_STORAGE_CLASS_TYPE_BUTT;
+    params.storage_class = OSS_STORAGE_CLASS_BUTT;
     
     s = oss_create_bucket_with_params(options, 
                                 bucket, 
@@ -347,7 +348,7 @@ aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *optio
     oss_init_bucket_request(options, bucket, HTTP_PUT, &req, 
                             query_params, headers, &resp);
 
-    build_bucket_storage_capacity(options->pool, storage_capacity, &body);
+    build_bucket_storage_capacity_body(options->pool, storage_capacity, &body);
     oss_write_request_body_from_buffer(&body, req); 
 
     s = oss_process_request(options, req, resp);
@@ -358,7 +359,7 @@ aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *optio
 
 aos_status_t *oss_get_bucket_storage_capacity(const oss_request_options_t *options, 
                                               const aos_string_t *bucket, 
-                                              long *oss_storage_capacity, 
+                                              long *storage_capacity, 
                                               aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
@@ -382,7 +383,7 @@ aos_status_t *oss_get_bucket_storage_capacity(const oss_request_options_t *optio
         return s;
     }
 
-    res = oss_storage_capacity_parse_from_body(options->pool, &resp->body, oss_storage_capacity);
+    res = oss_storage_capacity_parse_from_body(options->pool, &resp->body, storage_capacity);
     if (res != AOSE_OK) {
         aos_xml_error_status_set(s, res);
     }
@@ -431,7 +432,7 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *oss_list_buckets(const oss_request_options_t *options,
+aos_status_t *oss_list_bucket(const oss_request_options_t *options,
                               oss_list_buckets_params_t *params, 
                               aos_table_t **resp_headers)
 {
