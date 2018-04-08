@@ -127,10 +127,10 @@ typedef enum {
 } oss_acl_e;
 
 typedef enum {
-    OSS_STORAGE_CLASS_TYPE_STANDARD         = 0,  /*< standard */
-    OSS_STORAGE_CLASS_TYPE_IA               = 1,  /*< IA */
-    OSS_STORAGE_CLASS_TYPE_ARCHIVE          = 2,  /*< archive */
-    OSS_STORAGE_CLASS_TYPE_BUTT
+    OSS_STORAGE_CLASS_STANDARD         = 0,  /*< standard */
+    OSS_STORAGE_CLASS_IA               = 1,  /*< IA */
+    OSS_STORAGE_CLASS_ARCHIVE          = 2,  /*< archive */
+    OSS_STORAGE_CLASS_BUTT
 } oss_storage_class_type_e;
 
 typedef struct {
