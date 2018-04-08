@@ -118,7 +118,7 @@ void test_create_bucket_with_storage_class(CuTest *tc)
 
     aos_str_set(&bucket, IA_BUCKET_NAME);
     oss_delete_bucket(options, &bucket, &resp_headers);
-    apr_sleep(apr_time_from_sec(1));
+    apr_sleep(apr_time_from_sec(5));
 
     //create the bucket with storage class
     s = create_test_bucket_with_storage_class(options, IA_BUCKET_NAME, oss_acl, storage_class_tp);
