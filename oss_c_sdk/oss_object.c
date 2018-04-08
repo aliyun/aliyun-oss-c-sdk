@@ -314,7 +314,7 @@ aos_status_t *oss_put_symlink(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *oss_get_symlink_object(const oss_request_options_t *options, 
+aos_status_t *oss_get_symlink(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               const aos_string_t *sym_object,
                               aos_table_t **resp_headers)

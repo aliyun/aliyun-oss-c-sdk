@@ -108,7 +108,7 @@ void test_create_bucket_with_storage_class(CuTest *tc)
     aos_string_t bucket;
     aos_table_t *resp_headers = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
-    oss_storage_class_type_e storage_class_tp = OSS_STORAGE_CLASS_TYPE_IA;
+    oss_storage_class_type_e storage_class_tp = OSS_STORAGE_CLASS_IA;
     char IA_BUCKET_NAME[128] = {0};
     apr_snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
 
@@ -123,13 +123,13 @@ void test_create_bucket_with_storage_class(CuTest *tc)
 
      //create the same bucket again with different storage class
     s = create_test_bucket_with_storage_class(options, IA_BUCKET_NAME, 
-                                            oss_acl, OSS_STORAGE_CLASS_TYPE_ARCHIVE);
+                                            oss_acl, OSS_STORAGE_CLASS_ARCHIVE);
     // 409: BucketAlreadyExists Cannot modify existing bucket's storage class
     CuAssertIntEquals(tc, 409, s->code);
 
      //create the same bucket again with different storage class
     s = create_test_bucket_with_storage_class(options, IA_BUCKET_NAME, 
-                                            oss_acl, OSS_STORAGE_CLASS_TYPE_STANDARD);
+                                            oss_acl, OSS_STORAGE_CLASS_STANDARD);
     // 409: BucketAlreadyExists Cannot modify existing bucket's storage class
     CuAssertIntEquals(tc, 409, s->code);
 
@@ -260,7 +260,13 @@ void test_get_bucket_info(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     TEST_CASE_LOG("endpoint: %s, location: %s\n", TEST_OSS_ENDPOINT, bucket_info.location.data);
     TEST_CASE_LOG("user id %s, name %s, \n", bucket_info.owner_id.data, bucket_info.owner_name.data);
-    CuAssertIntEquals(tc, 1, bucket_info.location.len != 0);
+    CuAssertTrue(tc, bucket_info.location.len != 0);
+    CuAssertTrue(tc, bucket_info.acl.len != 0);
+    CuAssertTrue(tc, bucket_info.created_date.len != 0);
+    CuAssertTrue(tc, bucket_info.extranet_endpoint.len != 0);
+    CuAssertTrue(tc, bucket_info.intranet_endpoint.len != 0);
+    CuAssertTrue(tc, bucket_info.owner_id.len != 0);
+    CuAssertTrue(tc, bucket_info.owner_name.len != 0);
     CuAssertPtrNotNull(tc, resp_headers);
 
     aos_str_set(&bucket, "impossibleexistbucket");
@@ -290,7 +296,7 @@ void test_get_bucket_stat(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     TEST_CASE_LOG("storage %d, object count %d, multipart upload count %d\n", \
             (int)bucket_stat.storage_in_bytes, (int)bucket_stat.object_count, (int)bucket_stat.multipart_upload_count);
-    CuAssertIntEquals(tc, 1, bucket_stat.object_count != 0);
+    CuAssertTrue(tc, bucket_stat.object_count > 0);
     CuAssertPtrNotNull(tc, resp_headers);
 
     aos_pool_destroy(p);
@@ -562,7 +568,7 @@ void test_list_buckets(CuTest *tc)
     init_test_request_options(options, is_cname);
     params = oss_create_list_buckets_params(p);
     params->max_keys = 100;
-    s = oss_list_buckets(options, params, &resp_headers);
+    s = oss_list_bucket(options, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
@@ -594,7 +600,7 @@ void test_list_buckets_with_invalid_prefix(CuTest *tc)
     params->max_keys = 1;
     aos_str_set(&params->prefix, "impossibleMatch");
 
-    s = oss_list_buckets(options, params, &resp_headers);
+    s = oss_list_bucket(options, params, &resp_headers);
     CuAssertIntEquals(tc, 400, s->code);
     aos_pool_destroy(p);
 
@@ -633,7 +639,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
     params = oss_create_list_buckets_params(p);
     params->max_keys = 1;
 
-    s = oss_list_buckets(options, params, &resp_headers);
+    s = oss_list_bucket(options, params, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
         TEST_CASE_LOG("Get bucket %s\n", content->name.data);
@@ -650,7 +656,7 @@ void test_list_buckets_with_iterator(CuTest *tc)
         aos_str_set(&params->marker, params->next_marker.data);
         params->max_keys = 10;
         TEST_CASE_LOG("marker:%s, next marker: %s\n", params->marker.data, params->next_marker.data);
-        s = oss_list_buckets(options, params, &resp_headers);
+        s = oss_list_bucket(options, params, &resp_headers);
         CuAssertIntEquals(tc, 200, s->code);
         aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
             TEST_CASE_LOG("Get bucket %s\n", content->name.data);

@@ -164,7 +164,7 @@ aos_status_t *oss_get_bucket_referer(const oss_request_options_t *options,
  * @brief  put oss bucket storage capacity
  * @param[in]   options       the oss request options
  * @param[in]   bucket        the oss bucket name
- * @param[in]   storage_capacity  the oss bucket storage capacity
+ * @param[in]   storage_capacity  the oss bucket storage capacity, unit gigabyte
  * @param[out]  resp_headers  oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
@@ -177,13 +177,13 @@ aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *optio
  * @brief  get oss bucket storage capacity
  * @param[in]   options       the oss request options
  * @param[in]   bucket        the oss bucket name
- * @param[out]  oss_storage_capacity  the oss bucket storage capacity
+ * @param[out]  storage_capacity  the oss bucket storage capacity
  * @param[out]  resp_headers  oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
 aos_status_t *oss_get_bucket_storage_capacity(const oss_request_options_t *options, 
                                               const aos_string_t *bucket, 
-                                              long *oss_storage_capacity, 
+                                              long *storage_capacity, 
                                               aos_table_t **resp_headers);
 
 /*
@@ -349,7 +349,7 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
  * @param[out]  resp_headers  oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
-aos_status_t *oss_list_buckets(const oss_request_options_t *options,
+aos_status_t *oss_list_bucket(const oss_request_options_t *options,
                               oss_list_buckets_params_t *params, 
                               aos_table_t **resp_headers);
 
@@ -565,7 +565,7 @@ aos_status_t *oss_put_symlink(const oss_request_options_t *options,
  * @param[out]  resp_headers     oss server response headers containing object meta
  * @return  aos_status_t, code is 2xx success, other failure
  */
-aos_status_t *oss_get_symlink_object(const oss_request_options_t *options, 
+aos_status_t *oss_get_symlink(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               const aos_string_t *sym_object,
                               aos_table_t **resp_headers);

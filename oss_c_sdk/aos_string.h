@@ -21,11 +21,11 @@ typedef struct {
 
 static APR_INLINE int aos_string_is_empty(aos_string_t *str)
 {
-    if (str->len == 0 || !strcmp(str->data, "") || !str->data) {
+    if (NULL == str || str->len == 0  || NULL == str->data || 0 == strcmp(str->data, "")) {
         return AOS_TRUE;
     } else {
         return AOS_FALSE;
-    }
+    } 
 }
 
 static APR_INLINE void aos_string_tolower(aos_string_t *str)

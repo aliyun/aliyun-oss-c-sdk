@@ -115,7 +115,7 @@ int oss_location_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *os
     return res;
 }
 
-int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *oss_storage_capacity)
+int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *storage_capacity)
 {
     int res;
     mxml_node_t *doc = NULL;
@@ -126,7 +126,7 @@ int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *os
     if (res == AOSE_OK) {
         capacity_str = get_xmlnode_value(p, doc, xml_path);
         if (capacity_str) {
-            *oss_storage_capacity = atol(capacity_str);
+            *storage_capacity = atol(capacity_str);
         }
         mxmlDelete(doc);
     }
@@ -1188,7 +1188,7 @@ char *build_bucket_storage_capacity_xml(aos_pool_t *p, long storage_capacity)
     return bucket_storage_capacity_xml;
 }
 
-void build_bucket_storage_capacity(aos_pool_t *p, long storage_capacity, aos_list_t *body)
+void build_bucket_storage_capacity_body(aos_pool_t *p, long storage_capacity, aos_list_t *body)
 {
     char *bucket_storage_capacity_xml;
     aos_buf_t *b;
