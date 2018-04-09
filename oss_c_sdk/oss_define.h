@@ -87,6 +87,16 @@ extern const char LIVE_CHANNEL_DEFAULT_TYPE[];
 extern const char LIVE_CHANNEL_DEFAULT_PLAYLIST[];
 extern const int  LIVE_CHANNEL_DEFAULT_FRAG_DURATION;
 extern const int  LIVE_CHANNEL_DEFAULT_FRAG_COUNT;
+extern const char OSS_SELECT_CSV[];
+extern const char OSS_SELECT_SQL[];
+extern const char OSS_SELECT_INPUT_FIELD_DELIMITER[];
+extern const char OSS_SELECT_INPUT_QUOTE_CHARACTER[];
+extern const char OSS_SELECT_INPUT_RECORD_DELIMITER[];
+extern const char OSS_SELECT_INPUT_FILE_HEADER[];
+extern const char OSS_SELECT_LINE_RANGE[];
+extern const char OSS_SELECT_OUTPUT_KEEP_ALL_COLUMNS[];
+extern const char OSS_SELECT_OUTPUT_RAW[];
+extern const char OSS_SELECT_CSV_ROWS[];
 extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
@@ -315,4 +325,23 @@ typedef struct {
     aos_string_t remote_addr;
 } oss_live_record_content_t;
 
+typedef enum{
+    CSV_HEADER_IGNORE = 0,
+    CSV_HEADER_NONE = 1,
+    CSV_HEADER_USE = 2
+} csv_header_info;
+
+typedef struct {
+    char field_delimiter;
+    char field_quote;
+    aos_string_t new_line;
+    csv_header_info header_info;
+} csv_format_option;
+
+typedef struct {
+    int raw_output;
+    int keep_all_columns;
+    int start_line;
+    int end_line;
+} oss_select_option;
 #endif

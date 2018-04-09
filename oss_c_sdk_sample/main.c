@@ -21,17 +21,20 @@ extern void crc_sample();
 extern void image_sample();
 extern void resumable_upload_sample();
 extern void resumable_download_sample();
-
+extern void select_object_to_buffer_sample();
 int main(int argc, char *argv[])
 {
     if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {
         exit(1);
     }
 
+    select_object_to_buffer_sample();
+    printf("select_object_to_buffer_big_file_sample\n");
+    select_object_to_buffer_big_file_sample();
     //put_object_sample();
     //append_object_sample();
     //get_object_sample();
-    head_object_sample();
+    //head_object_sample();
     /*list_object_sample();
     multipart_object_sample();
     delete_object_sample();
@@ -44,7 +47,7 @@ int main(int argc, char *argv[])
 
     aos_http_io_deinitialize();
 
-    system("pause");
+    //system("pause");
 
     return 0;
 }

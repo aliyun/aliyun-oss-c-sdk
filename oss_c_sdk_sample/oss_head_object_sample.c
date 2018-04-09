@@ -29,7 +29,7 @@ void head_object()
     aos_str_set(&object, OBJECT_NAME);
     headers = aos_table_make(p, 0);
 
-    s = oss_head_csv_object(options, &bucket, &object, headers, &resp_headers);
+    s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
     
     if (aos_status_is_ok(s)) {
         content_length_str = (char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH);

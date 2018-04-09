@@ -25,6 +25,8 @@ static const char *g_s_oss_sub_resource_list[] = {
     "endTime",
     "x-oss-process",
     "security-token",
+    "csv",
+    "sql",
     NULL,
 };
 

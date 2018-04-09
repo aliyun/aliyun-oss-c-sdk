@@ -384,11 +384,12 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
     curl_easy_setopt_safe(CURLOPT_CONNECTTIMEOUT, t->controller->options->connect_timeout);
     curl_easy_setopt_safe(CURLOPT_LOW_SPEED_LIMIT, t->controller->options->speed_limit);
     curl_easy_setopt_safe(CURLOPT_LOW_SPEED_TIME, t->controller->options->speed_time);
+    //curl_easy_setopt_safe(CURLOPT_TIMEOUT, 500); // max timeout 500s
 
-    if (t->controller->options->enable_accept_encoding)
+    /*if (t->controller->options->enable_accept_encoding)
     {
         curl_easy_setopt_safe(CURLOPT_ACCEPT_ENCODING, "");
-    }
+    }*/
 
     aos_init_curl_headers(t);
     curl_easy_setopt_safe(CURLOPT_HTTPHEADER, t->headers);

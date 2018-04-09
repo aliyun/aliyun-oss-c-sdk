@@ -146,11 +146,13 @@ aos_status_t *oss_select_object_to_buffer(const oss_request_options_t *options,
                                        const aos_string_t *bucket, 
                                        const aos_string_t *object,
                                        const aos_string_t *sql,
+                                       const csv_format_option *csv_format,
+                                       const oss_select_option *select_option,
                                        aos_table_t *headers, 
                                        aos_list_t *buffer, 
                                        aos_table_t **resp_headers)
 {
-    return oss_do_select_object_to_buffer(options, bucket, object, sql, headers, 
+    return oss_do_select_object_to_buffer(options, bucket, object, sql, csv_format, select_option, headers, 
                                        buffer, NULL, resp_headers);
 }
 
@@ -189,6 +191,8 @@ aos_status_t *oss_do_select_object_to_buffer(const oss_request_options_t *option
                                           const aos_string_t *bucket, 
                                           const aos_string_t *object,
                                           const aos_string_t *sql,
+                                          const csv_format_option *csv_format,
+                                          const oss_select_option *select_option,
                                           aos_table_t *headers, 
                                           aos_list_t *buffer,
                                           oss_progress_callback progress_callback, 
@@ -201,13 +205,39 @@ aos_status_t *oss_do_select_object_to_buffer(const oss_request_options_t *option
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
 
-    apr_table_add(params, "x-oss-process", "csv/selcet");
-    apr_table_add(params, "sql", sql);
+    apr_table_add(params, OSS_PROCESS, OSS_SELECT_CSV);
+    apr_table_add(params, OSS_SELECT_SQL, sql->data);
+
+    if (csv_format != NULL){
+         char field_delimiter[4];
+         apr_table_set(headers, OSS_SELECT_INPUT_FIELD_DELIMITER, delimiter_to_string(csv_format->field_delimiter, field_delimiter));
+
+         char newline[5];
+         apr_table_set(headers, OSS_SELECT_INPUT_RECORD_DELIMITER, newline_to_string(&(csv_format->new_line), newline));
+
+         char quote[2];
+         quote[0] = csv_format->field_quote;
+         quote[1] = 0;
+         apr_table_set(headers, OSS_SELECT_INPUT_QUOTE_CHARACTER,quote);
+
+         char file_header[10];
+         apr_table_set(headers, OSS_SELECT_INPUT_FILE_HEADER, file_header_to_string(csv_format->header_info,  file_header));
+
+    }
+
+    if (select_option)
+    {
+         apr_table_set(headers, OSS_SELECT_OUTPUT_KEEP_ALL_COLUMNS, select_option->keep_all_columns ? "true" : "false");
+         apr_table_set(headers, OSS_SELECT_OUTPUT_RAW, select_option->raw_output ? "true" : "false");
+
+         char range_str[64];
+         if (range_to_string(select_option->start_line, select_option->end_line, range_str) != NULL){
+             apr_table_set(headers, OSS_SELECT_LINE_RANGE, range_str);
+         }
+    }
 
     oss_init_object_request(options, bucket, object, HTTP_GET, 
                             &req, params, headers, progress_callback, 0, &resp);
-
-   
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_body(resp, buffer);
@@ -303,6 +333,7 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
 aos_status_t *oss_head_csv_object(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               const aos_string_t *object,
+                              const csv_format_option *csv_format,
                               aos_table_t *headers, 
                               aos_table_t **resp_headers)
 {
@@ -316,6 +347,22 @@ aos_status_t *oss_head_csv_object(const oss_request_options_t *options,
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     apr_table_add(query_params, "csv", "");
+
+    if (csv_format != NULL){
+         char field_delimiter[4];
+         apr_table_set(headers, OSS_SELECT_INPUT_FIELD_DELIMITER, delimiter_to_string(csv_format->field_delimiter, field_delimiter));
+
+         char newline[5];
+         apr_table_set(headers, OSS_SELECT_INPUT_RECORD_DELIMITER, newline_to_string(&(csv_format->new_line), newline));
+
+         char quote[2];
+         quote[0] = csv_format->field_quote;
+         quote[1] = 0;
+         apr_table_set(headers, OSS_SELECT_INPUT_QUOTE_CHARACTER,quote);
+
+         char file_header[10];
+         apr_table_set(headers, OSS_SELECT_INPUT_FILE_HEADER, file_header_to_string(csv_format->header_info,  file_header));
+    }
 
     oss_init_object_request(options, bucket, object, HTTP_HEAD, 
                             &req, query_params, headers, NULL, 0, &resp);
