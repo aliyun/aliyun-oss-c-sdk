@@ -140,10 +140,7 @@ void oss_build_thread_params(oss_thread_params_t *thd_params, int part_num,
     for (; i < part_num; i++) {
         aos_pool_create(&subpool, parent_pool); 
         config = oss_config_create(subpool);
-        aos_str_set(&config->endpoint, options->config->endpoint.data);
-        aos_str_set(&config->access_key_id, options->config->access_key_id.data);
-        aos_str_set(&config->access_key_secret, options->config->access_key_secret.data);
-        config->is_cname = options->config->is_cname;
+        memcpy(config, options->config, sizeof(oss_config_t));
         ctl = aos_http_controller_create(subpool, 0);
         thd_params[i].options.config = config;
         thd_params[i].options.ctl = ctl;
