@@ -25,11 +25,17 @@
         aos_status_set(STATUS, RES, AOS_INCONSISTENT_ERROR_CODE, NULL); \
     } while(0)
 
+#define PARAM_OUT
+#define PARAM_IN
+
 extern const char OSS_CANNONICALIZED_HEADER_ACL[];
+extern const char OSS_CANNONICALIZED_HEADER_STORAGE_CLASS[];
 extern const char OSS_CANNONICALIZED_HEADER_SOURCE[];
 extern const char OSS_CANNONICALIZED_HEADER_PREFIX[];
 extern const char OSS_CANNONICALIZED_HEADER_DATE[];
 extern const char OSS_CANNONICALIZED_HEADER_COPY_SOURCE[];
+extern const char OSS_CANNONICALIZED_HEADER_SYMLINK[];
+extern const char OSS_CANNONICALIZED_HEADER_REGION[];
 extern const char OSS_CONTENT_MD5[];
 extern const char OSS_CONTENT_TYPE[];
 extern const char OSS_CONTENT_LENGTH[];
@@ -40,6 +46,13 @@ extern const char OSS_EXPECT[];
 extern const char OSS_EXPIRES[];
 extern const char OSS_SIGNATURE[];
 extern const char OSS_ACL[];
+extern const char OSS_LOCATION[];
+extern const char OSS_BUCKETINFO[];
+extern const char OSS_BUCKETSTAT[];
+extern const char OSS_RESTORE[];
+extern const char OSS_SYMLINK[];
+extern const char OSS_QOS[];
+extern const char OSS_LOGGING[];
 extern const char OSS_PREFIX[];
 extern const char OSS_DELIMITER[];
 extern const char OSS_MARKER[];
@@ -66,6 +79,9 @@ extern const char OSS_CALLBACK[];
 extern const char OSS_CALLBACK_VAR[];
 extern const char OSS_PROCESS[];
 extern const char OSS_LIFECYCLE[];
+extern const char OSS_REFERER[];
+extern const char OSS_CORS[];
+extern const char OSS_WEBSITE[];
 extern const char OSS_DELETE[];
 extern const char OSS_YES[];
 extern const char OSS_OBJECT_TYPE_NORMAL[];
@@ -110,6 +126,13 @@ typedef enum {
     OSS_ACL_PUBLIC_READ_WRITE        = 2    /*< public read write */
 } oss_acl_e;
 
+typedef enum {
+    OSS_STORAGE_CLASS_STANDARD         = 0,  /*< standard */
+    OSS_STORAGE_CLASS_IA               = 1,  /*< IA */
+    OSS_STORAGE_CLASS_ARCHIVE          = 2,  /*< archive */
+    OSS_STORAGE_CLASS_BUTT
+} oss_storage_class_type_e;
+
 typedef struct {
     aos_string_t endpoint;
     aos_string_t access_key_id;
@@ -121,6 +144,11 @@ typedef struct {
     aos_string_t proxy_user;
     aos_string_t proxy_passwd;
 } oss_config_t;
+
+typedef struct {
+    oss_acl_e acl;
+    oss_storage_class_type_e storage_class;
+} oss_create_bucket_params_t;
 
 typedef struct {
     oss_config_t *config;
@@ -137,6 +165,16 @@ typedef struct {
     aos_string_t owner_id;
     aos_string_t owner_display_name;
 } oss_list_object_content_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t create_date;
+    aos_string_t extranet_endpoint;
+    aos_string_t intranet_endpoint;
+    aos_string_t location;
+    aos_string_t name;
+    aos_string_t storage_class;
+} oss_list_bucket_content_t;
 
 typedef struct {
     aos_list_t node;
@@ -181,6 +219,17 @@ typedef struct {
 } oss_list_object_params_t;
 
 typedef struct {
+    PARAM_IN aos_string_t prefix;
+    PARAM_IN aos_string_t marker;
+    PARAM_IN int max_keys;
+    PARAM_OUT int truncated;
+    PARAM_OUT aos_string_t next_marker;
+    PARAM_OUT aos_string_t owner_id;
+    PARAM_OUT aos_string_t owner_name;
+    PARAM_OUT aos_list_t bucket_list;
+} oss_list_buckets_params_t;
+
+typedef struct {
     aos_string_t part_number_marker;
     int max_ret;
     int truncated;
@@ -218,13 +267,72 @@ typedef struct {
 } oss_upload_file_t;
 
 typedef struct {
+    int days;
+    aos_string_t created_before_date;
+} oss_lifecycle_rule_date_t;
+
+typedef struct {
     aos_list_t node;
     aos_string_t id;
     aos_string_t prefix;
     aos_string_t status;
     int days;
     aos_string_t date;
+    aos_string_t created_before_date;
+    oss_lifecycle_rule_date_t abort_multipart_upload_dt;
 } oss_lifecycle_rule_content_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t rule;
+} oss_sub_cors_rule_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_list_t allowed_origin_list;
+    aos_list_t allowed_method_list;
+    aos_list_t allowed_head_list;
+    aos_list_t expose_head_list;
+    int max_age_seconds;     // INT_MAX means no value
+} oss_cors_rule_t;
+
+typedef struct {
+    aos_list_t   node;
+    aos_string_t referer;
+} oss_referer_t;
+
+typedef struct {
+    aos_list_t   referer_list;
+    int allow_empty_referer;
+} oss_referer_config_t;
+
+typedef struct {
+    aos_string_t suffix_str;
+    aos_string_t key_str;
+} oss_website_config_t;
+
+typedef struct {
+    aos_list_t   node;
+    aos_string_t target_bucket;
+    aos_string_t prefix;
+    int logging_enabled;
+} oss_logging_config_content_t;
+
+typedef struct {
+    aos_string_t created_date;
+    aos_string_t extranet_endpoint;
+    aos_string_t intranet_endpoint;
+    aos_string_t location;
+    aos_string_t owner_id;
+    aos_string_t owner_name;
+    aos_string_t acl;
+} oss_bucket_info_t;
+
+typedef struct {
+    uint64_t storage_in_bytes;
+    uint64_t object_count;
+    uint64_t multipart_upload_count;
+} oss_bucket_stat_t;
 
 typedef struct {
     aos_list_t node;
