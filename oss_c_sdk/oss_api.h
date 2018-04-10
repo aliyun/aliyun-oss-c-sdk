@@ -23,6 +23,21 @@ aos_status_t *oss_create_bucket(const oss_request_options_t *options,
                                 aos_table_t **resp_headers);
 
 /*
+ * @brief  create oss bucket with storage class
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[in]   oss_acl       the oss bucket acl
+ * @param[in]   storage_class the oss bucket storage_class
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_create_bucket_with_storage_class(const oss_request_options_t *options, 
+                                const aos_string_t *bucket, 
+                                oss_acl_e oss_acl, 
+                                oss_storage_class_type_e storage_class, 
+                                aos_table_t **resp_headers);
+
+/*
  * @brief  delete oss bucket
  * @param[in]   options       the oss request options
  * @param[in]   bucket        the oss bucket name
@@ -60,6 +75,118 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
                                  aos_table_t **resp_headers);
 
 /*
+ * @brief  head oss bucket 
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_head_bucket(const oss_request_options_t *options, 
+                              const aos_string_t *bucket, 
+                              aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket location
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  oss_location  the oss bucket location
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_location(const oss_request_options_t *options, 
+                                      const aos_string_t *bucket, 
+                                      aos_string_t *oss_location, 
+                                      aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket info
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  bucket_info   the oss bucket info
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_info(const oss_request_options_t *options, 
+                                  const aos_string_t *bucket, 
+                                  oss_bucket_info_t *bucket_info, 
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket stat
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  bucket_stat   the oss bucket stat
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_stat(const oss_request_options_t *options, 
+                                  const aos_string_t *bucket, 
+                                  oss_bucket_stat_t *bucket_stat, 
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket cors
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  rule_list     the oss bucket cors rule list
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_cors(const oss_request_options_t *options, 
+                                  const aos_string_t *bucket, 
+                                  aos_list_t *rule_list, 
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  delete oss bucket cors
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_delete_bucket_cors(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket referer
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  referer_config the oss bucket referer config
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_referer(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     oss_referer_config_t *referer_config, 
+                                     aos_table_t **resp_headers);
+/*
+ * @brief  put oss bucket storage capacity
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[in]   storage_capacity  the oss bucket storage capacity, unit gigabyte
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *options, 
+                                              const aos_string_t *bucket, 
+                                              long storage_capacity, 
+                                              aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket storage capacity
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[out]  storage_capacity  the oss bucket storage capacity
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_storage_capacity(const oss_request_options_t *options, 
+                                              const aos_string_t *bucket, 
+                                              long *storage_capacity, 
+                                              aos_table_t **resp_headers);
+
+/*
  * @brief  put oss bucket lifecycle
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
@@ -71,6 +198,106 @@ aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
                                        const aos_string_t *bucket, 
                                        aos_list_t *lifecycle_rule_list, 
                                        aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss bucket referer 
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   referer_config      the oss bucket referer_config 
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_referer(const oss_request_options_t *options,
+                                     const aos_string_t *bucket, 
+                                     oss_referer_config_t *referer_config,
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss bucket cors 
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   rule_list           the oss bucket ocor rule list
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_cors(const oss_request_options_t *options,
+                                  const aos_string_t *bucket, 
+                                  aos_list_t *rule_list,
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss bucket website
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   website_config      the oss bucket website config 
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_website(const oss_request_options_t *options,
+                                     const aos_string_t *bucket, 
+                                     oss_website_config_t *website_config,
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket website
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]   website_config      the oss bucket website config 
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_website(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     oss_website_config_t *website_config, 
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  delete oss bucket website
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_delete_bucket_website(const oss_request_options_t *options, 
+                                        const aos_string_t *bucket, 
+                                        aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss bucket logging
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   content             the oss bucket logging content rule
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_bucket_logging(const oss_request_options_t *options,
+                                     const aos_string_t *bucket, 
+                                     oss_logging_config_content_t *content, 
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss bucket logging
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   content             the oss bucket logging content rule
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_bucket_logging(const oss_request_options_t *options, 
+                                     const aos_string_t *bucket, 
+                                     oss_logging_config_content_t *logging_content, 
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  delete oss bucket logging
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_delete_bucket_logging(const oss_request_options_t *options, 
+                                        const aos_string_t *bucket, 
+                                        aos_table_t **resp_headers);
 
 /*
  * @brief  get oss bucket lifecycle
@@ -110,6 +337,20 @@ aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
 aos_status_t *oss_list_object(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               oss_list_object_params_t *params, 
+                              aos_table_t **resp_headers);
+
+/*
+ * @brief  list oss buckets
+ * @param[in]   options       the oss request options
+ * @param[in]   params        input params for list bucket request,
+                              including prefix, marker, max_keys
+ * @param[out]  params        output params for list bucket response,
+                              including truncated, next_marker, bucket list
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_list_bucket(const oss_request_options_t *options,
+                              oss_list_buckets_params_t *params, 
                               aos_table_t **resp_headers);
 
 /*
@@ -212,6 +453,20 @@ aos_status_t *oss_get_object_to_buffer(const oss_request_options_t *options,
                                        aos_table_t **resp_headers);
 
 /*
+ * @brief  restore oss object from archive bucket
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_restore_object(const oss_request_options_t *options, 
+                                          const aos_string_t *bucket, 
+                                          const aos_string_t *object,
+                                          aos_table_t *headers, 
+                                          aos_table_t **resp_headers);
+
+/*
  * @brief  get oss object to buffer
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
@@ -285,6 +540,34 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
                               const aos_string_t *bucket, 
                               const aos_string_t *object,
                               aos_table_t *headers, 
+                              aos_table_t **resp_headers);
+
+/*
+ * @brief  put symlink oss object
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   sym_object       the oss symlink object name
+ * @param[in]   target_object    the oss target object game
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_symlink(const oss_request_options_t *options, 
+                              const aos_string_t *bucket, 
+                              const aos_string_t *sym_object,
+                              const aos_string_t *target_object,
+                              aos_table_t **resp_headers);
+
+/*
+ * @brief  get symlink oss object
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   sym_object       the oss symlink object name
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_symlink(const oss_request_options_t *options, 
+                              const aos_string_t *bucket, 
+                              const aos_string_t *sym_object,
                               aos_table_t **resp_headers);
 
 /*

@@ -4,6 +4,16 @@
 
 static const char *g_s_oss_sub_resource_list[] = {
     "acl",
+    "location",
+    "bucketInfo",
+    "stat",
+    "referer",
+    "cors",
+    "website",
+    "restore",
+    "logging",
+    "symlink",
+    "qos",
     "uploadId",
     "uploads",
     "partNumber",
@@ -289,14 +299,17 @@ int oss_sign_request(aos_http_request_t *req,
     int res = AOSE_OK;
     int len = 0;
     
-    len = strlen(req->resource);
-    if (len >= AOS_MAX_URI_LEN - 1) {
-        aos_error_log("http resource too long, %s.", req->resource);
-        return AOSE_INVALID_ARGUMENT;
-    }
-
     canon_res.data = canon_buf;
-    canon_res.len = apr_snprintf(canon_buf, sizeof(canon_buf), "/%s", req->resource);
+    if (req->resource != NULL) {
+        len = strlen(req->resource);
+        if (len >= AOS_MAX_URI_LEN - 1) {
+            aos_error_log("http resource too long, %s.", req->resource);
+            return AOSE_INVALID_ARGUMENT;
+        }
+        canon_res.len = apr_snprintf(canon_buf, sizeof(canon_buf), "/%s", req->resource);
+    } else {
+        canon_res.len = apr_snprintf(canon_buf, sizeof(canon_buf), "/");
+    }
 
     if ((value = apr_table_get(req->headers, OSS_CANNONICALIZED_HEADER_DATE)) == NULL) {
         aos_get_gmt_str_time(datestr);
