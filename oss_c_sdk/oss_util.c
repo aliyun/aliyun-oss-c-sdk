@@ -147,7 +147,19 @@ static void generate_rtmp_proto(const oss_request_options_t *options,
 
 int is_valid_ip(const char *str)
 {
-    if (INADDR_NONE == inet_addr(str) || INADDR_ANY == inet_addr(str)) {
+    char ip[24];
+    for(int i = 0;i < strlen(str)&& i <24;i++){
+        if (str[i] != ':'){
+            ip[i]=str[i];
+        }
+        else
+        {
+            ip[i]=0;
+            break;
+        }
+    }
+
+    if (INADDR_NONE == inet_addr(ip) || INADDR_ANY == inet_addr(ip)) {
         return 0;
     }
     return 1;
@@ -924,3 +936,84 @@ int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_
     return res;
 }
 
+char* delimiter_to_string(char c, char* str)
+{
+    switch(c)
+    {
+        case '\t':
+            *str = '\\';
+            *(str+1) = 't';
+            *(str+2) = 0;
+            break;
+        case '\v':
+            *str = '\\';
+            *(str+1) = 'v';
+            *(str+2) = 0;
+            break;
+        default:
+            *str = c;
+            *(str+1) = 0;
+            break;
+    }
+
+    return str;
+}
+
+char* newline_to_string(const aos_string_t *newline, char* newline_str)
+{
+    int j = 0;
+    for(int i=0; i < newline->len; i++, j++){
+        if (newline->data[i] == '\n'){
+            newline_str[j] = '\\';
+            newline_str[j+1] = 'n';
+            j++;
+        }
+        else if (newline->data[i] == '\r'){
+            newline_str[j] = '\\';
+            newline_str[j+1] = 'r';
+            j++;
+        }
+        else{
+            newline_str[j] = newline->data[i];
+        }
+    }
+
+    newline_str[j] = '\0';
+    return newline_str;
+}
+
+char* file_header_to_string(const csv_header_info header, char* file_header_str)
+{
+    if (header == CSV_HEADER_IGNORE)
+    {
+        strcpy(file_header_str, "Ignore");
+    }
+    else if (header == CSV_HEADER_USE)
+    {
+        strcpy(file_header_str, "Use");
+    }
+    else if(header == CSV_HEADER_NONE)
+    {
+        strcpy(file_header_str, "None");
+    }
+
+    return file_header_str;
+}
+
+char* range_to_string(int start, int end, char* range_str)
+{
+    if (start >= 0 && end >= 0){
+        sprintf(range_str, "%d-%d", start, end);
+    }
+    else if (start >= 0){
+        sprintf(range_str, "%d-", start);
+    }
+    else if (end >= 0){
+        sprintf(range_str, "-%d", end);
+    }
+    else{
+        return NULL;
+    }
+
+    return range_str;
+}

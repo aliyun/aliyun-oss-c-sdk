@@ -6,7 +6,7 @@ set(OSS_SAMPLE_SOURCE_FILES oss_sample_util.c oss_config.c main.c
     oss_put_object_sample.c oss_append_object_sample.c oss_get_object_sample.c
     oss_head_object_sample.c oss_delete_object_sample.c oss_multipart_upload_sample.c
     oss_crc_sample.c oss_image_sample.c oss_progress_sample.c oss_callback_sample.c
-    oss_list_object_sample.c oss_resumable_sample.c)
+    oss_list_object_sample.c oss_resumable_sample.c oss_select_sample.c)
 
 include_directories (${APR_INCLUDE_DIR})
 include_directories (${APR_UTIL_INCLUDE_DIR})

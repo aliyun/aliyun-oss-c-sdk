@@ -199,8 +199,9 @@ void test_put_object_from_buffer_with_specified(CuTest *tc)
     printf("test_put_object_from_buffer_with_specified ok\n");
 }
 
-void test_put_object_from_file(CuTest *tc)
+void test_put_object_from_file(CuTest *tc, int enable_ae)
 {
+    printf("start test_put_object_from_file %d",enable_ae);
     aos_pool_t *p = NULL;
     char *object_name = "video_1.ts";
     char *filename = __FILE__;
@@ -217,6 +218,7 @@ void test_put_object_from_file(CuTest *tc)
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
+    options->ctl->options->enable_accept_encoding = enable_ae;
     headers = aos_table_make(p, 5);
     s = create_test_object_from_file(options, TEST_BUCKET_NAME, 
             object_name, filename, headers);
@@ -239,7 +241,17 @@ void test_put_object_from_file(CuTest *tc)
     content_type = (char*)(apr_table_get(head_resp_headers, OSS_CONTENT_TYPE));
     CuAssertStrEquals(tc, "application/octet-stream", content_type);
 
-    printf("test_put_object_from_file ok\n");
+    printf("test_put_object_from_file %d ok\n", enable_ae);
+}
+
+void test_put_object_from_file_with_te(CuTest *tc)
+{
+    test_put_object_from_file(tc, 1);
+}
+
+void test_put_object_from_file_without_te(CuTest *tc)
+{
+    test_put_object_from_file(tc, 0);
 }
 
 void test_put_object_with_large_length_header(CuTest *tc)
@@ -432,7 +444,7 @@ void test_get_object_to_buffer_with_range(CuTest *tc)
     printf("test_get_object_to_buffer_with_range ok\n");
 }
 
-void test_get_object_to_file(CuTest *tc)
+void test_get_object_to_file(CuTest *tc, int enable_ae)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
@@ -452,6 +464,7 @@ void test_get_object_to_file(CuTest *tc)
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
+    options->ctl->options->enable_accept_encoding = enable_ae;
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     aos_str_set(&file, filename);
@@ -468,7 +481,17 @@ void test_get_object_to_file(CuTest *tc)
     remove(filename);
     aos_pool_destroy(p);
 
-    printf("test_get_object_to_file ok\n");
+    printf("test_get_object_to_file %d ok\n", enable_ae);
+}
+
+void test_get_object_to_file_with_te(CuTest *tc)
+{
+    test_get_object_to_file(tc,1);
+}
+
+void test_get_object_to_file_without_te(CuTest *tc)
+{
+    test_get_object_to_file(tc,0);
 }
 
 void test_head_object(CuTest *tc)
@@ -933,14 +956,16 @@ CuSuite *test_oss_object()
 
     SUITE_ADD_TEST(suite, test_object_setup);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer);
-    SUITE_ADD_TEST(suite, test_put_object_from_file);
+    SUITE_ADD_TEST(suite, test_put_object_from_file_with_te);
+    SUITE_ADD_TEST(suite, test_put_object_from_file_without_te);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_specified);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_range);
     SUITE_ADD_TEST(suite, test_put_object_from_file_with_content_type);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
     SUITE_ADD_TEST(suite, test_put_object_with_large_length_header);
-    SUITE_ADD_TEST(suite, test_get_object_to_file);
+    SUITE_ADD_TEST(suite, test_get_object_to_file_with_te);
+    SUITE_ADD_TEST(suite, test_get_object_to_file_without_te);
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
     SUITE_ADD_TEST(suite, test_copy_object);

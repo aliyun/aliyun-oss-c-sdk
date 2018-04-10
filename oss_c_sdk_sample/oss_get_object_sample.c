@@ -61,7 +61,7 @@ void get_object_to_buffer()
     aos_pool_destroy(p);
 }
 
-void get_object_to_local_file()
+void get_object_to_local_file(int enable_ae)
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
@@ -83,6 +83,7 @@ void get_object_to_local_file()
     headers = aos_table_make(p, 0);
     aos_str_set(&file, download_filename);
 
+    options->ctl->options->enable_accept_encoding = enable_ae;
     s = oss_get_object_to_file(options, &bucket, &object, headers, 
                                params, &file, &resp_headers);
     if (aos_status_is_ok(s)) {
@@ -120,7 +121,7 @@ void get_object_to_buffer_with_range()
     aos_list_init(&buffer);
     headers = aos_table_make(p, 1);
 
-    /* 设置Range，读取文件的指定范围，bytes=20-100包括第20和第100个字符 */
+    /* Set range for reading the data. bytes=20-100 means reading the data from the offset 20 to 100 of the file */
     apr_table_set(headers, "Range", "bytes=20-100");
 
     s = oss_get_object_to_buffer(options, &bucket, &object, 
@@ -173,7 +174,7 @@ void get_object_to_local_file_with_range()
     aos_str_set(&file, download_filename);
     headers = aos_table_make(p, 1);
 
-    /* 设置Range，读取文件的指定范围，bytes=20-100包括第20和第100个字符 */
+    /* Set range for reading the data. bytes=20-100 means reading the data from the offset 20 to 100 of the file */
     apr_table_set(headers, "Range", "bytes=20-100");
 
     s = oss_get_object_to_file(options, &bucket, &object, headers, 
@@ -324,7 +325,8 @@ void get_oss_dir_to_local_dir()
 void get_object_sample()
 {
     get_object_to_buffer();
-    get_object_to_local_file();
+    get_object_to_local_file(0); 
+    get_object_to_local_file(1); 
 
     get_object_to_buffer_with_range();
     get_object_to_local_file_with_range();
