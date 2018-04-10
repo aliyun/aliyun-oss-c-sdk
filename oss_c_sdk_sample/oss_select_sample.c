@@ -143,7 +143,7 @@ void select_object_to_buffer_big_file_sample()
     for(int i = 0; i < blockSize; i++){
         int start_line = i * lines/blockSize;
         int end_line = i == blockSize -1 ? lines - 1 : (i+1) * lines/blockSize - 1;
-        char *buf = select_object_to_buffer(p, "select count(*) from ossobject where _4 > 45 and _1 like 'Tom%'", start_line, end_line, &result_len);
+        char *buf = select_object_to_buffer(p, "select count(*) from ossobject where _4 > 60 and _1 like 'Tom%'", start_line, end_line, &result_len);
         printf(buf);
     }
 
