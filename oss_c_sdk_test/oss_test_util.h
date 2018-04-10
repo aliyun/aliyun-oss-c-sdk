@@ -15,6 +15,13 @@ OSS_CPP_START
         aos_str_set(&object, object_name);                              \
     } while(0)
 
+#define TEST_CASE_LOG_OPEN
+#ifdef TEST_CASE_LOG_OPEN
+#define TEST_CASE_LOG(fmt,...)  do { printf("%s:%d "fmt,__FUNCTION__,__LINE__,##__VA_ARGS__); fflush (stdout); } while (0)
+#else
+#define TEST_CASE_LOG(fmt,...) 
+#endif
+
 void make_rand_string(aos_pool_t *p, int len, aos_string_t *data);
 
 aos_buf_t *make_random_buf(aos_pool_t *p, int len);
@@ -31,6 +38,11 @@ void init_test_request_options(oss_request_options_t *options, int is_cname);
 
 aos_status_t * create_test_bucket(const oss_request_options_t *options,
     const char *bucket_name, oss_acl_e oss_acl);
+
+aos_status_t * create_test_bucket_with_storage_class(const oss_request_options_t *options,
+                                  const char *bucket_name, 
+                                  oss_acl_e oss_acl,
+                                  oss_storage_class_type_e storage_class_tp);
 
 aos_status_t *create_test_object(const oss_request_options_t *options, const char *bucket_name, 
     const char *object_name, const char *data, aos_table_t *headers);

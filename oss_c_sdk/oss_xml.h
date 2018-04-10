@@ -8,6 +8,9 @@
 #include "oss_define.h"
 #include "oss_resumable.h"
 
+
+typedef void (*NODE_PARSE_FUN)(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list);   
+
 OSS_CPP_START
 
 /**
@@ -35,6 +38,36 @@ char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list);
   * @brief  build body for put lifecycle
 **/
 void build_lifecycle_body(aos_pool_t *p, aos_list_t *lifecycle_rule_list, aos_list_t *body);
+
+/**
+  * @brief  build body for put referer 
+**/
+void build_referer_config_body(aos_pool_t *p, oss_referer_config_t *referer_config, aos_list_t *body);
+
+/**
+  * @brief  build body for put website 
+**/
+void build_website_config_body(aos_pool_t *p, oss_website_config_t *website_config, aos_list_t *body);
+
+/**
+  * @brief  build body for put cors 
+**/
+void build_cors_rule_body(aos_pool_t *p, aos_list_t *rule_list, aos_list_t *body);
+
+/**
+  * @brief  build body for put bucket logging
+**/
+void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body);
+
+/**
+  * @brief  build body for put storage class
+**/
+void build_bucket_storage_class(aos_pool_t *p, oss_storage_class_type_e storage_class, aos_list_t *body);
+
+/**
+  * @brief  build body for put storage capacity
+**/
+void build_bucket_storage_capacity_body(aos_pool_t *p, long storage_capacity, aos_list_t *body);
 
 /**
   * @brief  build xml body for delete objects
@@ -73,9 +106,62 @@ int oss_checkpoint_parse_from_body(aos_pool_t *p, const char *xml_body, oss_chec
 int oss_acl_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_acl);
 
 /**
+  * @bried  parse location from xml body for get_bucket_location
+**/
+int oss_location_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *oss_location);
+
+/**
+  * @bried  parse storage capacity from xml body for get_bucket_storage_capacity
+**/
+int oss_storage_capacity_parse_from_body(aos_pool_t *p, aos_list_t *bc, long *storage_capacity);
+
+/**
+  * @bried  parse logging info from xml body for get_bucket_logging
+**/
+int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_config_content_t *logging_content);
+
+/**
+  * @bried  parse bucket info from xml body for get_bucket_logging
+**/
+int oss_get_bucket_info_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_bucket_info_t *bucket_info);
+
+/**
+  * @bried  parse bucket stat from xml body for get_bucket_stat
+**/
+int oss_get_bucket_stat_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_bucket_stat_t *bucket_stat);
+
+/**
+  * @bried  parse bucket website info from xml body for get_bucket_website
+**/
+int oss_get_bucket_website_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_website_config_t *website_config);
+
+/**
+  * @bried  parse bucket referer configuration from xml body for get_bucket_logging
+**/
+int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_referer_config_t *referer_config);
+
+/**
+  * @bried  parse bucket cors from xml body for get_bucket_cors
+**/
+int oss_get_bucket_cors_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    aos_list_t *rule_list);
+
+/**
   * @brief parse upload_id from xml body for init multipart upload
 **/
 int oss_upload_id_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *upload_id);
+
+/**
+  * @brief parse objects from xml body for list buckets
+**/
+void oss_list_node_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
+     aos_list_t *node_list, NODE_PARSE_FUN parse_funptr);
+int oss_list_buckets_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    oss_list_buckets_params_t *params);
 
 /**
   * @brief parse objects from xml body for list objects
@@ -121,6 +207,8 @@ void oss_lifecycle_rule_content_parse(aos_pool_t *p, mxml_node_t *xml_node,
 void oss_lifecycle_rule_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
     aos_list_t *lifecycle_rule_list);
 int oss_lifecycle_rules_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *lifecycle_rule_list);
+void oss_lifecycle_rule_date_parse(aos_pool_t *p, mxml_node_t * xml_node,
+    oss_lifecycle_rule_date_t *rule_date);
 
 /**
   * @brief parse delete objects contents from xml body

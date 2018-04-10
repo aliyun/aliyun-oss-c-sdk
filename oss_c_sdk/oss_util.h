@@ -33,6 +33,13 @@ int is_valid_ip(const char *str);
 const char *get_oss_acl_str(oss_acl_e oss_acl);
 
 /**
+  * @brief  get oss storage type str according oss_storage_class
+  * @param[in] storage_class the oss bucket storage class
+  * @return oss storage class str
+**/
+const char *get_oss_storage_class_str(oss_storage_class_type_e storage_class);
+
+/**
   * @brief  create oss config including host, port, access_key_id, access_key_secret, is_oss_domain
 **/
 oss_config_t *oss_config_create(aos_pool_t *p);
@@ -61,6 +68,15 @@ void oss_init_bucket_request(const oss_request_options_t *options, const aos_str
         http_method_e method, aos_http_request_t **req, aos_table_t *params, aos_table_t *headers,
         aos_http_response_t **resp);
  
+/**
+  * @brief  init oss service request
+**/
+void oss_init_service_request(const oss_request_options_t *options, 
+                             http_method_e method, 
+                             aos_http_request_t **req, 
+                             aos_table_t *params, 
+                             aos_table_t *headers,
+                             aos_http_response_t **resp);
 /**
   * @brief  init oss object request
 **/
@@ -171,11 +187,31 @@ oss_list_part_content_t *oss_create_list_part_content(aos_pool_t *p);
 oss_list_multipart_upload_content_t *oss_create_list_multipart_upload_content(aos_pool_t *p);
 oss_complete_part_content_t *oss_create_complete_part_content(aos_pool_t *p);
 
+
+/**
+  * @brief  create oss api bucket list result content
+  * @return oss api bucket list result content
+**/
+oss_list_bucket_content_t *oss_create_list_bucket_content(aos_pool_t *p);
+
+/**
+  * @brief  create oss api bucket info result 
+  * @return oss api bucket info result 
+**/
+oss_bucket_info_t *oss_create_bucket_info(aos_pool_t *p);
+
 /**
   * @brief  create oss api list parameters
   * @return oss api list parameters
 **/
 oss_list_object_params_t *oss_create_list_object_params(aos_pool_t *p);
+
+/**
+  * @brief  create oss api list bucket parameters
+  * @return oss api list bucket parameters
+**/
+oss_list_buckets_params_t *oss_create_list_buckets_params(aos_pool_t *p);
+
 oss_list_upload_part_params_t *oss_create_list_upload_part_params(aos_pool_t *p);
 oss_list_multipart_upload_params_t *oss_create_list_multipart_upload_params(aos_pool_t *p);
 oss_list_live_channel_params_t *oss_create_list_live_channel_params(aos_pool_t *p);
@@ -197,6 +233,26 @@ oss_upload_file_t *oss_create_upload_file(aos_pool_t *p);
   * @return lifecycle rule content
 **/
 oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p);
+
+
+/**
+  * @brief  create cors rule content
+  * @return cors rule content
+**/
+void oss_create_sub_cors_rule(aos_pool_t *p, aos_list_t *list, char *rule_content);
+oss_cors_rule_t *oss_create_cors_rule(aos_pool_t *p);
+
+/**
+  * @brief  create and add refer
+  * @return new refer
+**/
+oss_referer_t * oss_create_and_add_refer(aos_pool_t *p, oss_referer_config_t *refer_config, char *refer_str);
+
+/**
+  * @brief  create logging rule content
+  * @return logging rule content
+**/
+oss_logging_config_content_t *oss_create_logging_rule_content(aos_pool_t *p);
 
 /**
   * @brief  create oss object content for delete objects
