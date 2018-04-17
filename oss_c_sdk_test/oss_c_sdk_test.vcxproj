@@ -96,6 +96,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)oss_c_sdk;$(SolutionDir)third_party\include;$(SolutionDir)third_party\include\apr;$(SolutionDir)third_party\include\aprutil;$(SolutionDir)third_party\include\mxml;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -104,7 +105,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)oss_c_sdk;$(SolutionDir)third_party\include;$(SolutionDir)third_party\include\apr;$(SolutionDir)third_party\include\aprutil;$(SolutionDir)third_party\include\mxml;$(IncludePath)</IncludePath>
-    <OutDir>$(SolutionDir)$(Platfome)\$(Configuration)</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -123,8 +124,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);..\third_party\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libapr-1.lib;libaprutil-1.lib;curl.lib;mxml1.lib;oss_c_sdk.lib;WS2_32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\$(Platform)\$(Configuration);..\third_party\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libapr-1.lib;libaprutil-1.lib;libcurl.lib;mxml1.lib;oss_c_sdk.lib;WS2_32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>
       </TreatLinkerWarningAsErrors>
     </Link>
@@ -142,8 +143,8 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration);..\third_party\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libapr-1.lib;libaprutil-1.lib;curl.lib;mxml1.lib;oss_c_sdk.lib;WS2_32.Lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\$(Platform)\$(Configuration);..\third_party\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libapr-1.lib;libaprutil-1.lib;libcurl.lib;mxml1.lib;oss_c_sdk.lib;WS2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>
       </TreatLinkerWarningAsErrors>
     </Link>
