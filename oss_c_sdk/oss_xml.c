@@ -337,14 +337,14 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     }
 
     node = mxmlFindElement(xml_node, xml_node, "ExtranetEndpoint", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
+    if (NULL != node && NULL != node->child) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
         aos_str_set(&content->extranet_endpoint, value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "IntranetEndpoint", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
+    if (NULL != node && NULL != node->child) {
         xml_value = node->child->value.opaque;
         value = apr_pstrdup(p, (char *)xml_value);
         aos_str_set(&content->intranet_endpoint, value);
