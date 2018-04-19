@@ -1,5 +1,17 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：3.6.0 日期：2018-04-19
+### 变更内容
+- 添加：create_bucket支持指定存储类型，支持oss_restore_object
+- 添加：支持symlink，oss_put_symlink和oss_get_symlink
+- 添加：存储空间设置logging，lifecycle，website，referer，cors
+- 添加：支持oss_list_bucket，oss_get_bucket_location
+- 添加：支持oss_get_bucket_location，oss_get_bucket_info
+
+## 版本号：3.5.2 日期：2017-11-14
+### 变更内容
+- 修复：oss_resumable_upload_file、oss_resumable_download_file不支持STS鉴权方式的问题
+
 ## 版本号：3.5.1 日期：2017-08-11
 ### 变更内容
 - 修复：`apr_file_info_get`在特定文件系统下报`70008 APR_INCOMPLETE`错误的问题
