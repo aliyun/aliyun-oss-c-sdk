@@ -543,6 +543,19 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
                               aos_table_t **resp_headers);
 
 /*
+ * @brief get object meta
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   object           the oss object name
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_object_meta(const oss_request_options_t *options,
+                                  const aos_string_t *bucket,
+                                  const aos_string_t *object,
+                                  aos_table_t **resp_headers);
+
+/*
  * @brief  put symlink oss object
  * @param[in]   options          the oss request options
  * @param[in]   bucket           the oss bucket name

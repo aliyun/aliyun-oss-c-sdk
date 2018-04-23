@@ -70,6 +70,7 @@
     <IncludePath>$(SolutionDir)third_party\include;$(SolutionDir)third_party\include\apr;$(SolutionDir)third_party\include\aprutil;$(SolutionDir)third_party\include\mxml;$(IncludePath)</IncludePath>
     <ExecutablePath>$(SolutionDir)third_party\include;$(ExecutablePath)</ExecutablePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>$(SolutionDir)third_party\include;$(SolutionDir)third_party\include\apr;$(SolutionDir)third_party\include\aprutil;$(SolutionDir)third_party\include\mxml;$(IncludePath)</IncludePath>
@@ -101,10 +102,10 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>libapr-1.lib;libaprutil-1.lib;curl.lib;mxml1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libapr-1.lib;libaprutil-1.lib;libcurl.lib;mxml1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>..\third_party\lib\Debug\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\third_party\lib\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>

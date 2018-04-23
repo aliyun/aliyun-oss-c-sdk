@@ -106,6 +106,7 @@ extern const int  LIVE_CHANNEL_DEFAULT_FRAG_COUNT;
 extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
+extern const char OSS_OBJECT_META[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 
