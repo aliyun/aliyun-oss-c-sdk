@@ -97,6 +97,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir)oss_c_sdk;$(SolutionDir)third_party\include;$(SolutionDir)third_party\include\apr;$(SolutionDir)third_party\include\aprutil;$(SolutionDir)third_party\include\mxml;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)</OutDir>
+    <IntDir>$(Platform)\$(Configuration)</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>false</LinkIncremental>

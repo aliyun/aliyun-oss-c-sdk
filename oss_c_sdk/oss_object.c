@@ -6,6 +6,7 @@
 #include "oss_util.h"
 #include "oss_xml.h"
 #include "oss_api.h"
+#include "aos_define.h"
 
 char *oss_gen_signed_url(const oss_request_options_t *options,
                          const aos_string_t *bucket, 
@@ -284,6 +285,32 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
     oss_fill_read_response_header(resp, resp_headers);
 
     return s;
+}
+
+aos_status_t *oss_get_object_meta(const oss_request_options_t *options,
+                                  const aos_string_t *bucket,
+                                  const aos_string_t *object,
+                                  aos_table_t **resp_headers){
+   aos_status_t *s = NULL;
+   aos_http_request_t *req = NULL;
+   aos_http_response_t *resp = NULL;
+   aos_table_t *query_params = NULL;
+   aos_table_t *headers = NULL;
+
+   //init query_params
+   query_params = aos_table_create_if_null(options, query_params, 1);
+   apr_table_add(query_params, OSS_OBJECT_META, "");
+
+   //init headers
+   headers = aos_table_create_if_null(options, headers, 0);
+
+   oss_init_object_request(options, bucket, object, HTTP_GET, 
+                            &req, query_params, headers, NULL, 0, &resp);
+
+   s = oss_process_request(options, req, resp);
+   oss_fill_read_response_header(resp, resp_headers);
+
+   return s;
 }
 
 aos_status_t *oss_put_symlink(const oss_request_options_t *options, 
