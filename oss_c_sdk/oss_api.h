@@ -828,6 +828,17 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
                                      aos_table_t **resp_headers);
 
 /*
+ * @brief  oss get object meta using signed url
+ * @param[in]   options             the oss request options
+ * @param[in]   signed_url          the signed url for put object
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_object_meta_by_url(const oss_request_options_t *options,
+                                     const aos_string_t *signed_url,
+                                     aos_table_t **resp_headers);
+
+/*
  * @brief  oss init multipart upload
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
