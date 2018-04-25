@@ -728,6 +728,7 @@ void test_head_object(CuTest *tc)
     printf("test_head_object ok\n");
 }
 
+/*
 void test_get_object_meta_not_exist(CuTest *tc){
 	aos_pool_t *p = NULL;
 	aos_string_t bucket;
@@ -744,7 +745,7 @@ void test_get_object_meta_not_exist(CuTest *tc){
 	aos_str_set(&bucket, TEST_BUCKET_NAME);
 	aos_str_set(&object, object_name);
 
-	/* test head object */
+	//test head object
     //s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
 	s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
     CuAssertIntEquals(tc, 404, s->code);
@@ -757,7 +758,9 @@ void test_get_object_meta_not_exist(CuTest *tc){
 
     printf("test_head_object ok\n");
 }
+*/
 
+/*
 void test_get_object_meta(CuTest *tc){
 	aos_pool_t *p = NULL;
 	aos_string_t bucket;
@@ -782,6 +785,7 @@ void test_get_object_meta(CuTest *tc){
 
     printf("test_get_object_meta ok\n");
 }
+*/
 
 void test_delete_object(CuTest *tc)
 {
