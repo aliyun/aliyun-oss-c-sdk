@@ -32,6 +32,7 @@ function(_TARGET_SAMPLE_LIBRARIES SAMPLE_BIN_NAME SOURCE_FILES)
 	 target_link_libraries(${SAMPLE_BIN_NAME} ${PTHREAD_LIBRARY})
 	 target_link_libraries(${SAMPLE_BIN_NAME} ${RT_LIBRARY})
 	 target_link_libraries(${SAMPLE_BIN_NAME} ${M_LIBRARY})
+         target_link_libraries(${SAMPLE_BIN_NAME} expat)
 endfunction()
 
 _TARGET_SAMPLE_LIBRARIES(oss_c_sdk_sample "${OSS_SAMPLE_SOURCE_FILES}")

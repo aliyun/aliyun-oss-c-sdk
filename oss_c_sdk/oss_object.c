@@ -346,7 +346,7 @@ aos_status_t *oss_head_csv_object(const oss_request_options_t *options,
 
     query_params = aos_table_create_if_null(options, query_params, 0);
 
-    apr_table_add(query_params, "csv", "");
+    apr_table_add(query_params, "x-oss-process", "csv/meta");
 
     if (csv_format != NULL){
          char field_delimiter[4];
@@ -364,7 +364,7 @@ aos_status_t *oss_head_csv_object(const oss_request_options_t *options,
          apr_table_set(headers, OSS_SELECT_INPUT_FILE_HEADER, file_header_to_string(csv_format->header_info,  file_header));
     }
 
-    oss_init_object_request(options, bucket, object, HTTP_HEAD, 
+    oss_init_object_request(options, bucket, object, HTTP_GET, 
                             &req, query_params, headers, NULL, 0, &resp);
 
     s = oss_process_request(options, req, resp);

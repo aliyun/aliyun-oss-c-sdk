@@ -148,7 +148,8 @@ static void generate_rtmp_proto(const oss_request_options_t *options,
 int is_valid_ip(const char *str)
 {
     char ip[24];
-    for(int i = 0;i < strlen(str)&& i <24;i++){
+    int i = 0;
+    for(i = 0;i < strlen(str)&& i <24;i++){
         if (str[i] != ':'){
             ip[i]=str[i];
         }
@@ -962,7 +963,8 @@ char* delimiter_to_string(char c, char* str)
 char* newline_to_string(const aos_string_t *newline, char* newline_str)
 {
     int j = 0;
-    for(int i=0; i < newline->len; i++, j++){
+    int i = 0;
+    for(i=0; i < newline->len; i++, j++){
         if (newline->data[i] == '\n'){
             newline_str[j] = '\\';
             newline_str[j+1] = 'n';
