@@ -728,26 +728,25 @@ void test_head_object(CuTest *tc)
     printf("test_head_object ok\n");
 }
 
-/*
 void test_get_object_meta_not_exist(CuTest *tc){
-	aos_pool_t *p = NULL;
-	aos_string_t bucket;
-	aos_string_t object;
-	char *object_name = "not_exist.object";
-	int is_cname = 0;
-	oss_request_options_t *options = NULL;
-	aos_table_t *resp_headers = NULL;
-	aos_status_t *s = NULL;
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "not_exist.object";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
 
-	aos_pool_create(&p, NULL);
-	options = oss_request_options_create(p);
-	init_test_request_options(options, is_cname);
-	aos_str_set(&bucket, TEST_BUCKET_NAME);
-	aos_str_set(&object, object_name);
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
 
-	//test head object
+    //test head object
     //s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
-	s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
+    s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
     CuAssertIntEquals(tc, 404, s->code);
     CuAssertStrEquals(tc, "UnknownError", s->error_code);
     CuAssertTrue(tc, NULL == s->error_msg);
@@ -758,34 +757,31 @@ void test_get_object_meta_not_exist(CuTest *tc){
 
     printf("test_head_object ok\n");
 }
-*/
 
-/*
 void test_get_object_meta(CuTest *tc){
-	aos_pool_t *p = NULL;
-	aos_string_t bucket;
-	aos_string_t object;
-	char *object_name = "oss_test_put_object.ts";
-	int is_cname = 0;
-	oss_request_options_t *options = NULL;
-	aos_table_t *resp_headers = NULL;
-	aos_status_t *s = NULL;
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "oss_test_put_object.ts";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
 
-	aos_pool_create(&p, NULL);
-	options = oss_request_options_create(p);
-	init_test_request_options(options, is_cname);
-	aos_str_set(&bucket, TEST_BUCKET_NAME);
-	aos_str_set(&object, object_name);
-	
-	s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
-	CuAssertIntEquals(tc, 200, s->code);
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    
+    s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
-	aos_pool_destroy(p);
+    aos_pool_destroy(p);
 
     printf("test_get_object_meta ok\n");
 }
-*/
 
 void test_delete_object(CuTest *tc)
 {
