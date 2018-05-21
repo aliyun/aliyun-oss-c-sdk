@@ -35,6 +35,7 @@ extern const char OSS_CANNONICALIZED_HEADER_PREFIX[];
 extern const char OSS_CANNONICALIZED_HEADER_DATE[];
 extern const char OSS_CANNONICALIZED_HEADER_COPY_SOURCE[];
 extern const char OSS_CANNONICALIZED_HEADER_SYMLINK[];
+extern const char OSS_CANNONICALIZED_HEADER_OBJECT[];
 extern const char OSS_CANNONICALIZED_HEADER_REGION[];
 extern const char OSS_CONTENT_MD5[];
 extern const char OSS_CONTENT_TYPE[];
