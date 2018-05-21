@@ -7,6 +7,7 @@ const char OSS_CANNONICALIZED_HEADER_STORAGE_CLASS[] = "StorageClass";
 const char OSS_CANNONICALIZED_HEADER_COPY_SOURCE[] = "x-oss-copy-source";
 const char OSS_CANNONICALIZED_HEADER_SYMLINK[] = "x-oss-symlink-target";
 const char OSS_CANNONICALIZED_HEADER_REGION[] = "x-oss-bucket-region";
+const char OSS_CANNONICALIZED_HEADER_OBJECT_ACL[] = "x-oss-object-acl";
 const char OSS_CONTENT_MD5[] = "Content-MD5";
 const char OSS_CONTENT_TYPE[] = "Content-Type";
 const char OSS_CONTENT_LENGTH[] = "Content-Length";
