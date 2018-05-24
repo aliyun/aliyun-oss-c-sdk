@@ -16,13 +16,13 @@ void get_object_acl(){
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
+	aos_string_t oss_acl;
    
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
-    aos_string_t oss_acl;
 
     s = oss_get_object_acl(options, &bucket, &object, &oss_acl, &resp_headers);
     
