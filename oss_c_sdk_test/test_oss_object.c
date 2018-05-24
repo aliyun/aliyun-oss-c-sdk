@@ -1299,6 +1299,12 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_object_to_file);
     SUITE_ADD_TEST(suite, test_head_object);
     SUITE_ADD_TEST(suite, test_head_object_with_not_exist);
+    SUITE_ADD_TEST(suite, test_get_object_meta_not_exist);
+    SUITE_ADD_TEST(suite, test_get_object_meta);
+    SUITE_ADD_TEST(suite, test_get_object_acl_not_exist);
+    SUITE_ADD_TEST(suite, test_get_object_acl);
+    SUITE_ADD_TEST(suite, test_put_object_acl_invalid_acl);
+    SUITE_ADD_TEST(suite, test_put_object_acl);
     SUITE_ADD_TEST(suite, test_copy_object);
     SUITE_ADD_TEST(suite, test_copy_object_with_source_url_encode);
     SUITE_ADD_TEST(suite, test_copy_object_negative);
