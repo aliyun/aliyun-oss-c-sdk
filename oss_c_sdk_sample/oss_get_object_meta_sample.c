@@ -35,6 +35,12 @@ void get_object_meta()
         object_type = (char*)apr_table_get(resp_headers, OSS_OBJECT_TYPE);
         printf("get object meta succeeded, object type:%s, content_length:%ld\n", 
                object_type, content_length);
+
+	apr_array_header_t *pp = (apr_array_header_t *) apr_table_elts(resp_headers);
+	for(int i = 0; i < pp-nelts; i++){
+	    apr_table_entry_t *ele = (apr_table_entry_t *)pp->elts + i;
+	    printf("ele key %s, value %s\n", ele->key, ele->val);	    
+	}
     } else {
         printf("req:%s, get object meta failed\n", s->req_id);
     }

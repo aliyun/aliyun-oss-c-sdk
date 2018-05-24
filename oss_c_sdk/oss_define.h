@@ -37,6 +37,7 @@ extern const char OSS_CANNONICALIZED_HEADER_COPY_SOURCE[];
 extern const char OSS_CANNONICALIZED_HEADER_SYMLINK[];
 extern const char OSS_CANNONICALIZED_HEADER_OBJECT[];
 extern const char OSS_CANNONICALIZED_HEADER_REGION[];
+extern const char OSS_CANNONICALIZED_HEADER_OBJECT_ACL[];
 extern const char OSS_CONTENT_MD5[];
 extern const char OSS_CONTENT_TYPE[];
 extern const char OSS_CONTENT_LENGTH[];
@@ -121,11 +122,13 @@ typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
  *     permission 
  * Public Read Write canned ACL gives the owner FULL_CONTROL and all users
  *     Read and Write permission
+ * Default Inherit the ACL of the bucket in which the object is 
  **/
 typedef enum {
     OSS_ACL_PRIVATE                  = 0,   /*< private */
     OSS_ACL_PUBLIC_READ              = 1,   /*< public read */
-    OSS_ACL_PUBLIC_READ_WRITE        = 2    /*< public read write */
+    OSS_ACL_PUBLIC_READ_WRITE        = 2,   /*< public read write */
+    OSS_ACL_DEFAULT                         /*< default */
 } oss_acl_e;
 
 typedef enum {
