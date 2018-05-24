@@ -7,6 +7,7 @@
 #include "oss_xml.h"
 #include "oss_api.h"
 #include "aos_define.h"
+#include "oss_define.h"
 
 char *oss_gen_signed_url(const oss_request_options_t *options,
                          const aos_string_t *bucket, 
@@ -315,15 +316,16 @@ aos_status_t *oss_get_object_meta(const oss_request_options_t *options,
 
 aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
                                  const aos_string_t *bucket,
-                 const aos_string_t *object,
-                 oss_acl_e oss_acl,
-                 aos_table_t **resp_headers){
+                                 const aos_string_t *object,
+                                 oss_acl_e oss_acl,
+                                 aos_table_t **resp_headers){
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
-
+    const char *oss_acl_str = NULL;
+		
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
@@ -344,13 +346,12 @@ aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
 }
 
 aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
-                 const aos_string_t *bucket,
-                 const aos_string_t *object,
-                 oss_acl_e *oss_acl,
-                 aos_table_t **resp_headers
-                 ){
-    
+                                 const aos_string_t *bucket,
+                                 const aos_string_t *object,
+                                 aos_string_t *oss_acl,
+                                 aos_table_t **resp_headers){
     aos_status_t *s = NULL;
+    int res;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;

@@ -783,6 +783,112 @@ void test_get_object_meta(CuTest *tc){
     printf("test_get_object_meta ok\n");
 }
 
+void test_get_object_acl_not_exist(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "not_exist.object";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_acl_str;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    
+    s = oss_get_object_acl(options, &bucket, &object, &oss_acl_str, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+    CuAssertStrEquals(tc, "NoSuchKey", s->error_code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    
+    aos_pool_destroy(p);
+
+    printf("test_get_object_acl_not_exist ok\n");	
+}
+
+void test_get_object_acl(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "oss_test_put_object.ts";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_acl_str;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    
+    s = oss_get_object_acl(options, &bucket, &object, &oss_acl_str, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    
+    aos_pool_destroy(p);
+
+    printf("test_get_object_acl ok\n");
+}
+
+void test_put_object_acl_invalid_acl(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "oss_test_put_object.ts";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    oss_acl_e oss_acl_invalid = (oss_acl_e)(OSS_ACL_DEFAULT + 1);
+
+    s = oss_put_object_acl(options, &bucket, &object, oss_acl_invalid, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertStrEquals(tc, "MissingArgument", s->error_code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    
+    aos_pool_destroy(p);
+    
+    printf("test_put_object_acl_invalid_acl ok\n");
+}
+
+void test_put_object_acl(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "oss_test_put_object.ts";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    oss_acl_e oss_acl = OSS_ACL_PRIVATE;
+
+    s = oss_put_object_acl(options, &bucket, &object, oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    
+    aos_pool_destroy(p);
+    
+    printf("test_put_object_acl ok\n");
+}
+
 void test_delete_object(CuTest *tc)
 {
     aos_pool_t *p = NULL;
