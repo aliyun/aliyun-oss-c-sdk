@@ -43,6 +43,7 @@ aos_status_t *aos_status_parse_from_body(aos_pool_t *p, aos_list_t *bc, int code
 
 extern const char AOS_XML_PARSE_ERROR_CODE[];
 extern const char AOS_OPEN_FILE_ERROR_CODE[];
+extern const char AOS_SELECT_INPUT_ERROR_CODE[];
 extern const char AOS_WRITE_FILE_ERROR_CODE[];
 extern const char AOS_RENAME_FILE_ERROR_CODE[];
 extern const char AOS_HTTP_IO_ERROR_CODE[];

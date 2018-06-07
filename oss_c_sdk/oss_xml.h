@@ -137,6 +137,18 @@ char *build_create_live_channel_xml(aos_pool_t *p, oss_live_channel_configuratio
 void build_create_live_channel_body(aos_pool_t *p, oss_live_channel_configuration_t *config, aos_list_t *body);
 
 /**
+ * @brief build body for create select object metadata
+ */
+char *build_create_select_object_metadata_xml(aos_pool_t *p, const oss_select_metadata_option *option);
+void build_create_select_object_metadata_body(aos_pool_t *p, const oss_select_metadata_option *option, aos_list_t *body);
+
+/**
+ * @brief build body for select object
+ */
+char *build_select_object_metadata_xml(aos_pool_t *p, const oss_select_option *option);
+void build_select_object_metadata_body(aos_pool_t *p, const oss_select_option *option, aos_list_t *body);
+
+/**
   * @brief parse create live channel contents from xml body
 **/
 void oss_publish_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_publish_url_t *content);

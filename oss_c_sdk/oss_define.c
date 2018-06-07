@@ -1,4 +1,5 @@
 #include "oss_define.h"
+#include "aos_string.h"
 
 const char OSS_CANNONICALIZED_HEADER_PREFIX[] = "x-oss-";
 const char OSS_CANNONICALIZED_HEADER_DATE[] = "x-oss-date";
@@ -60,17 +61,31 @@ const char LIVE_CHANNEL_STATUS_LIVE[] = "live";
 const char LIVE_CHANNEL_DEFAULT_TYPE[] = "HLS";
 const char LIVE_CHANNEL_DEFAULT_PLAYLIST[] = "playlist.m3u8";
 const char OSS_SELECT_CSV[] = "csv/select";
-const char OSS_SELECT_SQL[] = "sql";
-const char OSS_SELECT_INPUT_FIELD_DELIMITER[] = "x-oss-select-input-field-delimiter";
-const char OSS_SELECT_INPUT_QUOTE_CHARACTER[] = "x-oss-select-input-quote-character";
-const char OSS_SELECT_INPUT_RECORD_DELIMITER[] = "x-oss-select-input-record-delimiter";
-const char OSS_SELECT_INPUT_FILE_HEADER[] = "x-oss-select-input-file-header";
-const char OSS_SELECT_LINE_RANGE[] = "x-oss-select-line-range";
-const char OSS_SELECT_OUTPUT_KEEP_ALL_COLUMNS[] = "x-oss-select-output-keep-all-columns";
-const char OSS_SELECT_OUTPUT_RAW[] = "x-oss-select-output-raw-data";
+const char OSS_CSV_META[] = "csv/meta";
 const char OSS_SELECT_CSV_ROWS[] = "x-oss-select-csv-rows";
+const char OSS_SELECT_CSV_SPLITS[] = "x-oss-select-csv-splits";
 const int  LIVE_CHANNEL_DEFAULT_FRAG_DURATION = 5;
 const int  LIVE_CHANNEL_DEFAULT_FRAG_COUNT = 3;
 const int OSS_MAX_PART_NUM = 10000;
 const int OSS_PER_RET_NUM = 1000;
 const int MAX_SUFFIX_LEN = 1024;
+
+const csv_format_option csv_format_option_default = {
+        .field_delimiter = ',',
+        .field_quote = '"',
+        .comment = '#',
+        .record_delimiter.data = "\n",
+        .record_delimiter.len = 1,
+        .header_info = CSV_HEADER_IGNORE
+};
+
+const oss_select_metadata_option oss_select_metadata_option_default = {
+        .overwrite = 0,
+        .input_serialization.compression_info = NONE,
+        .input_serialization.csv_format.field_delimiter = ',',
+        .input_serialization.csv_format.field_quote = '"',
+        .input_serialization.csv_format.comment = '#',
+        .input_serialization.csv_format.record_delimiter.data = "\n",
+        .input_serialization.csv_format.record_delimiter.len = 1,
+        .input_serialization.csv_format.header_info = CSV_HEADER_IGNORE
+};

@@ -293,9 +293,5 @@ int oss_get_temporary_file_name(aos_pool_t *p, const aos_string_t *filename, aos
 
 int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_path, apr_pool_t *pool);
 
-char* delimiter_to_string(char c, char* str);
-char* newline_to_string(const aos_string_t *newline, char* newline_str);
-char* file_header_to_string(const csv_header_info header, char* file_header_str);
-char* range_to_string(int start, int end, char* range_str);
-
+char* range_to_string(const char* prefix, int start, int end, char* range_str);
 #endif

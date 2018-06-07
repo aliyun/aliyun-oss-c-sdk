@@ -88,15 +88,9 @@ extern const char LIVE_CHANNEL_DEFAULT_PLAYLIST[];
 extern const int  LIVE_CHANNEL_DEFAULT_FRAG_DURATION;
 extern const int  LIVE_CHANNEL_DEFAULT_FRAG_COUNT;
 extern const char OSS_SELECT_CSV[];
-extern const char OSS_SELECT_SQL[];
-extern const char OSS_SELECT_INPUT_FIELD_DELIMITER[];
-extern const char OSS_SELECT_INPUT_QUOTE_CHARACTER[];
-extern const char OSS_SELECT_INPUT_RECORD_DELIMITER[];
-extern const char OSS_SELECT_INPUT_FILE_HEADER[];
-extern const char OSS_SELECT_LINE_RANGE[];
-extern const char OSS_SELECT_OUTPUT_KEEP_ALL_COLUMNS[];
-extern const char OSS_SELECT_OUTPUT_RAW[];
+extern const char OSS_CSV_META[];
 extern const char OSS_SELECT_CSV_ROWS[];
+extern const char OSS_SELECT_CSV_SPLITS[];
 extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
@@ -331,17 +325,54 @@ typedef enum{
     CSV_HEADER_USE = 2
 } csv_header_info;
 
+typedef enum {
+    NONE = 1,
+    GZIP = 2
+} select_compression_info;
+
 typedef struct {
     char field_delimiter;
     char field_quote;
-    aos_string_t new_line;
+    char comment;
+    aos_string_t record_delimiter;
     csv_header_info header_info;
 } csv_format_option;
 
+extern const csv_format_option csv_format_option_default;
+
 typedef struct {
-    int raw_output;
+    select_compression_info compression_info;
+    csv_format_option csv_format;
+} select_input_serialization;
+
+typedef struct {
+    int raw_output; //always output raw data now
     int keep_all_columns;
-    int start_line;
-    int end_line;
+    csv_format_option csv_format;
+} select_output_serialization;
+
+typedef struct {
+    int overwrite;
+    select_input_serialization input_serialization;
+} oss_select_metadata_option;
+
+extern const oss_select_metadata_option oss_select_metadata_option_default;
+
+typedef enum {
+    NO_RANGE = 0,
+    LINE = 1,
+    SPLIT = 2
+} select_range_option;
+
+typedef struct {
+    select_range_option range_option;
+    int range[2];
+    aos_string_t expression;
+    select_input_serialization input_serialization;
+    select_output_serialization output_serialization;
 } oss_select_option;
+
+#define aos_select_input_error_status_set(STATUS, RES, MSG) do {\
+        aos_status_set(STATUS, RES, AOS_SELECT_INPUT_ERROR_CODE, MSG); \
+    } while(0)
 #endif

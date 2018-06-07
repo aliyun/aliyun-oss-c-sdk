@@ -4,6 +4,7 @@
 
 const char AOS_XML_PARSE_ERROR_CODE[] = "ParseXmlError";
 const char AOS_OPEN_FILE_ERROR_CODE[] = "OpenFileFail";
+const char AOS_SELECT_INPUT_ERROR_CODE[] = "SelectInputError";
 const char AOS_WRITE_FILE_ERROR_CODE[] = "WriteFileFail";
 const char AOS_RENAME_FILE_ERROR_CODE[] = "RenameFileFail";
 const char AOS_HTTP_IO_ERROR_CODE[] = "HttpIoError";

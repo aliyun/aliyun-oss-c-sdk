@@ -22,6 +22,7 @@ extern void image_sample();
 extern void resumable_upload_sample();
 extern void resumable_download_sample();
 extern void select_object_to_buffer_sample();
+extern void select_object_to_buffer_big_file_sample();
 int main(int argc, char *argv[])
 {
     if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {

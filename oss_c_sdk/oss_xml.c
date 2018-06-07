@@ -802,6 +802,212 @@ void build_create_live_channel_body(aos_pool_t *p, oss_live_channel_configuratio
     aos_list_add_tail(&b->node, body);
 }
 
+char *build_create_select_object_metadata_xml(aos_pool_t *p, const oss_select_metadata_option *option) {
+    char *xml_buff;
+    char *create_select_object_metadata_xml;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *overwrite_node;
+    mxml_node_t *input_serialization_node;
+    mxml_node_t *compression_type_node;
+    mxml_node_t *csv_node;
+    mxml_node_t *record_delimiter_node;
+    mxml_node_t *field_delimiter_node;
+    mxml_node_t *quote_char_node;
+    int encoded_len;
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "CsvMetaRequest");
+
+    overwrite_node = mxmlNewElement(root_node, "OverwriteIfExists");
+    mxmlNewText(overwrite_node, 0, option->overwrite == 0 ? "false" : "true");
+
+    input_serialization_node = mxmlNewElement(root_node, "InputSerialization");
+    compression_type_node = mxmlNewElement(input_serialization_node, "CompressionType");
+
+    mxmlNewText(compression_type_node, 0, option->input_serialization.compression_info == NONE ? "NONE" : "GZIP");
+    csv_node = mxmlNewElement(input_serialization_node, "CSV");
+    record_delimiter_node = mxmlNewElement(csv_node, "RecordDelimiter");
+
+    // encode and add record_delimiter
+    char encoded[128];
+    encoded_len = aos_base64_encode((const unsigned char*)option->input_serialization.csv_format.record_delimiter.data,
+                                    option->input_serialization.csv_format.record_delimiter.len, encoded);
+    encoded[encoded_len] = '\0';
+    mxmlNewText(record_delimiter_node, 0, encoded);
+
+    // encode and add field_delimiter
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->input_serialization.csv_format.field_delimiter),
+                                    1, encoded);
+    encoded[encoded_len] = '\0';
+    field_delimiter_node = mxmlNewElement(csv_node, "FieldDelimiter");
+    mxmlNewText(field_delimiter_node, 0, encoded);
+
+    // encode and add field_quote
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->input_serialization.csv_format.field_quote),
+                                    1, encoded);
+    encoded[encoded_len] = '\0';
+    quote_char_node = mxmlNewElement(csv_node, "QuoteCharacter");
+    mxmlNewText(quote_char_node, 0, encoded);
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    create_select_object_metadata_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return create_select_object_metadata_xml;
+}
+
+void build_create_select_object_metadata_body(aos_pool_t *p, const oss_select_metadata_option *option, aos_list_t *body) {
+    char *create_select_object_metadata_xml;
+    aos_buf_t *b;
+
+    create_select_object_metadata_xml = build_create_select_object_metadata_xml(p, option);
+    aos_list_init(body);
+    b = aos_buf_pack(p, create_select_object_metadata_xml, strlen(create_select_object_metadata_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+char *build_select_object_metadata_xml(aos_pool_t *p, const oss_select_option *option) {
+    char *xml_buff;
+    char *select_object_xml;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *expression_node;
+    mxml_node_t *input_serialization_node;
+    mxml_node_t *compression_type_node;
+    mxml_node_t *csv_node;
+    mxml_node_t *range_node;
+    mxml_node_t *record_delimiter_node;
+    mxml_node_t *field_delimiter_node;
+    mxml_node_t *quote_char_node;
+    mxml_node_t *comment_char_node;
+
+    mxml_node_t *output_serialization_node;
+    mxml_node_t *output_csv_node;
+    mxml_node_t *output_record_delimiter_node;
+    mxml_node_t *output_field_delimiter_node;
+    mxml_node_t *output_quote_char_node;
+    mxml_node_t *output_keep_all_columns_node;
+    mxml_node_t *output_raw_data_node;
+
+    int encoded_len;
+    //TODO, make sure buffer is enough
+    char buff[1024 * 1024];
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "SelectRequest");
+
+    //expression
+    expression_node = mxmlNewElement(root_node, "Expression");
+    encoded_len = aos_base64_encode((const unsigned char*)option->expression.data, option->expression.len, buff);
+    buff[encoded_len] = '\0';
+    mxmlNewText(expression_node, 0, buff);
+
+    input_serialization_node = mxmlNewElement(root_node, "InputSerialization");
+    compression_type_node = mxmlNewElement(input_serialization_node, "CompressionType");
+    mxmlNewText(compression_type_node, 0, option->input_serialization.compression_info == NONE ? "NONE" : "GZIP");
+
+    csv_node = mxmlNewElement(input_serialization_node, "CSV");
+    record_delimiter_node = mxmlNewElement(csv_node, "RecordDelimiter");
+
+    // encode and add record_delimiter
+    encoded_len = aos_base64_encode((const unsigned char*)option->input_serialization.csv_format.record_delimiter.data,
+                                    option->input_serialization.csv_format.record_delimiter.len, buff);
+    buff[encoded_len] = '\0';
+    mxmlNewText(record_delimiter_node, 0, buff);
+    // encode and add field_delimiter
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->input_serialization.csv_format.field_delimiter),
+                                    1, buff);
+    buff[encoded_len] = '\0';
+    field_delimiter_node = mxmlNewElement(csv_node, "FieldDelimiter");
+    mxmlNewText(field_delimiter_node, 0, buff);
+
+    // encode and add field_quote
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->input_serialization.csv_format.field_quote),
+                                    1, buff);
+    buff[encoded_len] = '\0';
+    quote_char_node = mxmlNewElement(csv_node, "QuoteCharacter");
+    mxmlNewText(quote_char_node, 0, buff);
+
+    // encode and add comment
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->input_serialization.csv_format.comment),
+                                    1, buff);
+    buff[encoded_len] = '\0';
+    comment_char_node = mxmlNewElement(csv_node, "Comments");
+    mxmlNewText(comment_char_node, 0, buff);
+    // add range
+    char* range_str = NULL;
+    if (option->range_option == LINE) {
+        range_str = range_to_string("line-range=", option->range[0], option->range[1], buff);
+    } else if (option->range_option == SPLIT) {
+        range_str = range_to_string("split-range=", option->range[0], option->range[1], buff);
+    }
+
+    if (range_str != NULL) {
+        range_node = mxmlNewElement(csv_node, "Range");
+        mxmlNewText(range_node, 0, range_str);
+    }
+
+    output_serialization_node = mxmlNewElement(root_node, "OutputSerialization");
+    //output raw data
+    output_raw_data_node = mxmlNewElement(output_serialization_node, "OutputRawData");
+    mxmlNewText(output_raw_data_node, 0, "true");
+
+    output_csv_node = mxmlNewElement(output_serialization_node, "CSV");
+    output_record_delimiter_node = mxmlNewElement(output_csv_node, "RecordDelimiter");
+
+    // encode and add record_delimiter
+    encoded_len = aos_base64_encode((const unsigned char*)option->output_serialization.csv_format.record_delimiter.data,
+                                    option->output_serialization.csv_format.record_delimiter.len, buff);
+    buff[encoded_len] = '\0';
+    mxmlNewText(output_record_delimiter_node, 0, buff);
+    // encode and add field_delimiter
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->output_serialization.csv_format.field_delimiter),
+                                    1, buff);
+    buff[encoded_len] = '\0';
+    output_field_delimiter_node = mxmlNewElement(output_csv_node, "FieldDelimiter");
+    mxmlNewText(output_field_delimiter_node, 0, buff);
+
+    // encode and add field_quote
+    encoded_len = aos_base64_encode((const unsigned char*)&(option->output_serialization.csv_format.field_quote),
+                                    1, buff);
+    buff[encoded_len] = '\0';
+    output_quote_char_node = mxmlNewElement(output_csv_node, "QuoteCharacter");
+    mxmlNewText(output_quote_char_node, 0, buff);
+
+    output_keep_all_columns_node = mxmlNewElement(output_csv_node, "KeepAllColumns");
+    mxmlNewText(output_keep_all_columns_node, 0, option->output_serialization.keep_all_columns == 0 ? "false" : "true");
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    select_object_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return select_object_xml;
+}
+
+void build_select_object_metadata_body(aos_pool_t *p, const oss_select_option *option, aos_list_t *body) {
+    char *select_object_xml;
+    aos_buf_t *b;
+
+    select_object_xml = build_select_object_metadata_xml(p, option);
+    aos_list_init(body);
+    b = aos_buf_pack(p, select_object_xml, strlen(select_object_xml));
+    aos_list_add_tail(&b->node, body);
+}
 
 void oss_live_channel_info_target_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_live_channel_target_t *target)
 {
