@@ -122,7 +122,8 @@ typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
  *     permission 
  * Public Read Write canned ACL gives the owner FULL_CONTROL and all users
  *     Read and Write permission
- * Default Inherit the ACL of the bucket in which the object is 
+ * Default Inherit the ACL of the bucket in which the object is, only the 
+ *     objects has this acl 
  **/
 typedef enum {
     OSS_ACL_PRIVATE                  = 0,   /*< private */
