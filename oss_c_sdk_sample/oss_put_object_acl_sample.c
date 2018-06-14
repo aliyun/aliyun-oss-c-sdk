@@ -16,7 +16,7 @@ void put_object_acl(){
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-	oss_acl_e oss_acl = OSS_ACL_DEFAULT;
+    oss_acl_e oss_acl = OSS_ACL_DEFAULT;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -29,12 +29,12 @@ void put_object_acl(){
     if(aos_status_is_ok(s)){
         printf("put object acl success!\n"); 
     }else{
-     	printf("put object acl failed!\n");    
+        printf("put object acl failed!\n");    
     }
 
     aos_pool_destroy(p);
 }
 
 void put_object_acl_sample(){
-    put_object_acl();	
+    put_object_acl();
 }
