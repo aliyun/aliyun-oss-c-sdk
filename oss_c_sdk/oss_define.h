@@ -128,7 +128,7 @@ typedef enum {
     OSS_ACL_PRIVATE                  = 0,   /*< private */
     OSS_ACL_PUBLIC_READ              = 1,   /*< public read */
     OSS_ACL_PUBLIC_READ_WRITE        = 2,   /*< public read write */
-    OSS_ACL_DEFAULT                         /*< default */
+    OSS_ACL_DEFAULT                  = 3    /*< default */
 } oss_acl_e;
 
 typedef enum {

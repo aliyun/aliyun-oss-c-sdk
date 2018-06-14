@@ -16,7 +16,7 @@ void get_object_acl(){
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-	aos_string_t oss_acl;
+    aos_string_t oss_acl;
    
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

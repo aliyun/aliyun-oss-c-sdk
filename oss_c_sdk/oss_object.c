@@ -325,7 +325,7 @@ aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
     const char *oss_acl_str = NULL;
-		
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
