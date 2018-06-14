@@ -822,27 +822,3 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
     return s;
 }
 
-/*
-aos_status_t *oss_get_object_meta_by_url(const oss_request_options_t *options,
-                                         const aos_string_t *signed_url,
-                                         aos_table_t **resp_headers){
-    aos_status_t *s = NULL;
-    aos_http_request_t *req = NULL;
-    aos_http_response_t *resp = NULL;
-    aos_table_t *query_params = NULL;
-    aos_table_t *headers = NULL;
-
-    headers = aos_table_create_if_null(options, headers, 0);
-
-    query_params = aos_table_create_if_null(options, query_params, 0);
-
-    oss_init_signed_url_request(options, signed_url, HTTP_HEAD, 
-                                &req, query_params, headers, &resp);
-    req->no_body = 1;
-
-    s = oss_process_signed_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
-
-    return s;
-}
-*/
