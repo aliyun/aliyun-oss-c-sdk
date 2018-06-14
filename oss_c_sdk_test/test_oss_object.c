@@ -744,8 +744,6 @@ void test_get_object_meta_not_exist(CuTest *tc){
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
 
-    //test head object
-    //s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
     s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
     CuAssertIntEquals(tc, 404, s->code);
     CuAssertStrEquals(tc, "UnknownError", s->error_code);
@@ -807,7 +805,7 @@ void test_get_object_acl_not_exist(CuTest *tc){
     
     aos_pool_destroy(p);
 
-    printf("test_get_object_acl_not_exist ok\n");	
+    printf("test_get_object_acl_not_exist ok\n");
 }
 
 void test_get_object_acl(CuTest *tc){
@@ -845,7 +843,7 @@ void test_put_object_acl_invalid_acl(CuTest *tc){
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-	oss_acl_e oss_acl_invalid = (oss_acl_e)(OSS_ACL_DEFAULT + 1);
+    oss_acl_e oss_acl_invalid = (oss_acl_e)(OSS_ACL_DEFAULT + 1);
     
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -872,7 +870,7 @@ void test_put_object_acl(CuTest *tc){
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-	oss_acl_e oss_acl = OSS_ACL_PRIVATE;
+    oss_acl_e oss_acl = OSS_ACL_PRIVATE;
     
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
