@@ -808,6 +808,55 @@ void test_get_object_acl_not_exist(CuTest *tc){
     printf("test_get_object_acl_not_exist ok\n");
 }
 
+void test_get_object_acl_object_empty(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_acl_str;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    
+    s = oss_get_object_acl(options, &bucket, &object, &oss_acl_str, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+    
+    aos_pool_destroy(p);
+
+    printf("test_get_object_acl_object_empty ok\n");
+}
+
+void test_get_object_acl_object_null(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t oss_acl_str;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    
+    s = oss_get_object_acl(options, &bucket, NULL, &oss_acl_str, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_NULL_POINT_ERROR, s->error_code);
+    
+    aos_pool_destroy(p);
+
+    printf("test_get_object_acl_object_null ok\n");
+}
+
 void test_get_object_acl(CuTest *tc){
     aos_pool_t *p = NULL;
     aos_string_t bucket;
@@ -859,6 +908,55 @@ void test_put_object_acl_invalid_acl(CuTest *tc){
     aos_pool_destroy(p);
     
     printf("test_put_object_acl_invalid_acl ok\n");
+}
+
+void test_put_object_acl_object_empty(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "";
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_acl_e oss_acl = OSS_ACL_DEFAULT;
+    
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+
+    s = oss_put_object_acl(options, &bucket, &object, oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+    
+    aos_pool_destroy(p);
+    
+    printf("test_put_object_acl_object_empty ok\n");
+}
+
+void test_put_object_acl_object_null(CuTest *tc){
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_acl_e oss_acl = OSS_ACL_DEFAULT;
+    
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+    s = oss_put_object_acl(options, &bucket, NULL, oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_NULL_POINT_ERROR, s->error_code);
+    
+    aos_pool_destroy(p);
+    
+    printf("test_put_object_acl_object_null ok\n");
 }
 
 void test_put_object_acl(CuTest *tc){
@@ -1300,8 +1398,12 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_object_meta_not_exist);
     SUITE_ADD_TEST(suite, test_get_object_meta);
     SUITE_ADD_TEST(suite, test_get_object_acl_not_exist);
+    SUITE_ADD_TEST(suite, test_get_object_acl_object_empty);
+    SUITE_ADD_TEST(suite, test_get_object_acl_object_null);
     SUITE_ADD_TEST(suite, test_get_object_acl);
     SUITE_ADD_TEST(suite, test_put_object_acl_invalid_acl);
+    SUITE_ADD_TEST(suite, test_put_object_acl_object_empty);
+    SUITE_ADD_TEST(suite, test_put_object_acl_object_null);
     SUITE_ADD_TEST(suite, test_put_object_acl);
     SUITE_ADD_TEST(suite, test_copy_object);
     SUITE_ADD_TEST(suite, test_copy_object_with_source_url_encode);

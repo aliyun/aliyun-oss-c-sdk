@@ -325,6 +325,20 @@ aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
     const char *oss_acl_str = NULL;
+    
+    s = aos_status_create(options->pool);
+    
+    // In this place, we use a temporary solution to the problem of empty or null values of bucket or object
+    // And in the next release, we will use a unified approach to solve this problem for all APIs
+    if(NULL == bucket || NULL == object){
+        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_NULL_POINT_ERROR, "bucket or object is NULL!");
+        return s;
+    }
+
+    if(0 == strcmp(bucket->data, "") || 0 == strcmp(object->data, "")){
+        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_EMPTY_STRING_ERROR, "bucket or object is empty!");
+        return s;
+    }
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -356,6 +370,20 @@ aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    s = aos_status_create(options->pool);
+    
+    // In this place, we use a temporary solution to the problem of empty or null values of bucket or object
+    // And in the next release, we will use a unified approach to solve this problem for all APIs
+    if(NULL == bucket || NULL == object){
+        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_NULL_POINT_ERROR, "bucket or object is NULL!");
+        return s;
+    }
+
+    if(0 == strcmp(bucket->data, "") || 0 == strcmp(object->data, "")){
+        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_EMPTY_STRING_ERROR, "bucket or object is empty!");
+        return s;
+    }
 
     //init query_params
     query_params = aos_table_create_if_null(options, headers, 1);

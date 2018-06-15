@@ -1392,6 +1392,7 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_list_buckets_with_invalid_prefix);
     SUITE_ADD_TEST(suite, test_list_buckets_with_iterator);
     SUITE_ADD_TEST(suite, test_put_bucket_acl);
+    SUITE_ADD_TEST(suite, test_put_bucket_acl_invalid_acl);
     SUITE_ADD_TEST(suite, test_get_bucket_acl);
     SUITE_ADD_TEST(suite, test_delete_objects_by_prefix);
     SUITE_ADD_TEST(suite, test_list_object);
