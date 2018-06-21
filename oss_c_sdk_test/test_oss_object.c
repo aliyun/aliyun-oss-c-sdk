@@ -850,7 +850,7 @@ void test_get_object_acl_object_null(CuTest *tc){
     
     s = oss_get_object_acl(options, &bucket, NULL, &oss_acl_str, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_NULL_POINT_ERROR, s->error_code);
+    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
     
     aos_pool_destroy(p);
 
@@ -952,7 +952,7 @@ void test_put_object_acl_object_null(CuTest *tc){
 
     s = oss_put_object_acl(options, &bucket, NULL, oss_acl, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_NULL_POINT_ERROR, s->error_code);
+    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
     
     aos_pool_destroy(p);
     
