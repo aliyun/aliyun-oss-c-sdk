@@ -330,12 +330,7 @@ aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
     
     // In this place, we use a temporary solution to the problem of empty or null values of bucket or object
     // And in the next release, we will use a unified approach to solve this problem for all APIs
-    if (NULL == bucket || NULL == object) {
-        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_NULL_POINT_ERROR, "bucket or object is NULL!");
-        return s;
-    }
-
-    if (0 == strcmp(bucket->data, "") || 0 == strcmp(object->data, "")) {
+    if (aos_string_is_empty(bucket) || aos_string_is_empty(object)) {
         aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_EMPTY_STRING_ERROR, "bucket or object is empty!");
         return s;
     }
@@ -375,12 +370,7 @@ aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
     
     // In this place, we use a temporary solution to the problem of empty or null values of bucket or object
     // And in the next release, we will use a unified approach to solve this problem for all APIs
-    if (NULL == bucket || NULL == object) {
-        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_NULL_POINT_ERROR, "bucket or object is NULL!");
-        return s;
-    }
-
-    if (0 == strcmp(bucket->data, "") || 0 == strcmp(object->data, "")) {
+    if (aos_string_is_empty(bucket) || aos_string_is_empty(object)) {
         aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_EMPTY_STRING_ERROR, "bucket or object is empty!");
         return s;
     }
