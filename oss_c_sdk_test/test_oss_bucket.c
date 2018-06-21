@@ -750,7 +750,7 @@ void test_list_object_with_delimiter(CuTest *tc)
                               common_prefix->prefix.data);
         if (size == 1) {
             CuAssertStrEquals(tc, "oss_tmp1/", prefix);
-        } else if(size == 2) {
+        } else if (size == 2) {
             CuAssertStrEquals(tc, "oss_tmp2/", prefix);
         }
     }
