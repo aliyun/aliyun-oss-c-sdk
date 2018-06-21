@@ -1284,7 +1284,7 @@ void test_append_object_from_buffer(CuTest *tc)
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&object, object_name);
     s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
-    if(s->code == 200) {
+    if (s->code == 200) {
         next_append_position = (char*)(apr_table_get(resp_headers, 
                         "x-oss-next-append-position"));
         position = atoi(next_append_position);
