@@ -26,10 +26,10 @@ void put_object_acl(){
 
     s = oss_put_object_acl(options, &bucket, &object, oss_acl, &resp_headers);
     
-    if(aos_status_is_ok(s)){
+    if (aos_status_is_ok(s)) {
         printf("put object acl success!\n"); 
-    }else{
-        printf("put object acl failed!\n");    
+    } else {
+        printf("put object acl failed!\n"); 
     }
 
     aos_pool_destroy(p);

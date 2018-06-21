@@ -26,9 +26,9 @@ void get_object_acl(){
 
     s = oss_get_object_acl(options, &bucket, &object, &oss_acl, &resp_headers);
     
-    if(aos_status_is_ok(s)) {
+    if (aos_status_is_ok(s)) {
        printf("get object acl success!\n");
-    }else{
+    } else {
        printf("get object acl failed!\n");
     }
 
