@@ -198,6 +198,31 @@ void test_put_bucket_acl(CuTest *tc)
     printf("test_put_bucket_acl ok\n");
 }
 
+/* only object has OSS_ACL_DEFAULT acl, it will return 400 while put bucket acl to OSS_ACL_DEFAULT */
+void test_put_bucket_acl_invalid_acl(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_acl_e oss_acl;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    oss_acl = OSS_ACL_DEFAULT;
+    s = oss_put_bucket_acl(options, &bucket, oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    CuAssertStrEquals(tc, "InvalidArgument", s->error_code); 
+    aos_pool_destroy(p);
+
+    printf("test_put_bucket_acl_invalid_acl ok\n");
+}
+
 void test_get_bucket_acl(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -725,7 +750,7 @@ void test_list_object_with_delimiter(CuTest *tc)
                               common_prefix->prefix.data);
         if (size == 1) {
             CuAssertStrEquals(tc, "oss_tmp1/", prefix);
-        } else if(size == 2) {
+        } else if (size == 2) {
             CuAssertStrEquals(tc, "oss_tmp2/", prefix);
         }
     }
@@ -1361,13 +1386,13 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_get_bucket_cors);
     SUITE_ADD_TEST(suite, test_delete_bucket_cors);
     SUITE_ADD_TEST(suite, test_get_bucket_location);
-    //SUITE_ADD_TEST(suite, test_head_bucket);
     SUITE_ADD_TEST(suite, test_put_bucket_storage_capacity);
     SUITE_ADD_TEST(suite, test_get_bucket_storage_capacity);
     SUITE_ADD_TEST(suite, test_list_buckets);
     SUITE_ADD_TEST(suite, test_list_buckets_with_invalid_prefix);
     SUITE_ADD_TEST(suite, test_list_buckets_with_iterator);
     SUITE_ADD_TEST(suite, test_put_bucket_acl);
+    SUITE_ADD_TEST(suite, test_put_bucket_acl_invalid_acl);
     SUITE_ADD_TEST(suite, test_get_bucket_acl);
     SUITE_ADD_TEST(suite, test_delete_objects_by_prefix);
     SUITE_ADD_TEST(suite, test_list_object);
