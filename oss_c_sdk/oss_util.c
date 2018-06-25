@@ -738,6 +738,8 @@ const char *get_oss_acl_str(oss_acl_e oss_acl)
             return "public-read";
         case OSS_ACL_PUBLIC_READ_WRITE:
             return "public-read-write";
+        case OSS_ACL_DEFAULT:
+            return "default";
         default:
             return NULL;
     }

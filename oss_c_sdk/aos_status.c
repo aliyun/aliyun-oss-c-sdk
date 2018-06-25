@@ -15,6 +15,7 @@ const char AOS_URL_ENCODE_ERROR_CODE[] = "UrlEncodeFail";
 const char AOS_INCONSISTENT_ERROR_CODE[] = "InconsistentError";
 const char AOS_CREATE_QUEUE_ERROR_CODE[] = "CreateQueueFail";
 const char AOS_CREATE_THREAD_POOL_ERROR_CODE[] = "CreateThreadPoolFail";
+const char AOS_EMPTY_STRING_ERROR[] = "EmptyStringError";
 
 aos_status_t *aos_status_create(aos_pool_t *p)
 {

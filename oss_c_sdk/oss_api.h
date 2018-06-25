@@ -543,6 +543,49 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
                               aos_table_t **resp_headers);
 
 /*
+ * @brief get object meta
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   object           the oss object name
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_object_meta(const oss_request_options_t *options,
+                                  const aos_string_t *bucket,
+                                  const aos_string_t *object,
+                                  aos_table_t **resp_headers);
+
+/*
+ * @brief put object acl
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   object           the oss object name
+ * @param[in]   oss_acl          the oss object ACL
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
+                                 const aos_string_t *bucket,
+                                 const aos_string_t *object,
+                                 oss_acl_e oss_acl,
+                                 aos_table_t **resp_headers);
+
+/*
+ * @brief put object acl
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   object           the oss object name
+ * @param[out]  oss_acl          the oss object ACL
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
+                                 const aos_string_t *bucket,
+                                 const aos_string_t *object,
+                                 aos_string_t *oss_acl,
+                                 aos_table_t **resp_headers);
+
+/*
  * @brief  put symlink oss object
  * @param[in]   options          the oss request options
  * @param[in]   bucket           the oss bucket name
@@ -812,6 +855,17 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
 aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
                                      const aos_string_t *signed_url, 
                                      aos_table_t *headers, 
+                                     aos_table_t **resp_headers);
+
+/*
+ * @brief  oss get object meta using signed url
+ * @param[in]   options             the oss request options
+ * @param[in]   signed_url          the signed url for put object
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_object_meta_by_url(const oss_request_options_t *options,
+                                     const aos_string_t *signed_url,
                                      aos_table_t **resp_headers);
 
 /*
