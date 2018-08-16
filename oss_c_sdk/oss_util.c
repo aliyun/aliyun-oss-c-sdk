@@ -886,14 +886,21 @@ aos_status_t *oss_process_request(const oss_request_options_t *options,
     int res = AOSE_OK;
     aos_status_t *s;
 
-    s = aos_status_create(options->pool);
     res = oss_sign_request(req, options->config);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_status_set(s, res, AOS_CLIENT_ERROR_CODE, NULL);
-        return s;
+    } else {
+        s = oss_send_request(options->ctl, req, resp);
     }
 
-    return oss_send_request(options->ctl, req, resp);
+    if (!aos_status_is_ok(s)) {
+        aos_warn_log("oss_process_request, method: %d, resource:%s,  result: %d, %s, %s, %s", 
+            req->method, req->resource,
+            s->code, s->error_code, s->error_msg, s->req_id);
+    }
+    
+    return s;
 }
 
 aos_status_t *oss_process_signed_request(const oss_request_options_t *options,
@@ -1057,3 +1064,9 @@ int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_
     return res;
 }
 
+aos_status_t oss_api_nullempty_error = {
+    AOSE_INVALID_ARGUMENT,
+    (char *)AOS_PARAMETER_NULLEMPTY_ERROR,
+    "The parameter is null or empty",
+    NULL
+};

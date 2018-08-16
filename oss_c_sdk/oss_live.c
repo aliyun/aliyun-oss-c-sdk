@@ -23,6 +23,15 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     aos_list_t body;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_arg_null(config);
+    oss_api_check_arg_null(publish_url_list);
+    oss_api_check_arg_null(play_url_list);
+    oss_api_enter("bucket:%.*s, name:%.*s",
+        bucket->len, bucket->data,
+        config->name.len, config->name.data);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -39,16 +48,16 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
+    if (aos_status_is_ok(s)) {
+        // parse result
+        res = oss_create_live_channel_parse_from_body(options->pool, &resp->body, 
+            publish_url_list, play_url_list);
+        if (res != AOSE_OK) {
+            aos_xml_error_status_set(s, res);
+        }
     }
 
-    // parse result
-    res = oss_create_live_channel_parse_from_body(options->pool, &resp->body, 
-        publish_url_list, play_url_list);
-    if (res != AOSE_OK) {
-        aos_xml_error_status_set(s, res);
-    }
+    oss_api_leave();
 
     return s;
 
@@ -66,6 +75,15 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(live_channel);
+    oss_api_check_string_nullempty(live_channel_status);
+    oss_api_enter("bucket:%.*s, live_channel:%.*s, status:%.*s", 
+        bucket->len, bucket->data,
+        live_channel->len, live_channel->data,
+        live_channel_status->len, live_channel_status->data);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -82,6 +100,7 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
     
+    oss_api_leave();
     return s;
 }
 
@@ -98,6 +117,14 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(live_channel);
+    oss_api_check_arg_null(info);
+    oss_api_enter("bucket:%.*s, live_channel:%.*s", 
+        bucket->len, bucket->data,
+        live_channel->len, live_channel->data);
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -110,16 +137,16 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
+    if (aos_status_is_ok(s)) {
+        // parse result
+        res = oss_live_channel_info_parse_from_body(options->pool, &resp->body, info);
+        if (res != AOSE_OK) {
+            aos_xml_error_status_set(s, res);
+        }
+        aos_str_set(&info->name, aos_pstrdup(options->pool, live_channel));
     }
 
-    // parse result
-    res = oss_live_channel_info_parse_from_body(options->pool, &resp->body, info);
-    if (res != AOSE_OK) {
-        aos_xml_error_status_set(s, res);
-    }
-    aos_str_set(&info->name, aos_pstrdup(options->pool, live_channel));
+    oss_api_leave();
 
     return s;
 }
@@ -137,6 +164,14 @@ aos_status_t *oss_get_live_channel_stat(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(live_channel);
+    oss_api_check_arg_null(stat);
+    oss_api_enter("bucket:%.*s, live_channel:%.*s", 
+        bucket->len, bucket->data,
+        live_channel->len, live_channel->data);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -150,15 +185,14 @@ aos_status_t *oss_get_live_channel_stat(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
+    if (aos_status_is_ok(s)) {
+        // parse result
+        res = oss_live_channel_stat_parse_from_body(options->pool, &resp->body, stat);
+        if (res != AOSE_OK) {
+            aos_xml_error_status_set(s, res);
+        }
     }
-
-    // parse result
-    res = oss_live_channel_stat_parse_from_body(options->pool, &resp->body, stat);
-    if (res != AOSE_OK) {
-        aos_xml_error_status_set(s, res);
-    }
+    oss_api_leave();
 
     return s;
 }
@@ -174,6 +208,13 @@ aos_status_t *oss_delete_live_channel(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(live_channel);
+    oss_api_enter("bucket:%.*s, live_channel:%.*s", 
+        bucket->len, bucket->data,
+        live_channel->len, live_channel->data);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -186,6 +227,7 @@ aos_status_t *oss_delete_live_channel(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -202,6 +244,11 @@ aos_status_t *oss_list_live_channel(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_arg_null(params);
+    oss_api_enter("bucket:%.*s",  bucket->len, bucket->data);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 4);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -217,16 +264,16 @@ aos_status_t *oss_list_live_channel(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
+    if (aos_status_is_ok(s)) {
+        // parse result
+        res = oss_list_live_channel_parse_from_body(options->pool, &resp->body,
+            &params->live_channel_list, &params->next_marker, &params->truncated);
+        if (res != AOSE_OK) {
+            aos_xml_error_status_set(s, res);
+        }
     }
 
-    // parse result
-    res = oss_list_live_channel_parse_from_body(options->pool, &resp->body,
-        &params->live_channel_list, &params->next_marker, &params->truncated);
-    if (res != AOSE_OK) {
-        aos_xml_error_status_set(s, res);
-    }
+    oss_api_leave();
 
     return s;
 }
@@ -244,6 +291,14 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(live_channel);
+    oss_api_check_arg_null(live_record_list);
+    oss_api_enter("bucket:%.*s, live_channel:%.*s", 
+        bucket->len, bucket->data,
+        live_channel->len, live_channel->data);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -257,15 +312,15 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
+    if (aos_status_is_ok(s)) {
+        // parse result
+        res = oss_live_channel_history_parse_from_body(options->pool, &resp->body, live_record_list);
+        if (res != AOSE_OK) {
+            aos_xml_error_status_set(s, res);
+        }
     }
 
-    // parse result
-    res = oss_live_channel_history_parse_from_body(options->pool, &resp->body, live_record_list);
-    if (res != AOSE_OK) {
-        aos_xml_error_status_set(s, res);
-    }
+    oss_api_leave();
 
     return s;
 }
@@ -285,6 +340,16 @@ aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     char *resource = NULL;
     aos_string_t resource_str;
+
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(live_channel);
+    oss_api_check_string_nullempty(play_list_name);
+    oss_api_enter("bucket:%.*s, live_channel:%.*s, play_list_name:%.*s, from:%"APR_INT64_T_FMT" to %"APR_INT64_T_FMT, 
+        bucket->len, bucket->data,
+        live_channel->len, live_channel->data,
+        play_list_name->len, play_list_name->data,
+        start_time, end_time);
 
     //init params
     query_params = aos_table_create_if_null(options, query_params, 3);
@@ -306,6 +371,7 @@ aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }

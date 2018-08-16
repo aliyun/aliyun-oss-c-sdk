@@ -18,6 +18,24 @@ static size_t aos_curl_default_header_callback(char *buffer, size_t size, size_t
 static size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 static size_t aos_curl_default_read_callback(char *buffer, size_t size, size_t nitems, void *instream);
 
+static int aos_curl_debug_callback(void *handle, curl_infotype type, char *data, size_t size, void *userp)
+{
+    switch (type) {
+    default: /* in case a new one is introduced to shock us */
+        break;
+    case CURLINFO_TEXT:
+        aos_debug_log("curl:0x%x=> Info: %.*s", (unsigned int)handle, (int)size, data);
+        break;
+    case CURLINFO_HEADER_OUT:
+        aos_debug_log("curl:0x%x=> Send header: %.*s", (unsigned int)handle, (int)size, data);
+        break;
+    case CURLINFO_HEADER_IN:
+        aos_debug_log("curl:0x%x=> Recv header: %.*s", (unsigned int)handle, (int)size, data);
+        break;
+    }
+    return 0;
+}
+
 static void aos_init_curl_headers(aos_curl_http_transport_t *t)
 {
     int pos;
@@ -89,7 +107,7 @@ static void aos_transport_cleanup(aos_http_transport_t *t)
     char buf[256];
 
     if (t->req->file_buf != NULL && t->req->file_buf->owner) {
-        aos_trace_log("close request body file.");
+        aos_debug_log("close request body file.");
         if ((s = apr_file_close(t->req->file_buf->file)) != APR_SUCCESS) {
             aos_warn_log("apr_file_close failure, %s.", apr_strerror(s, buf, sizeof(buf)));
         }
@@ -97,12 +115,14 @@ static void aos_transport_cleanup(aos_http_transport_t *t)
     }
     
     if (t->resp->file_buf != NULL && t->resp->file_buf->owner) {
-        aos_trace_log("close response body file.");
+        aos_debug_log("close response body file.");
         if ((s = apr_file_close(t->resp->file_buf->file)) != APR_SUCCESS) {
             aos_warn_log("apr_file_close failure, %s.", apr_strerror(s, buf, sizeof(buf)));
         }
         t->resp->file_buf = NULL;
     }
+    aos_info_log("cleanup transport, handle:0x%x", (unsigned int)t);
+
 }
 
 aos_http_transport_t *aos_curl_http_transport_create(aos_pool_t *p)
@@ -126,6 +146,8 @@ aos_http_transport_t *aos_curl_http_transport_create(aos_pool_t *p)
     t->header_callback = aos_curl_default_header_callback;
     t->read_callback = aos_curl_default_read_callback;
     t->write_callback = aos_curl_default_write_callback;
+
+    aos_info_log("create  transport, handle:0x%x, curl:0x%x", (unsigned int)t, (unsigned int)t->curl);
 
     return (aos_http_transport_t *)t;
 }
@@ -195,7 +217,7 @@ static void aos_curl_transport_headers_done(aos_curl_http_transport_t *t)
     }
     
     if (t->resp->status > 0) {
-        aos_trace_log("http response status %d.", t->resp->status);
+        //aos_debug_log("http response status %d.", t->resp->status);
         return;
     }
 
@@ -203,6 +225,7 @@ static void aos_curl_transport_headers_done(aos_curl_http_transport_t *t)
     if ((code = curl_easy_getinfo(t->curl, CURLINFO_RESPONSE_CODE, &http_code)) != CURLE_OK) {
         t->controller->reason = apr_pstrdup(t->pool, curl_easy_strerror(code));
         t->controller->error_code = AOSE_INTERNAL_ERROR;
+        aos_error_log("get response status fail, curl code:%d, reason:%s", code, t->controller->reason);
         return;
     } else {
         t->resp->status = http_code;
@@ -212,6 +235,7 @@ static void aos_curl_transport_headers_done(aos_curl_http_transport_t *t)
     if (value != NULL) {
         t->resp->content_length = aos_atoi64(value);
     }
+    aos_info_log("transport_headers_done, status:%d, content_length:%"APR_INT64_T_FMT, t->resp->status, t->resp->content_length);
 }
 
 size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
@@ -425,6 +449,11 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
         default: // HTTP_GET
             break;
     }
+
+    if (aos_log_level >= AOS_LOG_DEBUG) {
+        curl_easy_setopt_safe(CURLOPT_VERBOSE, 1L);   
+        curl_easy_setopt_safe(CURLOPT_DEBUGFUNCTION, aos_curl_debug_callback);
+    }
     
 #undef curl_easy_setopt_safe
     
@@ -458,6 +487,9 @@ int aos_curl_http_transport_perform(aos_http_transport_t *t_)
     }
     
     aos_curl_transport_finish(t);
+
+    aos_info_log("perform transport done, handle:0x%x, curl code:%d, error_code:%d, reason:%s", 
+        (unsigned int)t, code, t->controller->error_code, t->controller->reason);
     
     return t->controller->error_code;
 }

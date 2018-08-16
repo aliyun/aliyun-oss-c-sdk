@@ -49,19 +49,24 @@ void aos_log_format_default(int level,
     apr_time_exp_t tm;
     va_list args;
     char buffer[4096];
+    static char *level_str[] = {"", "", "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE"};
+
+    if (level > AOS_LOG_TRACE || level < AOS_LOG_FATAL)
+        level = 0;
 
     t = apr_time_now();
     if ((s = apr_time_exp_lt(&tm, t)) != APR_SUCCESS) {
         return;
     }
     
-    len = apr_snprintf(buffer, 4090, "[%04d-%02d-%02d %02d:%02d:%02d.%03d] %" APR_INT64_T_FMT " %s:%d ",
+    len = apr_snprintf(buffer, 4090, "[%04d-%02d-%02d %02d:%02d:%02d.%03d][%s][%" APR_INT64_T_FMT "][%s:%d] ",
                    tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
                    tm.tm_hour, tm.tm_min, tm.tm_sec, tm.tm_usec/1000,
+                   level_str[level],
                    (int64_t)apr_os_thread_current(), file, line);
     
     va_start(args, fmt);
-    len += vsnprintf(buffer + len, 4090 - len, fmt, args);
+    len += apr_vsnprintf(buffer + len, 4090 - len, fmt, args);
     va_end(args);
 
     while (buffer[len -1] == '\n') len--;

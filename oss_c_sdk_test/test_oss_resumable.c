@@ -2369,6 +2369,73 @@ void test_resumable_download_with_checkpoint_crc64_mismatch(CuTest *tc)
     printf("test_resumable_download_with_checkpoint_crc64_mismatch ok\n");
 }
 
+void test_resumable_invalid_parameter(CuTest *tc)
+{
+	aos_pool_t *p = NULL;
+	oss_request_options_t *options = NULL;
+	int is_cname = 0;
+	aos_string_t bucket;
+	aos_status_t *s = NULL;
+	aos_table_t *resp_headers = NULL;
+	aos_table_t *headers = NULL;
+	aos_string_t object;
+	aos_list_t part_list;
+
+	aos_pool_create(&p, NULL);
+	options = oss_request_options_create(p);
+	init_test_request_options(options, is_cname);
+	aos_str_set(&bucket, TEST_BUCKET_NAME);
+	aos_str_set(&object, "test_object");
+	headers = aos_table_make(p, 1);
+	aos_list_init(&part_list);
+
+	s = oss_resumable_upload_file(NULL, NULL, NULL, NULL, headers, headers, NULL, NULL, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_upload_file(options, NULL, NULL, NULL, headers, headers, NULL, NULL, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_upload_file(options, &bucket, NULL, NULL, headers, headers, NULL, NULL, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_upload_file(options, &bucket, &object, NULL, headers, headers, NULL, NULL, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_upload_file(options, &bucket, &object, &object, headers, headers, NULL, NULL, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_download_file(NULL, NULL, NULL, NULL, headers, headers, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_download_file(options, NULL, NULL, NULL, headers, headers, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_download_file(options, &bucket, NULL, NULL, headers, headers, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_download_file(options, &bucket, &object, NULL, headers, headers, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_resumable_download_file(options, &bucket, &object, &object, headers, headers, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+
+
+	aos_pool_destroy(p);
+
+	printf("test_multipart_invalid_parameter ok\n");
+}
+
 CuSuite *test_oss_resumable()
 {
     CuSuite* suite = CuSuiteNew();
@@ -2417,6 +2484,7 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_resumable_download_without_checkpoint_random_failure);
     SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_random_failure);
     SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_crc64_mismatch);
+	SUITE_ADD_TEST(suite, test_resumable_invalid_parameter);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;

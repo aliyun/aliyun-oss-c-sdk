@@ -56,6 +56,12 @@ aos_status_t *oss_do_put_object_from_buffer(const oss_request_options_t *options
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_arg_null(buffer);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
+
     headers = aos_table_create_if_null(options, headers, 2);
     set_content_type(NULL, object->data, headers);
     apr_table_add(headers, OSS_EXPECT, "");
@@ -73,6 +79,7 @@ aos_status_t *oss_do_put_object_from_buffer(const oss_request_options_t *options
     if (is_enable_crc(options) && has_crc_in_response(resp)) {
         oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
+    oss_api_leave();
 
     return s;
 }
@@ -104,7 +111,14 @@ aos_status_t *oss_do_put_object_from_file(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
-    s = aos_status_create(options->pool);
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(filename);
+    oss_api_enter("bucket:%.*s, object:%.*s, file:%.*s", 
+        bucket->len, bucket->data, 
+        object->len, object->data,
+        filename->len, filename->data);
 
     headers = aos_table_create_if_null(options, headers, 2);
     set_content_type(filename->data, object->data, headers);
@@ -117,17 +131,18 @@ aos_status_t *oss_do_put_object_from_file(const oss_request_options_t *options,
 
     res = oss_write_request_body_from_file(options->pool, filename, req);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        return s;
+    } else {
+        s = oss_process_request(options, req, resp);
+        oss_fill_read_response_body(resp, resp_body);
+        oss_fill_read_response_header(resp, resp_headers);
+    
+        if (is_enable_crc(options) && has_crc_in_response(resp)) {
+            oss_check_crc_consistent(req->crc64, resp->headers, s);
+        }
     }
-
-    s = oss_process_request(options, req, resp);
-    oss_fill_read_response_body(resp, resp_body);
-    oss_fill_read_response_header(resp, resp_headers);
-
-    if (is_enable_crc(options) && has_crc_in_response(resp)) {
-        oss_check_crc_consistent(req->crc64, resp->headers, s);
-    }
+    oss_api_leave();
 
     return s;
 }
@@ -157,6 +172,12 @@ aos_status_t *oss_do_get_object_to_buffer(const oss_request_options_t *options,
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_arg_null(buffer);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
+
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
 
@@ -171,6 +192,7 @@ aos_status_t *oss_do_get_object_to_buffer(const oss_request_options_t *options,
         !has_range_or_process_in_request(req)) {
         oss_check_crc_consistent(resp->crc64, resp->headers, s);
     }
+    oss_api_leave();
 
     return s;
 }
@@ -185,6 +207,11 @@ aos_status_t *oss_restore_object(const oss_request_options_t *options,
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
+
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
 
     params = aos_table_create_if_null(options, params, 0);
     apr_table_add(params, OSS_RESTORE, "");
@@ -205,6 +232,7 @@ aos_status_t *oss_restore_object(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -236,6 +264,15 @@ aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
     int res = AOSE_OK;
     aos_string_t tmp_filename;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(filename);
+    oss_api_enter("bucket:%.*s, object:%.*s, filename:%.*s", 
+        bucket->len, bucket->data, 
+        object->len, object->data,
+        filename->len, filename->data);
+
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
 
@@ -244,23 +281,21 @@ aos_status_t *oss_do_get_object_to_file(const oss_request_options_t *options,
     oss_init_object_request(options, bucket, object, HTTP_GET, 
                             &req, params, headers, progress_callback, 0, &resp);
 
-    s = aos_status_create(options->pool);
     res = oss_init_read_response_body_to_file(options->pool, &tmp_filename, resp);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        return s;
+    } else {
+        s = oss_process_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
+    
+        if (is_enable_crc(options) && has_crc_in_response(resp) && 
+            !has_range_or_process_in_request(req)) {
+                oss_check_crc_consistent(resp->crc64, resp->headers, s);
+        }
+        oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
     }
-
-    s = oss_process_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
-
-    if (is_enable_crc(options) && has_crc_in_response(resp) && 
-        !has_range_or_process_in_request(req)) {
-            oss_check_crc_consistent(resp->crc64, resp->headers, s);
-    }
-
-    oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
-
+    oss_api_leave();
     return s;
 }
 
@@ -275,6 +310,11 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
+
     headers = aos_table_create_if_null(options, headers, 0);    
 
     query_params = aos_table_create_if_null(options, query_params, 0);
@@ -284,7 +324,7 @@ aos_status_t *oss_head_object(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-
+    oss_api_leave();
     return s;
 }
 
@@ -298,6 +338,11 @@ aos_status_t *oss_get_object_meta(const oss_request_options_t *options,
    aos_table_t *query_params = NULL;
    aos_table_t *headers = NULL;
 
+   oss_api_check_arg_null(options);
+   oss_api_check_string_nullempty(bucket);
+   oss_api_check_string_nullempty(object);
+   oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
+
    //init query_params
    query_params = aos_table_create_if_null(options, query_params, 1);
    apr_table_add(query_params, OSS_OBJECT_META, "");
@@ -310,6 +355,7 @@ aos_status_t *oss_get_object_meta(const oss_request_options_t *options,
 
    s = oss_process_request(options, req, resp);
    oss_fill_read_response_header(resp, resp_headers);
+   oss_api_leave();
 
    return s;
 }
@@ -326,15 +372,11 @@ aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     const char *oss_acl_str = NULL;
     
-    s = aos_status_create(options->pool);
-    
-    // In this place, we use a temporary solution to the problem of empty or null values of bucket or object
-    // And in the next release, we will use a unified approach to solve this problem for all APIs
-    if (aos_string_is_empty(bucket) || aos_string_is_empty(object)) {
-        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_EMPTY_STRING_ERROR, "bucket or object is empty!");
-        return s;
-    }
-
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
+ 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
@@ -350,6 +392,7 @@ aos_status_t *oss_put_object_acl(const oss_request_options_t *options,
                     &req, query_params, headers, NULL, 0, &resp);
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -366,14 +409,11 @@ aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
-    s = aos_status_create(options->pool);
-    
-    // In this place, we use a temporary solution to the problem of empty or null values of bucket or object
-    // And in the next release, we will use a unified approach to solve this problem for all APIs
-    if (aos_string_is_empty(bucket) || aos_string_is_empty(object)) {
-        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_EMPTY_STRING_ERROR, "bucket or object is empty!");
-        return s;
-    }
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_arg_null(oss_acl);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
 
     //init query_params
     query_params = aos_table_create_if_null(options, headers, 1);
@@ -387,14 +427,13 @@ aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
     
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
-    if (!aos_status_is_ok(s)) {
-        return s;
+    if (aos_status_is_ok(s)) {
+        res = oss_acl_parse_from_body(options->pool, &resp->body, oss_acl);
+        if (res != AOSE_OK) {
+            aos_xml_error_status_set(s, res);
+        }
     }
-
-    res = oss_acl_parse_from_body(options->pool, &resp->body, oss_acl);
-    if (res != AOSE_OK) {
-        aos_xml_error_status_set(s, res);
-    }
+    oss_api_leave();
 
     return s;
 }
@@ -411,6 +450,15 @@ aos_status_t *oss_put_symlink(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(sym_object);
+    oss_api_check_string_nullempty(target_object);
+    oss_api_enter("bucket:%.*s, sym_object:%.*s", 
+        bucket->len, bucket->data, 
+        sym_object->len, sym_object->data,
+        target_object->len, target_object->data);
+
     headers = aos_table_make(options->pool, 1);
     apr_table_set(headers, OSS_CANNONICALIZED_HEADER_SYMLINK, target_object->data);
     headers = aos_table_create_if_null(options, headers, 0);    
@@ -423,6 +471,7 @@ aos_status_t *oss_put_symlink(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -438,6 +487,11 @@ aos_status_t *oss_get_symlink(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL; 
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(sym_object);
+    oss_api_enter("bucket:%.*s, sym_object:%.*s", bucket->len, bucket->data, sym_object->len, sym_object->data);
+
     headers = aos_table_create_if_null(options, headers, 0);    
 
     query_params = aos_table_create_if_null(options, query_params, 0);
@@ -448,6 +502,7 @@ aos_status_t *oss_get_symlink(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -463,6 +518,11 @@ aos_status_t *oss_delete_object(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     aos_table_t *query_params = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_enter("bucket:%.*s, object:%.*s", bucket->len, bucket->data, object->len, object->data);
+
     headers = aos_table_create_if_null(options, headers, 0);
     query_params = aos_table_create_if_null(options, query_params, 0);
 
@@ -472,6 +532,7 @@ aos_status_t *oss_delete_object(const oss_request_options_t *options,
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -492,7 +553,16 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
     char buffer[AOS_MAX_QUERY_ARG_LEN*3+1];
     int res = -1;
 
-    s = aos_status_create(options->pool);
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(source_bucket);
+    oss_api_check_string_nullempty(source_object);
+    oss_api_check_string_nullempty(dest_bucket);
+    oss_api_check_string_nullempty(dest_object);
+    oss_api_enter("source_bucket:%.*s, source_object:%.*s, dest_bucket:%.*s, dest_object:%.*s", 
+        source_bucket->len, source_bucket->data,
+        source_object->len, source_object->data,
+        dest_bucket->len, dest_bucket->data,
+        dest_object->len, dest_object->data);
 
     headers = aos_table_create_if_null(options, headers, 2);
     query_params = aos_table_create_if_null(options, query_params, 0);
@@ -500,20 +570,22 @@ aos_status_t *oss_copy_object(const oss_request_options_t *options,
     /* init headers */
     res = aos_url_encode(buffer, source_object->data, AOS_MAX_QUERY_ARG_LEN);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_status_set(s, res, AOS_URL_ENCODE_ERROR_CODE, NULL);
-        return s;
-    }
+    } else {
 
-    copy_source = apr_psprintf(options->pool, "/%.*s/%s", 
-        source_bucket->len, source_bucket->data, buffer);
-    apr_table_set(headers, OSS_CANNONICALIZED_HEADER_COPY_SOURCE, copy_source);
-    set_content_type(NULL, dest_object->data, headers);
+        copy_source = apr_psprintf(options->pool, "/%.*s/%s", 
+            source_bucket->len, source_bucket->data, buffer);
+        apr_table_set(headers, OSS_CANNONICALIZED_HEADER_COPY_SOURCE, copy_source);
+        set_content_type(NULL, dest_object->data, headers);
 
-    oss_init_object_request(options, dest_bucket, dest_object, HTTP_PUT, 
+        oss_init_object_request(options, dest_bucket, dest_object, HTTP_PUT, 
                             &req, query_params, headers, NULL, 0, &resp);
 
-    s = oss_process_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
+        s = oss_process_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
+	}
+	oss_api_leave();
 
     return s;
 }
@@ -530,7 +602,15 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
-    
+
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_arg_null(buffer);
+    oss_api_enter("bucket:%.*s, object:%.*s, position:%"APR_INT64_T_FMT, 
+        bucket->len, bucket->data, 
+        object->len, object->data, position);
+
     /* init query_params */
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_APPEND, "");
@@ -547,6 +627,7 @@ aos_status_t *oss_append_object_from_buffer(const oss_request_options_t *options
 
     s = oss_process_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -568,6 +649,15 @@ aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *opti
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_arg_null(buffer);
+    oss_api_enter("bucket:%.*s, object:%.*s, position:%lld, init_crc:%"APR_UINT64_T_FMT, 
+        bucket->len, bucket->data, 
+        object->len, object->data, 
+        position, init_crc);
+
     /* init query_params */
     query_params = aos_table_create_if_null(options, params, 2);
     apr_table_add(query_params, OSS_APPEND, "");
@@ -589,6 +679,7 @@ aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *opti
     if (is_enable_crc(options) && has_crc_in_response(resp)) {
         oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
+    oss_api_leave();
 
     return s;
 }
@@ -607,6 +698,15 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(append_file);
+    oss_api_enter("bucket:%.*s, object:%.*s, position:%"APR_INT64_T_FMT", append_file:%.*s",
+        bucket->len, bucket->data,
+        object->len, object->data,
+        position, append_file->len, append_file->data);
+
     /* init query_params */
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_APPEND, "");
@@ -621,14 +721,15 @@ aos_status_t *oss_append_object_from_file(const oss_request_options_t *options,
                             &req, query_params, headers, NULL, 0, &resp);
     res = oss_write_request_body_from_file(options->pool, append_file, req);
 
-    s = aos_status_create(options->pool);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        return s;
+    } else {
+        s = oss_process_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
     }
 
-    s = oss_process_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }
@@ -651,6 +752,16 @@ aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *option
     aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(append_file);
+    oss_api_enter("bucket:%.*s, object:%.*s, position:%"APR_INT64_T_FMT", init_crc:%"APR_UINT64_T_FMT", append_file:%.*s",
+        bucket->len, bucket->data,
+        object->len, object->data,
+        position, init_crc, 
+        append_file->len, append_file->data);
+
     /* init query_params */
     query_params = aos_table_create_if_null(options, params, 2);
     apr_table_add(query_params, OSS_APPEND, "");
@@ -665,19 +776,19 @@ aos_status_t *oss_do_append_object_from_file(const oss_request_options_t *option
                             headers, progress_callback, init_crc, &resp);
     res = oss_write_request_body_from_file(options->pool, append_file, req);
 
-    s = aos_status_create(options->pool);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        return s;
+    } else {
+        s = oss_process_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
+        oss_fill_read_response_body(resp, resp_body);
+    
+        if (is_enable_crc(options) && has_crc_in_response(resp)) {
+            oss_check_crc_consistent(req->crc64, resp->headers, s);
+        }
     }
-
-    s = oss_process_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
-    oss_fill_read_response_body(resp, resp_body);
-
-    if (is_enable_crc(options) && has_crc_in_response(resp)) {
-        oss_check_crc_consistent(req->crc64, resp->headers, s);
-    }
+    oss_api_leave();
 
     return s;
 }
@@ -692,6 +803,11 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
+
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(signed_url);
+	oss_api_check_arg_null(buffer);
+    oss_api_enter("signed_url:%.*s", signed_url->len, signed_url->data);
 
     /* init query_params */
     headers = aos_table_create_if_null(options, headers, 0);
@@ -708,6 +824,7 @@ aos_status_t *oss_put_object_from_buffer_by_url(const oss_request_options_t *opt
     if (is_enable_crc(options) && has_crc_in_response(resp)) {
         oss_check_crc_consistent(req->crc64, resp->headers, s);
     }
+    oss_api_leave();
 
     return s;
 }
@@ -724,7 +841,10 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
     aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
-    s = aos_status_create(options->pool);
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(signed_url);
+    oss_api_check_string_nullempty(filename);
+    oss_api_enter("signed_url:%.*s, filename:%.*s", signed_url->len, signed_url->data, filename->len, filename->data);
 
     headers = aos_table_create_if_null(options, headers, 0);
     query_params = aos_table_create_if_null(options, query_params, 0);
@@ -733,17 +853,17 @@ aos_status_t *oss_put_object_from_file_by_url(const oss_request_options_t *optio
                                 &req, query_params, headers, &resp);
     res = oss_write_request_body_from_file(options->pool, filename, req);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        return s;
+    } else {
+        s = oss_process_signed_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
+    
+        if (is_enable_crc(options) && has_crc_in_response(resp)) {
+            oss_check_crc_consistent(req->crc64, resp->headers, s);
+        }
     }
-
-    s = oss_process_signed_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
-
-    if (is_enable_crc(options) && has_crc_in_response(resp)) {
-        oss_check_crc_consistent(req->crc64, resp->headers, s);
-    }
-
+    oss_api_leave();
     return s;
 }
 
@@ -757,6 +877,11 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
+
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(signed_url);
+	oss_api_check_arg_null(buffer);
+    oss_api_enter("signed_url:%.*s", signed_url->len, signed_url->data);
 
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
@@ -772,6 +897,7 @@ aos_status_t *oss_get_object_to_buffer_by_url(const oss_request_options_t *optio
         !has_range_or_process_in_request(req)) {
             oss_check_crc_consistent(resp->crc64, resp->headers, s);
     }
+    oss_api_leave();
 
     return s;
 }
@@ -789,7 +915,10 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
     int res = AOSE_OK;
     aos_string_t tmp_filename;
 
-    s = aos_status_create(options->pool);
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(signed_url);
+    oss_api_check_string_nullempty(filename);
+    oss_api_enter("signed_url:%.*s, filename:%.*s", signed_url->len, signed_url->data, filename->len, filename->data);
 
     headers = aos_table_create_if_null(options, headers, 0);
     params = aos_table_create_if_null(options, params, 0);
@@ -801,20 +930,20 @@ aos_status_t *oss_get_object_to_file_by_url(const oss_request_options_t *options
 
     res = oss_init_read_response_body_to_file(options->pool, filename, resp);
     if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        return s;
+    } else {
+        s = oss_process_signed_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
+    
+        if (is_enable_crc(options) && has_crc_in_response(resp) && 
+            !has_range_or_process_in_request(req)) {
+                oss_check_crc_consistent(resp->crc64, resp->headers, s);
+        }
+    
+        oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
     }
-
-    s = oss_process_signed_request(options, req, resp);
-    oss_fill_read_response_header(resp, resp_headers);
-
-    if (is_enable_crc(options) && has_crc_in_response(resp) && 
-        !has_range_or_process_in_request(req)) {
-            oss_check_crc_consistent(resp->crc64, resp->headers, s);
-    }
-
-    oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
-
+    oss_api_leave();
     return s;
 }
 
@@ -828,6 +957,10 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(signed_url);
+    oss_api_enter("signed_url:%.*s", signed_url->len, signed_url->data);
+
     headers = aos_table_create_if_null(options, headers, 0);
     query_params = aos_table_create_if_null(options, query_params, 0);
     
@@ -836,6 +969,7 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
 
     s = oss_process_signed_request(options, req, resp);
     oss_fill_read_response_header(resp, resp_headers);
+    oss_api_leave();
 
     return s;
 }

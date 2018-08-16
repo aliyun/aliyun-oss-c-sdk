@@ -69,6 +69,32 @@ void test_bucket_setup(CuTest *tc)
 
 void test_bucket_cleanup(CuTest *tc)
 {
+	aos_pool_t *p = NULL;
+	oss_request_options_t *options = NULL;
+	int is_cname = 0;
+	aos_string_t bucket;
+	aos_status_t *s = NULL;
+	aos_string_t prefix;
+
+	aos_pool_create(&p, NULL);
+	options = oss_request_options_create(p);
+	init_test_request_options(options, is_cname);
+	aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+	// delete objects
+	aos_str_set(&prefix, "oss_test_object");
+	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+	
+	aos_str_set(&prefix, "oss_tmp1");
+	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
+	aos_str_set(&prefix, "oss_tmp2");
+	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
+	aos_str_set(&prefix, "oss_tmp3");
+	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
+	aos_pool_destroy(p);
 }
 
 void test_create_bucket(CuTest *tc)
@@ -1366,6 +1392,335 @@ void test_delete_objects_by_prefix(CuTest *tc)
     printf("test_delete_object_by_prefix ok\n");
 }
 
+void test_bucket_invalid_parameter(CuTest *tc)
+{
+	aos_pool_t *p = NULL;
+	oss_request_options_t *options = NULL;
+	int is_cname = 0;
+	aos_string_t bucket;
+	aos_status_t *s = NULL;
+	aos_table_t *resp_headers = NULL;
+
+	aos_pool_create(&p, NULL);
+	options = oss_request_options_create(p);
+	init_test_request_options(options, is_cname);
+	aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+	s = oss_create_bucket(NULL, NULL, OSS_ACL_DEFAULT, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_create_bucket(options, NULL, OSS_ACL_DEFAULT, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_create_bucket_with_storage_class(NULL, NULL, OSS_ACL_DEFAULT, OSS_STORAGE_CLASS_STANDARD, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_create_bucket_with_storage_class(options, NULL, OSS_ACL_DEFAULT, OSS_STORAGE_CLASS_STANDARD, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_acl(NULL, NULL, OSS_ACL_DEFAULT, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_acl(options, NULL, OSS_ACL_DEFAULT, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_acl(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_acl(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_acl(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_head_bucket(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_head_bucket(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_location(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_location(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_location(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_info(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_info(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_info(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_stat(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_stat(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_stat(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_referer(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_referer(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_referer(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_storage_capacity(NULL, NULL, 1024L, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_storage_capacity(options, NULL, 1024L, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_storage_capacity(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_storage_capacity(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_storage_capacity(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_object(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_object(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_object(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_bucket(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_bucket(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_logging(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_logging(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_logging(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_logging(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_logging(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_logging(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_logging(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_logging(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_lifecycle(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_lifecycle(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_lifecycle(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_cors(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_cors(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_cors(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_cors(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_cors(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_cors(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_cors(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_cors(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_referer(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_referer(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_referer(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_website(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_website(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_put_bucket_website(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_website(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_website(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_website(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_website(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_website(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_lifecycle(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_lifecycle(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_bucket_lifecycle(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_lifecycle(NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_bucket_lifecycle(options, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_objects(NULL, NULL, NULL, 0, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_objects(options, NULL, NULL, 0, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_objects(options, &bucket, NULL, 0, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	aos_list_t object_list;
+	aos_list_init(&object_list);
+	s = oss_delete_objects(options, &bucket, &object_list, 0, &resp_headers, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_objects_by_prefix(NULL, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_objects_by_prefix(options, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_delete_objects_by_prefix(options, &bucket, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	aos_pool_destroy(p);
+
+	printf("test_bucket_invalid_parameter ok\n");
+}
+
 CuSuite *test_oss_bucket()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1402,6 +1757,7 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_delete_objects_quiet);
     SUITE_ADD_TEST(suite, test_delete_objects_not_quiet);
     SUITE_ADD_TEST(suite, test_create_bucket_with_storage_class);
+	SUITE_ADD_TEST(suite, test_bucket_invalid_parameter);
     SUITE_ADD_TEST(suite, test_bucket_cleanup);
 
     return suite;

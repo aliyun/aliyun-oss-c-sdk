@@ -90,9 +90,9 @@ int fill_test_file(aos_pool_t *p, const char *filename, const char *content)
 
 void init_test_config(oss_config_t *config, int is_cname)
 {
-    aos_str_set(&config->endpoint, TEST_OSS_ENDPOINT);
-    aos_str_set(&config->access_key_id, TEST_ACCESS_KEY_ID);
-    aos_str_set(&config->access_key_secret, TEST_ACCESS_KEY_SECRET);
+    aos_str_set(&config->endpoint, TEST_OSS_ENDPOINT?TEST_OSS_ENDPOINT:"");
+    aos_str_set(&config->access_key_id, TEST_ACCESS_KEY_ID?TEST_ACCESS_KEY_ID:"");
+    aos_str_set(&config->access_key_secret, TEST_ACCESS_KEY_SECRET?TEST_ACCESS_KEY_SECRET:"");
     config->is_cname = is_cname;
 }
 

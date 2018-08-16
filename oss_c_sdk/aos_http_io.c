@@ -197,7 +197,7 @@ int aos_read_http_body_file(aos_http_request_t *req, char *buffer, int len)
     }
 
     if ((s = apr_file_read(req->file_buf->file, buffer, &nbytes)) != APR_SUCCESS) {
-        aos_error_log("apr_file_read filure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_read filure, file:%s, code:%d %s.", req->file_path, s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_READ_ERROR;
     }
     req->file_buf->file_pos += nbytes;
@@ -233,7 +233,7 @@ int aos_write_http_body_file(aos_http_response_t *resp, const char *buffer, int 
             aos_error_log("resp body file arg NULL.");
             return AOSE_INVALID_ARGUMENT;
         }
-        aos_trace_log("open file %s.", resp->file_path);
+        aos_debug_log("open file %s.", resp->file_path);
         if ((elen = aos_open_file_for_write(resp->pool, resp->file_path, resp->file_buf)) != AOSE_OK) {
             return elen;
         }
@@ -241,7 +241,7 @@ int aos_write_http_body_file(aos_http_response_t *resp, const char *buffer, int 
 
     assert(resp->file_buf->file != NULL);
     if ((s = apr_file_write(resp->file_buf->file, buffer, &nbytes)) != APR_SUCCESS) {
-        aos_error_log("apr_file_write fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_write fialure, file:%s, code:%d %s.", resp->file_path, s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_WRITE_ERROR;
     }
     
@@ -258,6 +258,8 @@ int aos_http_io_initialize(const char *user_agent_info, int flags)
     char buf[256];
     aos_http_request_options_t *req_options;
     aos_http_transport_options_t *trans_options;
+
+    aos_info_log("enter aos_http_io_initialize ");
 
     if ((ecode = curl_global_init(CURL_GLOBAL_ALL &
            ~((flags & AOS_INIT_WINSOCK) ? 0: CURL_GLOBAL_WIN32))) != CURLE_OK) 
@@ -295,12 +297,16 @@ int aos_http_io_initialize(const char *user_agent_info, int flags)
 
     aos_set_default_request_options(req_options);
     aos_set_default_transport_options(trans_options);
+    
+    aos_info_log("leave aos_http_io_initialize ");
 
     return AOSE_OK;
 }
 
 void aos_http_io_deinitialize()
 {
+    aos_info_log("enter aos_http_io_deinitialize ");
+
     apr_thread_mutex_destroy(requestStackMutexG);
 
     while (requestStackCountG--) {
@@ -315,6 +321,8 @@ void aos_http_io_deinitialize()
         aos_pool_destroy(aos_global_pool);
         aos_global_pool = NULL;
     }
+    aos_info_log("leave aos_http_io_deinitialize ");
+   
     apr_terminate();
 }
 

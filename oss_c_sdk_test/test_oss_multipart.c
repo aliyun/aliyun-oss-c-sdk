@@ -786,6 +786,207 @@ void test_oss_get_sorted_uploaded_part_with_empty(CuTest *tc)
     printf("test_oss_get_sorted_uploaded_part_with_empty ok\n");
 }
 
+void test_multipart_invalid_parameter(CuTest *tc)
+{
+	aos_pool_t *p = NULL;
+	oss_request_options_t *options = NULL;
+	int is_cname = 0;
+	aos_string_t bucket;
+	aos_status_t *s = NULL;
+	aos_table_t *resp_headers = NULL;
+	aos_table_t *headers = NULL;
+	aos_string_t object;
+	aos_list_t part_list;
+
+	aos_pool_create(&p, NULL);
+	options = oss_request_options_create(p);
+	init_test_request_options(options, is_cname);
+	aos_str_set(&bucket, TEST_BUCKET_NAME);
+	aos_str_set(&object, "test_object");
+	headers = aos_table_make(p, 1);
+	aos_list_init(&part_list);
+	
+	s = oss_init_multipart_upload(NULL, NULL, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_init_multipart_upload(options, NULL, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_init_multipart_upload(options, &bucket, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_init_multipart_upload(options, &bucket, &object, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_abort_multipart_upload(NULL, NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_abort_multipart_upload(options, NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_abort_multipart_upload(options, &bucket, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_abort_multipart_upload(options, &bucket, &object, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_upload_part(NULL, NULL, NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_upload_part(options, NULL, NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_upload_part(options, &bucket, NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_upload_part(options, &bucket, &object, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_upload_part(options, &bucket, &object, &object, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_multipart_upload(NULL, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_multipart_upload(options, NULL, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_list_multipart_upload(options, &bucket, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_complete_multipart_upload(NULL, NULL, NULL, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_complete_multipart_upload(options, NULL, NULL, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_complete_multipart_upload(options, &bucket, NULL, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_complete_multipart_upload(options, &bucket, &object, NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+	
+	s = oss_complete_multipart_upload(options, &bucket, &object, &object, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_buffer(NULL, NULL, NULL, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_buffer(options, NULL, NULL, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_buffer(options, &bucket, NULL, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_buffer(options, &bucket, &object, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_buffer(options, &bucket, &object, &object, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_file(NULL, NULL, NULL, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_file(options, NULL, NULL, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_file(options, &bucket, NULL, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_file(options, &bucket, &object, NULL, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_from_file(options, &bucket, &object, &object, 1, NULL, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_copy(NULL, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_part_copy(options, NULL, headers, &resp_headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_sorted_uploaded_part(NULL, NULL, NULL, NULL, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_sorted_uploaded_part(options, NULL, NULL, NULL, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_sorted_uploaded_part(options, &bucket, NULL, NULL, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_sorted_uploaded_part(options, &bucket, &object, NULL, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_sorted_uploaded_part(options, &bucket, &object, &object, NULL, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_get_sorted_uploaded_part(options, &bucket, &object, &object, &part_list, NULL);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_file(NULL, NULL, NULL, NULL, NULL, 1000LL, headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_file(options, NULL, NULL, NULL, NULL, 1000LL, headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_file(options, &bucket, NULL, NULL, NULL, 1000LL, headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_file(options, &bucket, &object, NULL, NULL, 1000LL, headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	s = oss_upload_file(options, &bucket, &object, &object, NULL, 1000LL, headers);
+	CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+	CuAssertStrEquals(tc, AOS_PARAMETER_NULLEMPTY_ERROR, s->error_code);
+
+	aos_pool_destroy(p);
+
+	printf("test_multipart_invalid_parameter ok\n");
+}
+
 CuSuite *test_oss_multipart()
 {
     CuSuite* suite = CuSuiteNew();
@@ -803,6 +1004,7 @@ CuSuite *test_oss_multipart()
     SUITE_ADD_TEST(suite, test_list_upload_part_with_empty);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part_with_empty);
+	SUITE_ADD_TEST(suite, test_multipart_invalid_parameter);
     SUITE_ADD_TEST(suite, test_multipart_cleanup);
 
     return suite;

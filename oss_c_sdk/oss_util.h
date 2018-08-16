@@ -349,6 +349,32 @@ int oss_get_temporary_file_name(aos_pool_t *p, const aos_string_t *filename, aos
 
 int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_path, apr_pool_t *pool);
 
+extern aos_status_t oss_api_nullempty_error;
+
+/**
+*
+**/
+#define oss_api_check_string_nullempty(a) do {\
+        if (aos_string_is_empty(a)) { \
+            aos_debug_log("%s , The parameter "#a" is null or empty.", __FUNCTION__);\
+            return &oss_api_nullempty_error;\
+        }\
+    } while(0)
+
+#define oss_api_check_arg_null(a) do { \
+        if (NULL == a) { \
+            aos_debug_log("%s , The parameter "#a" is null or empty.", __FUNCTION__);\
+            return &oss_api_nullempty_error;\
+        }\
+    } while(0)
+
+/**
+*
+**/
+#define oss_api_enter(format, ...) aos_info_log("enter %s, "format, __FUNCTION__, ##__VA_ARGS__)
+#define oss_api_leave() aos_info_log("leave %s, aos_status_t:%d, %s, %s, %s", __FUNCTION__, s->code, s->error_code, s->error_msg, s->req_id);
+
+
 OSS_CPP_END
 
 #endif

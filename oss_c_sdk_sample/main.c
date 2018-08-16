@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+	aos_log_set_level(AOS_LOG_DEBUG);
     put_object_sample();
     append_object_sample();
     get_object_sample();

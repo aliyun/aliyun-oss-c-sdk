@@ -2,6 +2,7 @@
 #include "aos_log.h"
 #include "aos_http_io.h"
 #include "oss_config.h"
+#include "apr_env.h"
 
 extern CuSuite *test_xml();
 extern CuSuite *test_util();
@@ -113,21 +114,35 @@ int run_all_tests(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     int exit_code = -1;
-
-    TEST_OSS_ENDPOINT = TEST_OSS_ENDPOINT != NULL ? 
-                        TEST_OSS_ENDPOINT : getenv("OSS_TEST_ENDPOINT");
-    TEST_ACCESS_KEY_ID = TEST_ACCESS_KEY_ID != NULL ? 
-                         TEST_ACCESS_KEY_ID : getenv("OSS_TEST_ACCESS_KEY_ID");
-    TEST_ACCESS_KEY_SECRET = TEST_ACCESS_KEY_SECRET != NULL ?
-                             TEST_ACCESS_KEY_SECRET : getenv("OSS_TEST_ACCESS_KEY_SECRET");
-    TEST_BUCKET_NAME = TEST_BUCKET_NAME != NULL ?
-                       TEST_BUCKET_NAME : getenv("OSS_TEST_BUCKET");
-
+    char *str;
 
     if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {
         exit(1);
     }
 
+    if (TEST_OSS_ENDPOINT == NULL) {
+        str = NULL;
+        apr_env_get(&str, "OSS_TEST_ENDPOINT", aos_global_pool);
+        TEST_OSS_ENDPOINT = str;
+    }
+
+    if (TEST_ACCESS_KEY_ID == NULL) {
+        str = NULL;
+        apr_env_get(&str, "OSS_TEST_ACCESS_KEY_ID", aos_global_pool);
+        TEST_ACCESS_KEY_ID = str;
+    }
+
+    if (TEST_ACCESS_KEY_SECRET == NULL) {
+        str = NULL;
+        apr_env_get(&str, "OSS_TEST_ACCESS_KEY_SECRET", aos_global_pool);
+        TEST_ACCESS_KEY_SECRET = str;
+    }
+
+    if (TEST_BUCKET_NAME == NULL) {
+        str = NULL;
+        apr_env_get(&str, "OSS_TEST_BUCKET", aos_global_pool);
+        TEST_BUCKET_NAME = str;
+    }
     aos_log_set_level(AOS_LOG_OFF);
     exit_code = run_all_tests(argc, argv);
 

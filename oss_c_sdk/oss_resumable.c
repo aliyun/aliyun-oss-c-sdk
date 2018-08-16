@@ -107,7 +107,7 @@ int oss_open_checkpoint_file(aos_pool_t *pool,  aos_string_t *checkpoint_path, o
     return s;
 }
 
-int oss_get_part_num(int64_t file_size, int64_t part_size)
+static int oss_get_part_num(int64_t file_size, int64_t part_size)
 {
     int64_t num = 0;
     int64_t left = 0;
@@ -116,7 +116,7 @@ int oss_get_part_num(int64_t file_size, int64_t part_size)
     return (int)num;
 }
 
-void oss_build_parts(int64_t file_size, int64_t part_size, oss_checkpoint_part_t *parts)
+static void oss_build_parts(int64_t file_size, int64_t part_size, oss_checkpoint_part_t *parts)
 {
     int i = 0;
     for (; i * part_size < file_size; i++) {
@@ -127,7 +127,7 @@ void oss_build_parts(int64_t file_size, int64_t part_size, oss_checkpoint_part_t
     }
 }
 
-void oss_build_thread_params(oss_thread_params_t *thd_params, int part_num, 
+static void oss_build_thread_params(oss_thread_params_t *thd_params, int part_num, 
                              aos_pool_t *parent_pool, oss_request_options_t *options, 
                              aos_string_t *bucket, aos_string_t *object, aos_string_t *filepath,
                              aos_string_t *upload_id, oss_checkpoint_part_t *parts,
@@ -155,7 +155,7 @@ void oss_build_thread_params(oss_thread_params_t *thd_params, int part_num,
     }
 }
 
-void oss_destroy_thread_pool(oss_thread_params_t *thd_params, int part_num) 
+static void oss_destroy_thread_pool(oss_thread_params_t *thd_params, int part_num) 
 {
     int i = 0;
     for (; i < part_num; i++) {
@@ -163,7 +163,7 @@ void oss_destroy_thread_pool(oss_thread_params_t *thd_params, int part_num)
     }
 }
 
-void oss_set_task_tracker(oss_thread_params_t *thd_params, int part_num, 
+static void oss_set_task_tracker(oss_thread_params_t *thd_params, int part_num, 
                           apr_uint32_t *launched, apr_uint32_t *failed, apr_uint32_t *completed,
                           apr_queue_t *failed_parts, apr_queue_t *completed_parts) 
 {
@@ -177,7 +177,7 @@ void oss_set_task_tracker(oss_thread_params_t *thd_params, int part_num,
     }
 }
 
-int oss_verify_checkpoint_md5(aos_pool_t *pool, const oss_checkpoint_t *checkpoint)
+static int oss_verify_checkpoint_md5(aos_pool_t *pool, const oss_checkpoint_t *checkpoint)
 {
     return AOS_TRUE;
 }
@@ -363,7 +363,7 @@ void oss_get_checkpoint_todo_parts(oss_checkpoint_t *checkpoint, int *part_num, 
     *part_num = idx;
 }
 
-void * APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data) 
+static void * APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data) 
 {
     aos_status_t *s = NULL;
     oss_thread_params_t *params = NULL;
@@ -400,7 +400,7 @@ void * APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data)
     return NULL;
 }
 
-aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *options,
+static aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *options,
                                                    aos_string_t *bucket, 
                                                    aos_string_t *object, 
                                                    aos_string_t *filepath,                           
@@ -556,7 +556,7 @@ aos_status_t *oss_resumable_upload_file_without_cp(oss_request_options_t *option
     return s;
 }
 
-aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
+static aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
                                                 aos_string_t *bucket, 
                                                 aos_string_t *object, 
                                                 aos_string_t *filepath,                           
@@ -778,6 +778,16 @@ aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
     aos_status_t *s;
     int res;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(filepath);
+    oss_api_check_arg_null(clt_params);
+    oss_api_enter("bucket:%.*s, object:%.*s, file:%.*s, thread_num:%d",
+        bucket->len, bucket->data,
+        object->len, object->data,
+        filepath->len, filepath->data, clt_params->thread_num);
+
     thread_num = oss_get_thread_num(clt_params);
 
     aos_pool_create(&sub_pool, options->pool);
@@ -786,22 +796,22 @@ aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
         aos_error_log("Open read file fail, filename:%s\n", filepath->data);
         s = aos_status_create(options->pool);
         aos_file_error_status_set(s, res);
-        aos_pool_destroy(sub_pool);
-        return s;
-    }
-    part_size = clt_params->part_size;
-    oss_get_part_size(finfo.size, &part_size);
-
-    if (NULL != clt_params && clt_params->enable_checkpoint) {
-        oss_get_upload_checkpoint_path(clt_params, filepath, sub_pool, &checkpoint_path);
-        s = oss_resumable_upload_file_with_cp(options, bucket, object, filepath, headers, params, thread_num, 
-            part_size, &checkpoint_path, &finfo, progress_callback, resp_headers, resp_body);
     } else {
-        s = oss_resumable_upload_file_without_cp(options, bucket, object, filepath, headers, params, thread_num, 
-            part_size, &finfo, progress_callback, resp_headers, resp_body);
+        part_size = clt_params->part_size;
+        oss_get_part_size(finfo.size, &part_size);
+        
+        if (NULL != clt_params && clt_params->enable_checkpoint) {
+            oss_get_upload_checkpoint_path(clt_params, filepath, sub_pool, &checkpoint_path);
+            s = oss_resumable_upload_file_with_cp(options, bucket, object, filepath, headers, params, thread_num, 
+                part_size, &checkpoint_path, &finfo, progress_callback, resp_headers, resp_body);
+        } else {
+            s = oss_resumable_upload_file_without_cp(options, bucket, object, filepath, headers, params, thread_num, 
+                part_size, &finfo, progress_callback, resp_headers, resp_body);
+        }
     }
 
     aos_pool_destroy(sub_pool);
+    oss_api_leave();
     return s;
 }
 
@@ -870,7 +880,7 @@ static void download_part(oss_request_options_t *options,
     return;
 }
 
-void *APR_THREAD_FUNC download_part_thread(apr_thread_t *thd, void *data)
+static void *APR_THREAD_FUNC download_part_thread(apr_thread_t *thd, void *data)
 {
     apr_queue_t *task_queue = (apr_queue_t *)data;
 
@@ -897,7 +907,7 @@ void *APR_THREAD_FUNC download_part_thread(apr_thread_t *thd, void *data)
     return NULL;
 }
 
-aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *options,
+static aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *options,
                                                    aos_string_t *bucket, 
                                                    aos_string_t *object, 
                                                    aos_string_t *filepath,                           
@@ -1157,6 +1167,16 @@ aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
     aos_pool_t *sub_pool;
     aos_status_t *s;
 
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(filepath);
+    oss_api_check_arg_null(clt_params);
+    oss_api_enter("bucket:%.*s, object:%.*s, file:%.*s, thread_num:%d",
+        bucket->len, bucket->data,
+        object->len, object->data,
+        filepath->len, filepath->data, clt_params->thread_num);
+
     thread_num = oss_get_thread_num(clt_params);
     aos_pool_create(&sub_pool, options->pool);
     
@@ -1172,5 +1192,6 @@ aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
     }
 
     aos_pool_destroy(sub_pool);
+    oss_api_leave();
     return s;
 }
