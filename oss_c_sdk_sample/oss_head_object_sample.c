@@ -39,7 +39,7 @@ void head_object()
 
         object_type = (char*)apr_table_get(resp_headers, OSS_OBJECT_TYPE);
         
-        printf("head object succeeded, object type:%s, content_length:%lld\n", 
+        printf("head object succeeded, object type:%s, content_length:%"APR_INT64_T_FMT"\n",
                object_type, content_length);
     } else {
         printf("head object failed\n");

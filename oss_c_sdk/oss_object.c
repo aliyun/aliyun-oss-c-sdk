@@ -454,7 +454,7 @@ aos_status_t *oss_put_symlink(const oss_request_options_t *options,
     oss_api_check_string_nullempty(bucket);
     oss_api_check_string_nullempty(sym_object);
     oss_api_check_string_nullempty(target_object);
-    oss_api_enter("bucket:%.*s, sym_object:%.*s", 
+    oss_api_enter("bucket:%.*s, sym_object:%.*s, target_object:%.*s", 
         bucket->len, bucket->data, 
         sym_object->len, sym_object->data,
         target_object->len, target_object->data);
@@ -653,7 +653,7 @@ aos_status_t *oss_do_append_object_from_buffer(const oss_request_options_t *opti
     oss_api_check_string_nullempty(bucket);
     oss_api_check_string_nullempty(object);
     oss_api_check_arg_null(buffer);
-    oss_api_enter("bucket:%.*s, object:%.*s, position:%lld, init_crc:%"APR_UINT64_T_FMT, 
+    oss_api_enter("bucket:%.*s, object:%.*s, position:%"APR_INT64_T_FMT", init_crc:%"APR_UINT64_T_FMT,
         bucket->len, bucket->data, 
         object->len, object->data, 
         position, init_crc);

@@ -73,7 +73,6 @@ void test_bucket_cleanup(CuTest *tc)
 	oss_request_options_t *options = NULL;
 	int is_cname = 0;
 	aos_string_t bucket;
-	aos_status_t *s = NULL;
 	aos_string_t prefix;
 
 	aos_pool_create(&p, NULL);

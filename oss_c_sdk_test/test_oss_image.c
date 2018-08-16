@@ -121,7 +121,7 @@ void test_resize_image(CuTest *tc) {
     get_iamge_info(tc, &image_info);
     CuAssertIntEquals(tc, 100, image_info.height);
     CuAssertIntEquals(tc, 100, image_info.width);
-    CuAssertIntEquals(tc, 3347, image_info.size);
+    CuAssertIntEquals(tc, 3267, image_info.size);
     CuAssertStrEquals(tc, "jpg", image_info.format);
 
     printf("test_resize_image ok\n");

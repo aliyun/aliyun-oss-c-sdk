@@ -4,6 +4,7 @@
 aos_log_print_pt  aos_log_print = aos_log_print_default;
 aos_log_format_pt aos_log_format = aos_log_format_default;
 aos_log_level_e   aos_log_level = AOS_LOG_WARN;
+aos_log_level_e   aos_log_level_env = AOS_LOG_OFF;
 
 extern apr_file_t *aos_stderr_file;
 
@@ -20,6 +21,9 @@ void aos_log_set_format(aos_log_format_pt p)
 void aos_log_set_level(aos_log_level_e level)
 {   
     aos_log_level = level;
+    if (aos_log_level_env > aos_log_level) {
+        aos_log_level = aos_log_level_env;
+    }
 }
 
 void aos_log_set_output(apr_file_t *output)
@@ -75,4 +79,12 @@ void aos_log_format_default(int level,
 
     aos_log_print(buffer, len);
 }
+
+void aos_log_set_level_from_env(aos_log_level_e level)
+{
+    aos_log_level_env = level;
+    aos_log_set_level(aos_log_level);
+}
+
+
 

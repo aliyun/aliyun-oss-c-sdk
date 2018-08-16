@@ -69,6 +69,8 @@ void aos_log_format_default(int level,
                             const char *fmt, ...)
         __attribute__ ((__format__ (__printf__, 5, 6)));
 
+void aos_log_set_level_from_env(aos_log_level_e level);
+
 extern aos_log_level_e aos_log_level;
 extern aos_log_format_pt aos_log_format;
 extern aos_log_format_pt aos_log_format;

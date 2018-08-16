@@ -3,6 +3,7 @@
 #include "aos_define.h"
 #include <apr_thread_mutex.h>
 #include <apr_file_io.h>
+#include <apr_env.h>
 
 aos_pool_t *aos_global_pool = NULL;
 apr_file_t *aos_stderr_file = NULL;
@@ -297,7 +298,17 @@ int aos_http_io_initialize(const char *user_agent_info, int flags)
 
     aos_set_default_request_options(req_options);
     aos_set_default_transport_options(trans_options);
-    
+
+    char *str = NULL;
+    if (apr_env_get(&str, "OSS_SDK_LOG_LEVEL", aos_global_pool) == APR_SUCCESS) {
+        if (str != NULL) {
+            int value = atoi(str);
+            if (value >= AOS_LOG_OFF || value <= AOS_LOG_ALL) {
+                aos_log_set_level_from_env((aos_log_level_e)value);
+            }
+        }
+    }
+
     aos_info_log("leave aos_http_io_initialize ");
 
     return AOSE_OK;

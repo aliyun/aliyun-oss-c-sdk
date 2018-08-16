@@ -24,13 +24,13 @@ static int aos_curl_debug_callback(void *handle, curl_infotype type, char *data,
     default: /* in case a new one is introduced to shock us */
         break;
     case CURLINFO_TEXT:
-        aos_debug_log("curl:0x%x=> Info: %.*s", (unsigned int)handle, (int)size, data);
+        aos_debug_log("curl:%p=> Info: %.*s", handle, (int)size, data);
         break;
     case CURLINFO_HEADER_OUT:
-        aos_debug_log("curl:0x%x=> Send header: %.*s", (unsigned int)handle, (int)size, data);
+        aos_debug_log("curl:%p=> Send header: %.*s", handle, (int)size, data);
         break;
     case CURLINFO_HEADER_IN:
-        aos_debug_log("curl:0x%x=> Recv header: %.*s", (unsigned int)handle, (int)size, data);
+        aos_debug_log("curl:%p=> Recv header: %.*s", handle, (int)size, data);
         break;
     }
     return 0;
@@ -121,7 +121,7 @@ static void aos_transport_cleanup(aos_http_transport_t *t)
         }
         t->resp->file_buf = NULL;
     }
-    aos_info_log("cleanup transport, handle:0x%x", (unsigned int)t);
+    aos_info_log("cleanup transport, handle:%p", t);
 
 }
 
@@ -147,7 +147,7 @@ aos_http_transport_t *aos_curl_http_transport_create(aos_pool_t *p)
     t->read_callback = aos_curl_default_read_callback;
     t->write_callback = aos_curl_default_write_callback;
 
-    aos_info_log("create  transport, handle:0x%x, curl:0x%x", (unsigned int)t, (unsigned int)t->curl);
+    aos_info_log("create  transport, handle:%p, curl:%p", t, t->curl);
 
     return (aos_http_transport_t *)t;
 }
@@ -488,8 +488,8 @@ int aos_curl_http_transport_perform(aos_http_transport_t *t_)
     
     aos_curl_transport_finish(t);
 
-    aos_info_log("perform transport done, handle:0x%x, curl code:%d, error_code:%d, reason:%s", 
-        (unsigned int)t, code, t->controller->error_code, t->controller->reason);
+    aos_info_log("perform transport done, handle:%p, curl code:%d, error_code:%d, reason:%s", 
+        t, code, t->controller->error_code, t->controller->reason);
     
     return t->controller->error_code;
 }
