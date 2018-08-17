@@ -13,6 +13,8 @@
 # define OSS_CPP_END
 #endif
 
+OSS_CPP_START
+
 #define aos_xml_error_status_set(STATUS, RES) do {                   \
         aos_status_set(STATUS, RES, AOS_XML_PARSE_ERROR_CODE, NULL); \
     } while(0)
@@ -27,6 +29,7 @@
 
 #define PARAM_OUT
 #define PARAM_IN
+
 
 extern const char OSS_CANNONICALIZED_HEADER_ACL[];
 extern const char OSS_CANNONICALIZED_HEADER_STORAGE_CLASS[];
@@ -428,5 +431,7 @@ typedef struct {
     aos_string_t end_time;
     aos_string_t remote_addr;
 } oss_live_record_content_t;
+
+OSS_CPP_END
 
 #endif

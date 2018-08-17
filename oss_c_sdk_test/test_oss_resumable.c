@@ -470,13 +470,13 @@ void test_resumable_checkpoint_xml(CuTest *tc)
     }
     cp->part_num = i;
 
-    xml_doc = oss_build_checkpoint_xml(p ,cp);
+    xml_doc = oss_build_checkpoint_xml(cp);
 
     CuAssertStrEquals(tc, xml_doc_expected, xml_doc);
 
     cp_actual = oss_create_checkpoint_content(p);
     oss_checkpoint_parse_from_body(p, xml_doc, cp_actual);
-
+    free(xml_doc);
     CuAssertIntEquals(tc, OSS_CP_UPLOAD, cp_actual->cp_type);
     CuAssertStrEquals(tc, "", cp_actual->md5.data);
 

@@ -69,31 +69,31 @@ void test_bucket_setup(CuTest *tc)
 
 void test_bucket_cleanup(CuTest *tc)
 {
-	aos_pool_t *p = NULL;
-	oss_request_options_t *options = NULL;
-	int is_cname = 0;
-	aos_string_t bucket;
-	aos_string_t prefix;
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_string_t bucket;
+    aos_string_t prefix;
 
-	aos_pool_create(&p, NULL);
-	options = oss_request_options_create(p);
-	init_test_request_options(options, is_cname);
-	aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
 
-	// delete objects
-	aos_str_set(&prefix, "oss_test_object");
-	oss_delete_objects_by_prefix(options, &bucket, &prefix);
-	
-	aos_str_set(&prefix, "oss_tmp1");
-	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    // delete objects
+    aos_str_set(&prefix, "oss_test_object");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    
+    aos_str_set(&prefix, "oss_tmp1");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
 
-	aos_str_set(&prefix, "oss_tmp2");
-	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    aos_str_set(&prefix, "oss_tmp2");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
 
-	aos_str_set(&prefix, "oss_tmp3");
-	oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    aos_str_set(&prefix, "oss_tmp3");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
 
-	aos_pool_destroy(p);
+    aos_pool_destroy(p);
 }
 
 void test_create_bucket(CuTest *tc)

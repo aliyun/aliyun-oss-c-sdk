@@ -93,7 +93,7 @@ int get_xmlnode_value_uint64(aos_pool_t *p, mxml_node_t *xml_node, const char *x
 /**
   * @brief  build xml for checkpoint
 **/
-char *oss_build_checkpoint_xml(aos_pool_t *p, const oss_checkpoint_t *checkpoint);
+char *oss_build_checkpoint_xml(const oss_checkpoint_t *checkpoint);
 
 /**
   * @bried  parse checkpoint from xml

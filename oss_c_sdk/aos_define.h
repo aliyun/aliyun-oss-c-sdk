@@ -24,6 +24,8 @@
 # define AOS_CPP_END
 #endif
 
+AOS_CPP_START
+
 typedef enum {
     HTTP_GET,
     HTTP_HEAD,
@@ -148,5 +150,7 @@ typedef apr_array_header_t aos_array_header_t;
 #  define ULLONG_MAX (LLONG_MAX * 2ULL + 1)
 # endif
 # endif
+
+AOS_CPP_END
 
 #endif

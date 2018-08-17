@@ -237,11 +237,6 @@ int oss_dump_checkpoint(aos_pool_t *pool, const oss_checkpoint_t *checkpoint)
     char buf[256];
     apr_size_t len;
     
-    // to xml
-    xml_body = oss_build_checkpoint_xml(pool, checkpoint);
-    if (NULL == xml_body) {
-        return AOSE_OUT_MEMORY;
-    }
 
     // truncate to empty
     s = apr_file_trunc(checkpoint->thefile, 0);
@@ -249,10 +244,17 @@ int oss_dump_checkpoint(aos_pool_t *pool, const oss_checkpoint_t *checkpoint)
         aos_error_log("apr_file_write failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_TRUNC_ERROR;
     }
+
+    // to xml
+    xml_body = oss_build_checkpoint_xml(checkpoint);
+    if (NULL == xml_body) {
+        return AOSE_OUT_MEMORY;
+    }
    
     // write to file
     len = strlen(xml_body);
     s = apr_file_write(checkpoint->thefile, xml_body, &len);
+    free(xml_body);
     if (s != APR_SUCCESS) {
         aos_error_log("apr_file_write failure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_WRITE_ERROR;
