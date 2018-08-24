@@ -334,11 +334,13 @@ int aos_url_decode(const char *in, char *out)
 int aos_urlsafe_base64_encode(const char *in, int inLen, char *out)
 {
     int pad = 0;
-    int len = aos_base64_encode((const unsigned char *)in, inLen, out);
+    int i;
+    int len;
+    len = aos_base64_encode((const unsigned char *)in, inLen, out);
     //'+' -> '-'
     //'/' -> '_'
     //'=' -> ''
-    for (int i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         if (out[i] == '+') {
             out[i] = '-';
         } else if (out[i] == '/') {
