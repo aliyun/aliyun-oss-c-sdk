@@ -53,6 +53,8 @@ unsigned char* aos_md5(aos_pool_t* pool, const char* in, apr_size_t in_len);
 
 int aos_url_decode(const char *in, char *out);
 
+int aos_urlsafe_base64_encode(const char *in, int inLen, char *out);
+
 /*
  * Convert a string to a long long integer.
  *

@@ -9,6 +9,15 @@
 #include "oss_xml.h"
 #include "oss_util.c"
 #include "aos_transport.c"
+#include "oss_test_util.h"
+
+
+static char local_file[1024];
+
+void test_aos_setup(CuTest *tc)
+{
+    sprintf(local_file, "%sBingWallpaper-2017-01-19.jpg", get_test_file_path());
+}
 
 /*
  * oss_xml.c
@@ -445,12 +454,6 @@ void test_aos_strtoull(CuTest *tc)
     CuAssertTrue(tc, val == UINT64_MAX);
 }
 
-#if defined(WIN32)
-static char *test_local_file = "..\\oss_c_sdk_test\\BingWallpaper-2017-01-19.jpg";
-#else
-static char *test_local_file = "oss_c_sdk_test/BingWallpaper-2017-01-19.jpg";
-#endif
-
 void test_oss_get_file_info(CuTest *tc) {
     aos_pool_t *p;
     apr_finfo_t finfo;
@@ -458,7 +461,7 @@ void test_oss_get_file_info(CuTest *tc) {
     apr_status_t s;
 
     aos_pool_create(&p, NULL);
-    aos_str_set(&filepath, test_local_file);
+    aos_str_set(&filepath, local_file);
 
     s = oss_get_file_info(&filepath, p, &finfo); 
     CuAssertIntEquals(tc, AOSE_OK, s);
@@ -483,7 +486,7 @@ void test_aos_open_file_for_read(CuTest *tc) {
     aos_pool_create(&p, NULL);
 
     fb = aos_create_file_buf(p);
-    s = aos_open_file_for_read(p, test_local_file, fb);
+    s = aos_open_file_for_read(p, local_file, fb);
     CuAssertIntEquals(tc, AOSE_OK, s);
     CuAssertTrue(tc, fb->file_pos == 0);
     CuAssertTrue(tc, fb->file_last == 769686);
@@ -493,10 +496,23 @@ void test_aos_open_file_for_read(CuTest *tc) {
     aos_pool_destroy(p);
 }
 
+void test_aos_urlsafe_base64_encode(CuTest *tc) {
+    char buff[5];
+    char urlsafe_base64[8];
+    
+    buff[0] = 0xFF; buff[1] = 0xE2;  buff[2] = 'a';  buff[3] = '0';  buff[4] = '2';
+    aos_urlsafe_base64_encode(buff, 5,urlsafe_base64);
+
+    CuAssertStrEquals(tc,"_-JhMDI",urlsafe_base64);
+    
+    printf("test_aos_urlsafe_base64_encode ok\n");
+}
+
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();
-
+    
+    SUITE_ADD_TEST(suite, test_aos_setup);
     SUITE_ADD_TEST(suite, test_get_xml_doc_with_empty_aos_list);
     SUITE_ADD_TEST(suite, test_aos_list_movelist_with_empty_list);
     SUITE_ADD_TEST(suite, test_starts_with_failed);
@@ -522,6 +538,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_aos_strtoull);
     SUITE_ADD_TEST(suite, test_oss_get_file_info); 
     SUITE_ADD_TEST(suite, test_aos_open_file_for_read);
+    SUITE_ADD_TEST(suite, test_aos_urlsafe_base64_encode);
 
     return suite;
 }

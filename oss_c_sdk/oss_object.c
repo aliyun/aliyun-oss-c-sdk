@@ -974,3 +974,56 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *oss_process_object(const oss_request_options_t *options,
+                                const aos_string_t *bucket,
+                                const aos_string_t *object,
+                                const aos_string_t *process,
+                                aos_table_t *headers,
+                                aos_table_t **resp_headers)
+{
+    aos_status_t *s = NULL;
+    aos_table_t *query_params = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_buf_t *content;
+    aos_list_t body;
+    char *data;
+
+    oss_api_check_arg_null(options);
+    oss_api_check_string_nullempty(bucket);
+    oss_api_check_string_nullempty(object);
+    oss_api_check_string_nullempty(process);
+    oss_api_enter("bucket:%.*s, object:%.*s, process:%.*s", 
+        bucket->len, bucket->data, 
+        object->len, object->data,
+        process->len, process->data);
+
+    //init query_params
+    query_params = aos_table_create_if_null(options, query_params, 1);
+    apr_table_add(query_params, OSS_PROCESS, "");
+
+    //init headers
+    headers = aos_table_create_if_null(options, headers, 1);
+    set_content_type(object->data, NULL, headers);
+
+    oss_init_object_request(options, bucket, object, HTTP_POST,
+        &req, query_params, headers, NULL, 0, &resp);
+    
+    //process data 
+    data = apr_psprintf(options->pool, "x-oss-process=%.*s", process->len, process->data);
+    if (!data ||!(content = aos_buf_pack(options->pool, data, strlen(data)))) {
+        s = aos_status_create(options->pool);
+        aos_status_set(s, AOSE_OUT_MEMORY, AOS_OVER_MEMROY_ERROR, "build process object data error.");
+    } else {
+        aos_list_init(&body);
+        aos_list_add_tail(&content->node, &body);
+        oss_write_request_body_from_buffer(&body, req);
+        s = oss_process_request(options, req, resp);
+        oss_fill_read_response_header(resp, resp_headers);
+    }
+
+    oss_api_leave();
+
+    return s;
+}
+

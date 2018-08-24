@@ -116,6 +116,13 @@ static oss_content_type_t file_type[] = {
     {NULL, NULL}
 };
 
+aos_status_t oss_api_nullempty_error = {
+    AOSE_INVALID_ARGUMENT,
+    (char *)AOS_PARAMETER_NULLEMPTY_ERROR,
+    "The parameter is null or empty",
+    NULL
+};
+
 static int starts_with(const aos_string_t *str, const char *prefix) {
     uint32_t i;
     if(NULL != str && prefix && str->len > 0 && strlen(prefix)) {
@@ -1064,9 +1071,4 @@ int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_
     return res;
 }
 
-aos_status_t oss_api_nullempty_error = {
-    AOSE_INVALID_ARGUMENT,
-    (char *)AOS_PARAMETER_NULLEMPTY_ERROR,
-    "The parameter is null or empty",
-    NULL
-};
+

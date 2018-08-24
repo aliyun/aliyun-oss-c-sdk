@@ -2,6 +2,7 @@
 #include "oss_config.h"
 #include "oss_api.h"
 #include "oss_test_util.h"
+#include "cjson.h"
 
 void make_rand_string(aos_pool_t *p, int len, aos_string_t *data)
 {
@@ -260,6 +261,72 @@ aos_status_t *delete_test_live_channel(const oss_request_options_t *options,
     return oss_delete_live_channel(options, &bucket, &channel_id, NULL);
 }
 
+aos_status_t *get_image_info(const oss_request_options_t *options,
+    const char *bucket_name, const char *object_name, image_info_t *info)
+{
+    aos_status_t *s = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t buffer;
+
+    aos_list_init(&buffer);
+    aos_str_set(&bucket, bucket_name);
+    aos_str_set(&object, object_name);
+
+    /* test get object to buffer */
+    params = aos_table_make(options->pool, 1);
+    apr_table_set(params, OSS_PROCESS, "image/info");
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, params, &buffer, &resp_headers);
+
+    if (aos_status_is_ok(s)) {
+        aos_buf_t *content = NULL;
+        char *buf = NULL;
+        int64_t len = 0;
+        int64_t size = 0;
+        int64_t pos = 0;
+        cJSON * root = NULL;
+        cJSON * item = NULL;
+
+        /* get buffer len */
+        len = aos_buf_list_len(&buffer);
+        buf = (char *)aos_pcalloc(options->pool, (apr_size_t)(len + 1));
+        buf[len] = '\0';
+        
+        /* copy buffer content to memory */
+        aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
+            size = aos_buf_size(content);
+            memcpy(buf + pos, content->pos, (size_t)size);
+            pos += size;
+        }
+        
+        /* parse image info from json */
+        root = cJSON_Parse(buf);
+        
+        item = cJSON_GetObjectItem(root, "ImageHeight");
+        item = cJSON_GetObjectItem(item, "value");
+        info->height = atol(item->valuestring);
+        
+        item = cJSON_GetObjectItem(root, "ImageWidth");
+        item = cJSON_GetObjectItem(item, "value");
+        info->width = atol(item->valuestring);
+        
+        item = cJSON_GetObjectItem(root, "FileSize");
+        item = cJSON_GetObjectItem(item, "value");
+        info->size = atol(item->valuestring);
+        
+        item = cJSON_GetObjectItem(root, "Format");
+        item = cJSON_GetObjectItem(item, "value");
+        apr_snprintf(info->format, 64, "%s", item->valuestring);
+        
+        cJSON_Delete(root);
+    }
+    return s;
+}
+
+
 char* gen_test_signed_url(const oss_request_options_t *options, 
                           const char *bucket_name,
                           const char *object_name, 
@@ -319,4 +386,27 @@ void progress_callback(int64_t consumed_bytes, int64_t total_bytes)
 void percentage(int64_t consumed_bytes, int64_t total_bytes) 
 {
     assert(total_bytes >= consumed_bytes);
+}
+
+char *get_test_file_path()
+{
+    static int flag = 0;
+    static char path[1024];
+#if defined(WIN32)
+    char ch = '\\';
+#else
+    char ch = '/';
+#endif
+    if (!flag) {
+        char *filepath = __FILE__;
+        char * pos = strrchr(filepath, ch);
+        if (pos) {
+            int len = (int)(pos - filepath + 1);
+            sprintf(path, "%.*s", len, filepath);
+        } else {
+            sprintf(path, "oss_c_sdk_test%c", ch);
+        }
+        flag = 1;
+    }
+    return path;
 }

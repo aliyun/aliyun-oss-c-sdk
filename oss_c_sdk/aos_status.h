@@ -56,6 +56,7 @@ extern const char AOS_CREATE_QUEUE_ERROR_CODE[];
 extern const char AOS_CREATE_THREAD_POOL_ERROR_CODE[];
 extern const char AOS_EMPTY_STRING_ERROR[];
 extern const char AOS_PARAMETER_NULLEMPTY_ERROR[];
+extern const char AOS_OVER_MEMROY_ERROR[];
 AOS_CPP_END
 
 #endif

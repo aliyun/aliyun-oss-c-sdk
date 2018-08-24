@@ -1289,6 +1289,25 @@ char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
                               const aos_string_t *play_list_name,
                               const int64_t expires);
 
+
+/*
+ * @brief  process a object and save into a new object
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   process             object processing command
+ * @param[in]   headers             the headers for request
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_process_object(const oss_request_options_t *options,
+                                const aos_string_t *source_bucket,
+                                const aos_string_t *source_object,
+                                const aos_string_t *process,
+                                aos_table_t *headers,
+                                aos_table_t **resp_headers);
+
+
 OSS_CPP_END
 
 #endif
