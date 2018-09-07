@@ -47,18 +47,7 @@ void test_resumable_cleanup(CuTest *tc)
     init_test_request_options(options, is_cname);
 
     /* delete test object */
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_without_checkpoint.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_partsize.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_threads.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_checkpoint.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_checkpoint_format_invalid.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_file_size_unavailable.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_uploadid_unavailable.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_with_uploadid_available.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_callback_without_checkpoint.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_progress_without_checkpoint.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_callback_with_checkpoint.jpg");
-    delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_progress_with_checkpoint.jpg");
+    delete_test_object_by_prefix(options, TEST_BUCKET_NAME, "test_resumable");
 
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);

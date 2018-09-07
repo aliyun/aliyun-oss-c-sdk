@@ -112,6 +112,10 @@ extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
 extern const char OSS_OBJECT_META[];
+extern const char OSS_EXPIRES_2[];
+extern const char OSS_SIGNATURE_2[];
+extern const char OSS_SIGNATURE_VERSION_2[];
+extern const char OSS_ACCESSKEYID_2[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 
@@ -152,6 +156,7 @@ typedef struct {
     int proxy_port;
     aos_string_t proxy_user;
     aos_string_t proxy_passwd;
+    int signature_version;
 } oss_config_t;
 
 typedef struct {

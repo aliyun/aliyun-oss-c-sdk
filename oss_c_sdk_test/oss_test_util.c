@@ -190,6 +190,54 @@ aos_status_t *delete_test_object(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *delete_test_object_by_prefix(const oss_request_options_t *options,
+                                const char *bucket_name,
+                                const char *object_name_prefix)
+{
+    aos_string_t bucket;
+    aos_status_t * s = NULL;
+    oss_list_object_params_t *params = NULL;
+    oss_list_object_content_t *content = NULL;
+    char *nextMarker = "";
+
+    aos_str_set(&bucket, bucket_name);
+
+    params = oss_create_list_object_params(options->pool);
+    params->max_ret = 100;
+    aos_str_set(&params->prefix, object_name_prefix);
+    aos_str_set(&params->marker, nextMarker);
+
+    do {
+        s = oss_list_object(options, &bucket, params, NULL);
+        if (!aos_status_is_ok(s))
+        {
+            return s;
+        }
+
+        aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+            char object_name[128];
+            sprintf(object_name, "%.*s", content->key.len, content->key.data);
+            s = delete_test_object(options, bucket_name, object_name);
+            if (!aos_status_is_ok(s))
+            {
+                return s;
+            }
+        }
+
+        nextMarker = apr_psprintf(options->pool, "%.*s", params->next_marker.len, params->next_marker.data);
+        aos_str_set(&params->marker, nextMarker);
+        aos_list_init(&params->object_list);
+        aos_list_init(&params->common_prefix_list);
+    } while (params->truncated == AOS_TRUE);
+
+    if (s == NULL) {
+        s = aos_status_create(options->pool);
+        aos_status_set(s, AOSE_OK, NULL, NULL);
+    }
+
+    return s;
+}
+
 aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, 
                                          const char *bucket_name, 
                                          const char *object_name, 

@@ -79,3 +79,7 @@ const int OSS_MAX_PART_NUM = 10000;
 const int OSS_PER_RET_NUM = 1000;
 const int MAX_SUFFIX_LEN = 1024;
 const char OSS_OBJECT_META[] = "objectMeta";
+const char OSS_EXPIRES_2[] = "x-oss-expires";
+const char OSS_SIGNATURE_2[] = "x-oss-signature";
+const char OSS_SIGNATURE_VERSION_2[] = "x-oss-signature-version";
+const char OSS_ACCESSKEYID_2[] = "x-oss-access-key-id";

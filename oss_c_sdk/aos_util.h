@@ -81,6 +81,14 @@ unsigned long long aos_strtoull(const char *nptr, char **endptr, int base);
 **/
 uint64_t aos_atoui64(const char *nptr);
 
+/**
+ * Compute HMAC-SHA-256 with key [key] and message [message], storing result
+ * in [hmac]
+ */
+void HMAC_SHA256(unsigned char hmac[32], const unsigned char *key, int key_len,
+               const unsigned char *message, int message_len);
+
+
 AOS_CPP_END
 
 #endif

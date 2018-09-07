@@ -1249,6 +1249,7 @@ void test_object_by_url(CuTest *tc)
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test effective url for get_object_to_buffer */
+    req = aos_http_request_create(p);
     req->method = HTTP_GET;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
                                   object_name, effective_time, req);
@@ -1267,6 +1268,7 @@ void test_object_by_url(CuTest *tc)
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test effective url for head_object */
+    req = aos_http_request_create(p);
     resp_headers = NULL;
     req->method = HTTP_HEAD;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 

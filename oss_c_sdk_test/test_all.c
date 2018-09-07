@@ -21,6 +21,7 @@ extern CuSuite *test_oss_crc();
 extern CuSuite *test_aos();
 extern CuSuite *test_oss_proxy();
 extern CuSuite *test_oss_resumable();
+extern CuSuite *test_oss_signature();
 
 static const struct testlist {
     const char *testname;
@@ -37,6 +38,7 @@ static const struct testlist {
     {"test_oss_proxy", test_oss_proxy},
     {"test_oss_resumable", test_oss_resumable},
     {"test_aos", test_aos},
+    {"test_oss_signature", test_oss_signature},
     {"LastTest", NULL}
 };
 
