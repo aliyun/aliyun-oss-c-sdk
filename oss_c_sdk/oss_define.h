@@ -27,6 +27,7 @@
 
 #define PARAM_OUT
 #define PARAM_IN
+#define OSS_INVALID_VALUE  -1
 
 extern const char OSS_CANNONICALIZED_HEADER_ACL[];
 extern const char OSS_CANNONICALIZED_HEADER_STORAGE_CLASS[];
@@ -109,6 +110,7 @@ extern const int OSS_MAX_PART_NUM;
 extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
 extern const char OSS_OBJECT_META[];
+extern const char OSS_SELECT_OBJECT_OUTPUT_RAW[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 
@@ -428,5 +430,45 @@ typedef struct {
     aos_string_t end_time;
     aos_string_t remote_addr;
 } oss_live_record_content_t;
+
+typedef struct {
+    aos_string_t compression_type;
+    aos_string_t file_header_info;
+    aos_string_t record_delimiter;
+    aos_string_t field_delimiter;
+    aos_string_t quote_character;
+    aos_string_t comment_character;
+    aos_string_t range;
+} oss_select_object_input_param_t;
+
+typedef struct {
+    aos_string_t record_delimiter;
+    aos_string_t field_delimiter;
+    int32_t      keep_all_columns;
+    int32_t      output_rawdata;
+    int32_t      enable_payload_crc;
+    int32_t      output_header;
+} oss_select_object_output_param_t;
+
+typedef struct {
+    int32_t skip_partial_data_record;
+} oss_select_object_option_param_t;
+
+typedef struct {
+    oss_select_object_input_param_t  input_param;
+    oss_select_object_output_param_t output_param;
+    oss_select_object_option_param_t option_param;
+} oss_select_object_params_t;
+
+typedef struct {
+    PARAM_IN aos_string_t compression_type;
+    PARAM_IN aos_string_t record_delimiter;
+    PARAM_IN aos_string_t field_delimiter;
+    PARAM_IN aos_string_t quote_character;
+    PARAM_IN int32_t      over_write_if_existing;
+    PARAM_OUT uint32_t splits_count;
+    PARAM_OUT uint64_t rows_count;
+    PARAM_OUT uint32_t columns_count;
+} oss_select_object_meta_params_t;
 
 #endif

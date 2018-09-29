@@ -320,3 +320,31 @@ void percentage(int64_t consumed_bytes, int64_t total_bytes)
 {
     assert(total_bytes >= consumed_bytes);
 }
+
+char * get_text_file_data(aos_pool_t *pool, const char *filepath)
+{
+    apr_status_t s;
+    apr_file_t *thefile;
+    apr_finfo_t finfo;
+    apr_size_t nread = 0;
+    apr_off_t offset = 0;
+
+    s = apr_file_open(&thefile, filepath, APR_READ, APR_UREAD | APR_GREAD, pool);
+    if (s != APR_SUCCESS) {
+        return NULL;
+    }
+
+    s = apr_file_info_get(&finfo, APR_FINFO_SIZE | APR_FINFO_MTIME, thefile);
+    if (s != APR_SUCCESS) {
+        apr_file_close(thefile);
+        return NULL;
+    }
+
+    nread = (apr_size_t)finfo.size;
+    char *buf = aos_pcalloc(pool, nread + 1);
+    apr_file_seek(thefile, APR_SET, &offset);
+    apr_file_read(thefile, buf, &nread);
+    buf[nread] = '\0';
+    apr_file_close(thefile);
+    return buf;
+}
