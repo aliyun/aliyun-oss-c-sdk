@@ -840,3 +840,214 @@ aos_status_t *oss_head_object_by_url(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *oss_select_object_to_buffer(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    const aos_string_t *expression,
+    oss_select_object_params_t *select_params,
+    aos_list_t *buffer,
+    aos_table_t **resp_headers)
+{
+    return oss_do_select_object_to_buffer(options, bucket, object, 
+        expression, select_params,
+        NULL, NULL, buffer, NULL, resp_headers);
+}
+
+aos_status_t *oss_do_select_object_to_buffer(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    const aos_string_t *expression,
+    oss_select_object_params_t *select_params,
+    aos_table_t *headers,
+    aos_table_t *params,
+    aos_list_t *buffer,
+    oss_progress_callback progress_callback,
+    aos_table_t **resp_headers)
+{
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_list_t body;
+    unsigned char *md5 = NULL;
+    char *buf = NULL;
+    int64_t body_len;
+    char *b64_value = NULL;
+    int b64_buf_len = (20 + 1) * 4 / 3;
+    int b64_len;
+
+
+    /*init query_params*/
+    query_params = aos_table_create_if_null(options, params, 1);
+    apr_table_add(query_params, OSS_PROCESS, "csv/select");
+
+    /*init headers*/
+    headers = aos_table_create_if_null(options, headers, 1);
+    apr_table_add(headers, OSS_CONTENT_TYPE, "application/x-www-form-urlencoded");
+
+    oss_init_object_request(options, bucket, object, HTTP_POST,
+        &req, query_params, headers, progress_callback, 0, &resp);
+
+    /*build post data*/
+    oss_build_select_object_body(options->pool, expression, select_params, &body);
+
+    /*add Content-MD5*/
+    body_len = aos_buf_list_len(&body);
+    buf = aos_buf_list_content(options->pool, &body);
+    md5 = aos_md5(options->pool, buf, (apr_size_t)body_len);
+    b64_value = aos_pcalloc(options->pool, b64_buf_len);
+    b64_len = aos_base64_encode(md5, 20, b64_value);
+    b64_value[b64_len] = '\0';
+    apr_table_addn(headers, OSS_CONTENT_MD5, b64_value);
+
+    oss_write_request_body_from_buffer(&body, req);
+    oss_init_select_object_read_response_body(options->pool, resp);
+
+    s = oss_process_request(options, req, resp);
+    oss_fill_read_response_body(resp, buffer);
+    oss_fill_read_response_header(resp, resp_headers);
+
+    oss_check_select_object_status(resp, s);
+
+    return s;
+}
+
+aos_status_t *oss_select_object_to_file(const oss_request_options_t *options,
+        const aos_string_t *bucket,
+        const aos_string_t *object,
+        const aos_string_t *expression,
+        oss_select_object_params_t *select_params,
+        aos_string_t *filename,
+        aos_table_t **resp_headers)
+
+{
+    return oss_do_select_object_to_file(options, bucket, object, 
+        expression, select_params, 
+        NULL, NULL, filename, NULL, resp_headers);
+}
+
+aos_status_t *oss_do_select_object_to_file(const oss_request_options_t *options,
+        const aos_string_t *bucket,
+        const aos_string_t *object,
+        const aos_string_t *expression,
+        oss_select_object_params_t *select_params,
+        aos_table_t *headers,
+        aos_table_t *params,
+        aos_string_t *filename,
+        oss_progress_callback progress_callback,
+        aos_table_t **resp_headers)
+{
+    int res = AOSE_OK;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_list_t body;
+    unsigned char *md5 = NULL;
+    char *buf = NULL;
+    int64_t body_len;
+    char *b64_value = NULL;
+    int b64_buf_len = (20 + 1) * 4 / 3;
+    int b64_len;
+    aos_string_t tmp_filename;
+
+
+    /*init query_params*/
+    query_params = aos_table_create_if_null(options, params, 1);
+    apr_table_add(query_params, OSS_PROCESS, "csv/select");
+
+    /*init headers*/
+    headers = aos_table_create_if_null(options, headers, 1);
+    apr_table_add(headers, OSS_CONTENT_TYPE, "application/x-www-form-urlencoded");
+
+    oss_init_object_request(options, bucket, object, HTTP_POST,
+        &req, query_params, headers, progress_callback, 0, &resp);
+
+    /*create temp file*/
+    oss_get_temporary_file_name(options->pool, filename, &tmp_filename);
+    res = oss_init_read_response_body_to_file(options->pool, &tmp_filename, resp);
+    if (res != AOSE_OK) {
+        s = aos_status_create(options->pool);
+        aos_file_error_status_set(s, res);
+        return s;
+    }
+
+    /*build post data*/
+    oss_build_select_object_body(options->pool, expression, select_params, &body);
+
+    /*add Content-MD5*/
+    body_len = aos_buf_list_len(&body);
+    buf = aos_buf_list_content(options->pool, &body);
+    md5 = aos_md5(options->pool, buf, (apr_size_t)body_len);
+    b64_value = aos_pcalloc(options->pool, b64_buf_len);
+    b64_len = aos_base64_encode(md5, 20, b64_value);
+    b64_value[b64_len] = '\0';
+    apr_table_addn(headers, OSS_CONTENT_MD5, b64_value);
+
+    oss_write_request_body_from_buffer(&body, req);
+    oss_init_select_object_read_response_body(options->pool, resp);
+
+    s = oss_process_request(options, req, resp);
+    oss_fill_read_response_header(resp, resp_headers);
+
+    oss_check_select_object_status(resp, s);
+
+    oss_temp_file_rename(s, tmp_filename.data, filename->data, options->pool);
+
+    return s;
+}
+
+aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    oss_select_object_meta_params_t *meta_params,
+    aos_table_t **resp_headers)
+
+{
+    int res = AOSE_OK;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
+    aos_list_t body;
+    unsigned char *md5 = NULL;
+    char *buf = NULL;
+    int64_t body_len;
+    char *b64_value = NULL;
+    int b64_buf_len = (20 + 1) * 4 / 3;
+    int b64_len;
+
+    /*init query_params*/
+    query_params = aos_table_create_if_null(options, query_params, 1);
+    apr_table_add(query_params, OSS_PROCESS, "csv/meta");
+
+    /*init headers*/
+    headers = aos_table_create_if_null(options, headers, 1);
+    apr_table_add(headers, OSS_CONTENT_TYPE, "application/x-www-form-urlencoded");
+
+    oss_init_object_request(options, bucket, object, HTTP_POST,
+        &req, query_params, headers, NULL, 0, &resp);
+
+    /*build post data*/
+    oss_build_create_select_object_meta_body(options->pool, meta_params, &body);
+
+    /*add Content-MD5*/
+    body_len = aos_buf_list_len(&body);
+    buf = aos_buf_list_content(options->pool, &body);
+    md5 = aos_md5(options->pool, buf, (apr_size_t)body_len);
+    b64_value = aos_pcalloc(options->pool, b64_buf_len);
+    b64_len = aos_base64_encode(md5, 20, b64_value);
+    b64_value[b64_len] = '\0';
+    apr_table_addn(headers, OSS_CONTENT_MD5, b64_value);
+
+    oss_write_request_body_from_buffer(&body, req);
+
+    oss_init_create_select_object_meta_read_response_body(options->pool, resp);
+    s = oss_process_request(options, req, resp);
+   
+    oss_fill_read_response_header(resp, resp_headers);
+    oss_check_create_select_object_meta_status(resp, s, meta_params);
+
+    return s;
+}

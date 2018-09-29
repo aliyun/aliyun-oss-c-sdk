@@ -4,6 +4,7 @@
 #include "aos_status.h"
 #include "oss_auth.h"
 #include "oss_util.h"
+#include "aos_crc64.h"
 
 #ifndef WIN32
 #include<sys/socket.h>
@@ -145,10 +146,29 @@ static void generate_rtmp_proto(const oss_request_options_t *options,
     req->proto = apr_psprintf(options->pool, "%.*s", (int)strlen(proto), proto);
 }
 
+static int is_ipv4_with_port(const char *str)
+{
+    int ip[4];
+    int port;
+    char end_char;
+    if (str == NULL) {
+        return 0;
+    }
+    if (5 == sscanf(str, "%d.%d.%d.%d:%d%c", &ip[0], &ip[1], &ip[2], &ip[3], &port, &end_char)) {
+        if ((ip[0] >= 0 && ip[0] <= 255) &&
+            (ip[1] >= 0 && ip[1] <= 255) &&
+            (ip[2] >= 0 && ip[2] <= 255) &&
+            (ip[3] >= 0 && ip[3] <= 255)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 int is_valid_ip(const char *str)
 {
     if (INADDR_NONE == inet_addr(str) || INADDR_ANY == inet_addr(str)) {
-        return 0;
+        return is_ipv4_with_port(str) ? 1:0;
     }
     return 1;
 }
@@ -729,6 +749,44 @@ oss_list_live_channel_params_t *oss_create_list_live_channel_params(aos_pool_t *
     return params;
 }
 
+oss_select_object_params_t *oss_create_select_object_params(aos_pool_t *p)
+{
+    oss_select_object_params_t *params;
+    params = (oss_select_object_params_t *)aos_pcalloc(
+        p, sizeof(oss_select_object_params_t));
+    //input
+    aos_str_set(&params->input_param.compression_type, "");
+    aos_str_set(&params->input_param.file_header_info, "");
+    aos_str_set(&params->input_param.record_delimiter, "");
+    aos_str_set(&params->input_param.field_delimiter, "");
+    aos_str_set(&params->input_param.quote_character, "");
+    aos_str_set(&params->input_param.comment_character, "");
+    aos_str_set(&params->input_param.range, "");
+    //output
+    aos_str_set(&params->output_param.record_delimiter, "");
+    aos_str_set(&params->output_param.field_delimiter, "");
+    params->output_param.keep_all_columns = OSS_INVALID_VALUE;
+    params->output_param.output_rawdata = OSS_INVALID_VALUE;
+    params->output_param.enable_payload_crc = OSS_INVALID_VALUE;
+    params->output_param.output_header = AOS_FALSE;
+    //option
+    params->option_param.skip_partial_data_record = AOS_FALSE;
+    return params;
+}
+
+oss_select_object_meta_params_t *oss_create_select_object_meta_params(aos_pool_t *p)
+{
+    oss_select_object_meta_params_t *params;
+    params = (oss_select_object_meta_params_t *)aos_pcalloc(
+        p, sizeof(oss_select_object_meta_params_t));
+    aos_str_set(&params->compression_type, "None");
+    aos_str_set(&params->record_delimiter, "");
+    aos_str_set(&params->field_delimiter, "");
+    aos_str_set(&params->quote_character, "");
+    params->over_write_if_existing = OSS_INVALID_VALUE;
+    return params;
+}
+
 const char *get_oss_acl_str(oss_acl_e oss_acl)
 {
     switch (oss_acl) {
@@ -1057,3 +1115,318 @@ int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_
     return res;
 }
 
+#define FRAME_HEADER_LEN   (12+8)
+#define SELECT_OBJECT_MAGIC  0xFF123456
+
+typedef struct
+{
+    uint32_t magic;
+    int32_t select_output_raw;
+    uint8_t header[FRAME_HEADER_LEN]; // header + payload offset: 12 + 8
+    int32_t header_len;
+    uint8_t tail[4];
+    int32_t tail_len;
+    int32_t payload_remains;
+    uint32_t header_crc32;        //not use now
+    uint32_t payload_crc32;
+    uint8_t end_frame[256];
+    uint32_t end_frame_size;
+} select_object_depack_frame;
+
+static void oss_init_depack_frame(aos_http_response_t *resp)
+{
+    select_object_depack_frame *depack = (select_object_depack_frame *)resp->user_data;
+    if (depack && depack->select_output_raw < 0) {
+        char *select_output_raw = NULL;
+        select_output_raw = (char*)apr_table_get(resp->headers, OSS_SELECT_OBJECT_OUTPUT_RAW);
+        if (select_output_raw && !strncasecmp(select_output_raw, "true", 4)) {
+            depack->select_output_raw = AOS_TRUE;
+        } else {
+            depack->select_output_raw = AOS_FALSE;
+        }
+        depack->payload_remains = 0;
+        depack->header_len = 0;
+        depack->end_frame_size = 0;
+    }
+}
+
+static int oss_depack_frame(select_object_depack_frame *depack, const char *in_buf, int len, 
+    int *frame_type, char **payload_buf, int *payload_len)
+{
+    int remain = len;
+    const char *ptr = in_buf;
+    if (!depack || !frame_type || !payload_buf || !payload_len) {
+        return len;
+    }
+    *frame_type = 0;
+    *payload_buf = NULL;
+    *payload_len = 0;
+    //Version | Frame - Type | Payload Length | Header Checksum | Payload | Payload Checksum
+    //<1 byte> <--3 bytes-->   <-- 4 bytes --> <------4 bytes--> <variable><----4bytes------>
+    //Payload 
+    //<offset | data>
+    //<8 types><variable>
+    //header
+    if (depack->header_len < FRAME_HEADER_LEN) {
+        int copy = FRAME_HEADER_LEN - depack->header_len;
+        copy = aos_min(copy, remain);
+        memcpy(depack->header + depack->header_len, ptr, copy);
+        depack->header_len += copy;
+        ptr += copy;
+        remain -= copy;
+
+        if (depack->header_len == FRAME_HEADER_LEN) {
+            uint32_t payload_length;
+            payload_length = depack->header[4];
+            payload_length = (payload_length << 8) | depack->header[5];
+            payload_length = (payload_length << 8) | depack->header[6];
+            payload_length = (payload_length << 8) | depack->header[7];
+            depack->payload_remains = payload_length - 8;
+            depack->payload_crc32 = aos_crc32(0, depack->header + 12, 8);
+        }
+    }
+
+    //payload
+    if (depack->payload_remains > 0) {
+        uint32_t type;
+        int copy = aos_min(depack->payload_remains, remain);
+        type = depack->header[1];
+        type = (type << 8) | depack->header[2];
+        type = (type << 8) | depack->header[3];
+        *frame_type   = type;
+        *payload_buf = (char *)ptr;
+        *payload_len = copy;
+        remain -= copy;
+        depack->payload_remains -= copy;
+        depack->payload_crc32 = aos_crc32(depack->payload_crc32, ptr, copy);
+        return len - remain;
+    }
+
+    //tail
+    if (depack->tail_len < 4) {
+        int copy = 4 - depack->tail_len;
+        copy = aos_min(copy, remain);
+        memcpy(depack->tail + depack->tail_len, ptr, copy);
+        depack->tail_len += copy;
+        ptr += copy;
+        remain -= copy;
+    }
+
+    return len - remain;
+}
+
+static int oss_write_select_object_to(aos_http_response_t *resp, const char *buffer, int len)
+{
+    if (resp->type == BODY_IN_FILE) {
+        return aos_write_http_body_file(resp, buffer, len);
+    } else if (resp->type == BODY_IN_MEMORY ){
+        return aos_write_http_body_memory(resp, buffer, len);
+    }
+    return AOSE_INVALID_OPERATION;
+}
+
+static int oss_write_select_object_body(aos_http_response_t *resp, const char *buffer, int len)
+{
+    select_object_depack_frame *depack = (select_object_depack_frame *)resp->user_data;
+
+    //init select_output_raw
+    oss_init_depack_frame(resp);
+
+    //depack frame
+    if (depack->select_output_raw == AOS_FALSE) {
+        int remain = len;
+        const char *ptr = buffer;
+        int frame_type;
+        char *payload_buf;
+        int payload_len;
+        int ret;
+        while (remain > 0) {
+            ret = oss_depack_frame(depack, ptr, remain, &frame_type, &payload_buf, &payload_len);
+            switch (frame_type)
+            {
+            case 0x800001: //Data Frame
+            {
+                int wlen = oss_write_select_object_to(resp, payload_buf, payload_len);
+                if (wlen != payload_len) {
+                    return wlen;
+                }
+            }
+                break;
+            case 0x800004: //Continuous Frame
+                break;
+            case 0x800005: //Select object End Frame
+            case 0x800006: //Create Meta End Frame
+            {
+                int32_t left = sizeof(depack->end_frame) - depack->end_frame_size;
+                int32_t copy = aos_min(left, payload_len);
+                if (copy > 0) {
+                    memcpy(depack->end_frame + depack->end_frame_size, payload_buf, copy);
+                    depack->end_frame_size += copy;
+                }
+            }
+                break;
+            default:
+                //get payload checksum
+                if (depack->tail_len == 4) {
+                    //compare check sum
+                    uint32_t payload_crc32;
+                    payload_crc32 = depack->tail[0];
+                    payload_crc32 = (payload_crc32 << 8) | depack->tail[1];
+                    payload_crc32 = (payload_crc32 << 8) | depack->tail[2];
+                    payload_crc32 = (payload_crc32 << 8) | depack->tail[3];
+                    if (payload_crc32 != 0 && payload_crc32 != depack->payload_crc32) {
+                        return AOSE_SELECT_OBJECT_CRC_ERROR;
+                    }
+
+                    //reset to get next frame
+                    depack->header_len = 0;
+                    depack->tail_len = 0;
+                }
+                break;
+            }
+            ptr += ret;
+            remain -= ret;
+        }
+    } else {
+        len = oss_write_select_object_to(resp, buffer, len);
+    }
+
+    return len;
+}
+
+int oss_init_select_object_read_response_body(aos_pool_t *p, aos_http_response_t *resp)
+{
+    int res = AOSE_OK;
+  
+    if (!p || !resp || resp->type == BODY_IN_CALLBACK) {
+        return res;
+    }
+
+    select_object_depack_frame *depack = (select_object_depack_frame *)aos_pcalloc(p, sizeof(select_object_depack_frame));
+    depack->magic = SELECT_OBJECT_MAGIC;
+    depack->select_output_raw = OSS_INVALID_VALUE;
+    resp->user_data  = (void *)depack;
+    resp->write_body = oss_write_select_object_body;
+
+    return res;
+}
+
+void oss_check_select_object_status(aos_http_response_t *resp, aos_status_t *s)
+{
+    if (!resp || !s) {
+        return;
+    }
+
+    if (!aos_status_is_ok(s)) {
+        return;
+    }
+
+    select_object_depack_frame *depack = (select_object_depack_frame *)resp->user_data;
+    if (depack && 
+        (depack->magic == SELECT_OBJECT_MAGIC) &&
+        (depack->select_output_raw == AOS_FALSE)) {
+       
+        uint32_t http_code;
+        http_code = depack->end_frame[8];
+        http_code = (http_code << 8) | depack->end_frame[9];
+        http_code = (http_code << 8) | depack->end_frame[10];
+        http_code = (http_code << 8) | depack->end_frame[11];
+        
+        if (!aos_http_is_ok(http_code)) {
+            char *error_msg = NULL;
+            if (depack->end_frame_size > 12) {
+                error_msg = apr_pstrmemdup(resp->pool, depack->end_frame + 12, depack->end_frame_size - 12);
+            }
+            aos_status_set(s, http_code, AOS_SELECT_OBJECT_ERROR, error_msg);
+        } else {
+            //update the httpcode
+            s->code = http_code;
+        }
+    }
+}
+
+int oss_init_create_select_object_meta_read_response_body(aos_pool_t *p, aos_http_response_t *resp)
+{
+    int res = AOSE_OK;
+
+    if (!p || !resp || resp->type == BODY_IN_CALLBACK) {
+        return res;
+    }
+
+    select_object_depack_frame *depack = (select_object_depack_frame *)aos_pcalloc(p, sizeof(select_object_depack_frame));
+    depack->magic = SELECT_OBJECT_MAGIC;
+    depack->select_output_raw = AOS_FALSE;
+    resp->user_data = (void *)depack;
+    resp->write_body = oss_write_select_object_body;
+
+    return res;
+}
+
+void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_status_t *s,
+    oss_select_object_meta_params_t *meta_params)
+{
+    if (!resp || !s) {
+        return;
+    }
+
+    if (!aos_status_is_ok(s)) {
+        return;
+    }
+
+    /**
+    * Format of end frame
+    * |--total scan size(8 bytes)--|
+    * |--status code(4 bytes)--|--total splits count(4 bytes)--|
+    * |--total lines(8 bytes)--|--columns count(4 bytes)--|--error message(optional)--|
+    */
+    select_object_depack_frame *depack = (select_object_depack_frame *)resp->user_data;
+    if (depack &&
+        (depack->magic == SELECT_OBJECT_MAGIC) &&
+        (depack->select_output_raw == AOS_FALSE)) {
+
+        uint32_t http_code;
+        http_code = depack->end_frame[8];
+        http_code = (http_code << 8) | depack->end_frame[9];
+        http_code = (http_code << 8) | depack->end_frame[10];
+        http_code = (http_code << 8) | depack->end_frame[11];
+
+        uint32_t splits_count;
+        splits_count = depack->end_frame[12];
+        splits_count = (splits_count << 8) | depack->end_frame[13];
+        splits_count = (splits_count << 8) | depack->end_frame[14];
+        splits_count = (splits_count << 8) | depack->end_frame[15];
+
+        uint64_t rows_count;
+        rows_count = depack->end_frame[16];
+        rows_count = (rows_count << 8) | depack->end_frame[17];
+        rows_count = (rows_count << 8) | depack->end_frame[18];
+        rows_count = (rows_count << 8) | depack->end_frame[19];
+        rows_count = (rows_count << 8) | depack->end_frame[20];
+        rows_count = (rows_count << 8) | depack->end_frame[21];
+        rows_count = (rows_count << 8) | depack->end_frame[22];
+        rows_count = (rows_count << 8) | depack->end_frame[23];
+
+        uint32_t columns_count;
+        columns_count = depack->end_frame[24];
+        columns_count = (columns_count << 8) | depack->end_frame[25];
+        columns_count = (columns_count << 8) | depack->end_frame[26];
+        columns_count = (columns_count << 8) | depack->end_frame[27];
+
+        if (!aos_http_is_ok(http_code)) {
+            char *error_msg = NULL;
+            if (depack->end_frame_size > 28) {
+                error_msg = apr_pstrmemdup(resp->pool, depack->end_frame + 12, depack->end_frame_size - 12);
+            }
+            aos_status_set(s, http_code, AOS_CREATE_SELECT_OBJECT_META_ERROR, error_msg);
+        }
+        else {
+            //update the httpcode
+            s->code = http_code;
+            if (meta_params) {
+                meta_params->splits_count = splits_count;
+                meta_params->rows_count = rows_count;
+                meta_params->columns_count = columns_count;
+            }
+        }
+    }
+}

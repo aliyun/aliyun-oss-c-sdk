@@ -22,13 +22,14 @@
     <ProjectGuid>{0B918A52-C5E1-4976-A205-F257C0D0B102}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>oss_c_sdk_demo</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -177,6 +178,7 @@
     <ClCompile Include="oss_put_object_sample.c" />
     <ClCompile Include="oss_resumable_sample.c" />
     <ClCompile Include="oss_sample_util.c" />
+    <ClCompile Include="oss_select_object_sample.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="oss_config.h" />

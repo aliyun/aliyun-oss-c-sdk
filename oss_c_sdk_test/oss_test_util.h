@@ -75,6 +75,10 @@ char *decrypt(const char *encrypted_str, aos_pool_t *pool);
 void percentage(int64_t consumed_bytes, int64_t total_bytes);
 void progress_callback(int64_t consumed_bytes, int64_t total_bytes);
 
+char * get_text_file_data(aos_pool_t *pool, const char *filepath);
+
+
+
 OSS_CPP_END
 
 #endif

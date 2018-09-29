@@ -304,6 +304,18 @@ oss_resumable_clt_params_t *oss_create_resumable_clt_params_content(aos_pool_t *
                                                                     int enable_checkpoint, const char *checkpoint_path);
 
 /**
+* @brief  create select object params
+* @return oss select object params
+**/
+oss_select_object_params_t *oss_create_select_object_params(aos_pool_t *p);
+
+/**
+* @brief  create select object meta params
+* @return oss select object meta params
+**/
+oss_select_object_meta_params_t *oss_create_select_object_meta_params(aos_pool_t *p);
+
+/**
   * @brief  get part size for multipart upload
 **/
 void oss_get_part_size(int64_t filesize, int64_t *part_size);
@@ -348,6 +360,27 @@ int oss_check_crc_consistent(uint64_t crc, const apr_table_t *resp_headers, aos_
 int oss_get_temporary_file_name(aos_pool_t *p, const aos_string_t *filename, aos_string_t *temp_file_name);
 
 int oss_temp_file_rename(aos_status_t *s, const char *from_path, const char *to_path, apr_pool_t *pool);
+
+/**
+* @brief  read select object body content from oss response body 
+**/
+int oss_init_select_object_read_response_body(aos_pool_t *p, aos_http_response_t *resp);
+
+/**
+* @brief check select object result after getting all body
+**/
+void oss_check_select_object_status(aos_http_response_t *resp, aos_status_t *s);
+
+/**
+* @brief  read create select object meta body content from oss response body 
+**/
+int oss_init_create_select_object_meta_read_response_body(aos_pool_t *p, aos_http_response_t *resp);
+
+/**
+* @brief check create select object result after getting all body
+**/
+void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_status_t *s,
+    oss_select_object_meta_params_t *meta_params);
 
 OSS_CPP_END
 
