@@ -11,9 +11,13 @@
 #include "oss_test_util.h"
 #include "aos_crc64.h"
 
+#ifdef WIN32
+char *test_local_file = "oss_c_sdk_test\\sample_data.csv";
+char *test_local_file_gz = "oss_c_sdk_test\\sample_data.csv.gz";
+#else
 char *test_local_file = "oss_c_sdk_test/sample_data.csv";
 char *test_local_file_gz = "oss_c_sdk_test/sample_data.csv.gz";
-
+#endif
 
 static void test_select_object_setup(CuTest *tc)
 {
@@ -339,7 +343,7 @@ void test_select_object_without_output_raw(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
-void test_select_object_with_skip_partial_data(CuTest *tc)
+void test_select_object_with_skip_partial_data_true(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     int is_cname = 0;
@@ -351,7 +355,7 @@ void test_select_object_with_skip_partial_data(CuTest *tc)
     aos_string_t object;
     char *object_name = "oss_test_select_object_with_skip_partial_data.csv";
     char *object_data = "abc,def\nefg\nhij,klm\n";
-    char *select_data = NULL;
+    //char *select_data = NULL;
     char *sql = NULL;
 
     aos_pool_create(&p, NULL);
@@ -368,15 +372,15 @@ void test_select_object_with_skip_partial_data(CuTest *tc)
     select_params->option_param.skip_partial_data_record = AOS_TRUE;
     aos_list_init(&buffer);
     s = oss_select_object_to_buffer(options, &bucket, &object, &expression, select_params, &buffer, &resp_headers);
-    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 400, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    select_data = aos_buf_list_content(options->pool, &buffer);
-    CuAssertStrEquals(tc, "abc,def\nhij,klm\n", select_data);
+    //select_data = aos_buf_list_content(options->pool, &buffer);
+    //CuAssertStrEquals(tc, "abc,def\nhij,klm\n", select_data);
     printf("%s ok\n", __FUNCTION__);
 }
 
-void test_select_object_without_skip_partial_data(CuTest *tc)
+void test_select_object_with_skip_partial_data_false(CuTest *tc)
 {
     aos_pool_t *p = NULL;
     int is_cname = 0;
@@ -940,7 +944,7 @@ void test_select_object_create_meta_delimiters(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
     CuAssertIntEquals(tc, 1, meta_params->splits_count);
-    CuAssertIntEquals(tc, 1, (int32_t)meta_params->rows_count);
+    CuAssertIntEquals(tc, 3, (int32_t)meta_params->rows_count);
     CuAssertIntEquals(tc, 3, meta_params->columns_count);
 
 
@@ -968,7 +972,7 @@ void test_select_object_create_meta_delimiters(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
     CuAssertIntEquals(tc, 1, meta_params->splits_count);
-    CuAssertIntEquals(tc, 3, (int32_t)meta_params->rows_count);
+    CuAssertIntEquals(tc, 1, (int32_t)meta_params->rows_count);
     CuAssertIntEquals(tc, 3, meta_params->columns_count);
 
     aos_pool_destroy(p);
@@ -1095,8 +1099,8 @@ CuSuite *test_oss_select_object()
     SUITE_ADD_TEST(suite, test_select_object_without_keep_columns);
     SUITE_ADD_TEST(suite, test_select_object_with_output_raw);
     SUITE_ADD_TEST(suite, test_select_object_without_output_raw);
-    SUITE_ADD_TEST(suite, test_select_object_with_skip_partial_data);
-    SUITE_ADD_TEST(suite, test_select_object_without_skip_partial_data);
+    SUITE_ADD_TEST(suite, test_select_object_with_skip_partial_data_true);
+    SUITE_ADD_TEST(suite, test_select_object_with_skip_partial_data_false);
     SUITE_ADD_TEST(suite, test_select_object_with_crc);
     SUITE_ADD_TEST(suite, test_select_object_without_crc);
     SUITE_ADD_TEST(suite, test_select_object_with_output_delimiters);
