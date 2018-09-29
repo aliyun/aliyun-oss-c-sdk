@@ -2193,7 +2193,6 @@ static char *oss_build_select_object_xml(aos_pool_t *p, const aos_string_t *expr
     mxml_node_t *input_node;
     mxml_node_t *output_node;
     mxml_node_t *option_node;
-    int i = 0;
     int b64_len;
     char b64_buf[2048];
     aos_string_t value;
@@ -2210,13 +2209,13 @@ static char *oss_build_select_object_xml(aos_pool_t *p, const aos_string_t *expr
     max_b64_expression_len = (expression->len + 1) * 4 / 3;
     if (max_b64_expression_len > sizeof(b64_buf)) {
         char *tmp = (char *)malloc(max_b64_expression_len);
-        b64_len = aos_base64_encode(expression->data, expression->len, tmp);
+        b64_len = aos_base64_encode((unsigned char*)(expression->data), expression->len, tmp);
         value.data = tmp;
         value.len = b64_len;
         set_xmlnode_value_str(root_node, "Expression", &value);
         free(tmp);
     } else {
-        b64_len = aos_base64_encode(expression->data, expression->len, b64_buf);
+        b64_len = aos_base64_encode((unsigned char*)(expression->data), expression->len, b64_buf);
         value.data = b64_buf;
         value.len  = b64_len;
         set_xmlnode_value_str(root_node, "Expression", &value);
@@ -2245,28 +2244,28 @@ static char *oss_build_select_object_xml(aos_pool_t *p, const aos_string_t *expr
             }
             if (!aos_string_is_empty(&params->input_param.record_delimiter)) {
                 value = params->input_param.record_delimiter;
-                b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
                 value.data = b64_buf;
                 value.len = b64_len;
                 set_xmlnode_value_str(csv_node, "RecordDelimiter", &value);
             }
             if (!aos_string_is_empty(&params->input_param.field_delimiter)) {
                 value = params->input_param.field_delimiter;
-                b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
                 value.data = b64_buf;
                 value.len = b64_len;
                 set_xmlnode_value_str(csv_node, "FieldDelimiter", &value);
             }
             if (!aos_string_is_empty(&params->input_param.quote_character)) {
                 value = params->input_param.quote_character;
-                b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
                 value.data = b64_buf;
                 value.len = b64_len;
                 set_xmlnode_value_str(csv_node, "QuoteCharacter", &value);
             }
             if (!aos_string_is_empty(&params->input_param.comment_character)) {
                 value = params->input_param.comment_character;
-                b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
                 value.data = b64_buf;
                 value.len = b64_len;
                 set_xmlnode_value_str(csv_node, "CommentCharacter", &value);
@@ -2286,14 +2285,14 @@ static char *oss_build_select_object_xml(aos_pool_t *p, const aos_string_t *expr
         mxml_node_t *csv_node = mxmlNewElement(output_node, "CSV");
         if (!aos_string_is_empty(&params->output_param.record_delimiter)) {
             value = params->output_param.record_delimiter;
-            b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
             value.data = b64_buf;
             value.len = b64_len;
             set_xmlnode_value_str(csv_node, "RecordDelimiter", &value);
         }
         if (!aos_string_is_empty(&params->output_param.field_delimiter)) {
             value = params->output_param.field_delimiter;
-            b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
             value.data = b64_buf;
             value.len = b64_len;
             set_xmlnode_value_str(csv_node, "FieldDelimiter", &value);
@@ -2380,7 +2379,6 @@ static char *oss_build_create_select_object_meta_xml(aos_pool_t *p, const oss_se
     mxml_node_t *doc;
     mxml_node_t *root_node;
     mxml_node_t *input_node;
-    int i = 0;
     int b64_len;
     char b64_buf[1024];
     aos_string_t value;
@@ -2404,7 +2402,7 @@ static char *oss_build_create_select_object_meta_xml(aos_pool_t *p, const oss_se
         mxml_node_t *csv_node = mxmlNewElement(input_node, "CSV");
         if (!aos_string_is_empty(&params->record_delimiter)) {
             value = params->record_delimiter;
-            b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
             value.data = b64_buf;
             value.len = b64_len;
             set_xmlnode_value_str(csv_node, "RecordDelimiter", &value);
@@ -2412,7 +2410,7 @@ static char *oss_build_create_select_object_meta_xml(aos_pool_t *p, const oss_se
 
         if (!aos_string_is_empty(&params->field_delimiter)) {
             value = params->field_delimiter;
-            b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
             value.data = b64_buf;
             value.len = b64_len;
             set_xmlnode_value_str(csv_node, "FieldDelimiter", &value);
@@ -2420,7 +2418,7 @@ static char *oss_build_create_select_object_meta_xml(aos_pool_t *p, const oss_se
 
         if (!aos_string_is_empty(&params->quote_character)) {
             value = params->quote_character;
-            b64_len = aos_base64_encode(value.data, value.len, b64_buf);
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
             value.data = b64_buf;
             value.len = b64_len;
             set_xmlnode_value_str(csv_node, "QuoteCharacter", &value);
@@ -2464,18 +2462,4 @@ void oss_build_create_select_object_meta_body(aos_pool_t *p,
     aos_list_add_tail(&b->node, body);
 }
 
-int oss_get_select_object_meta_endfram_from_body(aos_pool_t *p, aos_list_t *bc)
-{
-    int res = AOSE_OK;
-    aos_buf_t *b = NULL;
-    int nsize = 0;
-    //Version | Frame - Type | Payload Length | Header Checksum | Payload | Payload Checksum
-    //<= 1 byte><--3 bytes--><-- - 4 bytes----><------ - 4 bytes--><variable><----4bytes---------->
-    //aos_list_for_each_entry(aos_buf_t, b, bc, node) {
-    //    memcpy(buffer + nsize, (char *)b->pos, aos_buf_size(b));
-    //    nsize += aos_buf_size(b);
-    //}
-    
-    return res;
-}
 

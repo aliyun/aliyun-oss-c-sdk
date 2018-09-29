@@ -1335,7 +1335,7 @@ void oss_check_select_object_status(aos_http_response_t *resp, aos_status_t *s)
         if (!aos_http_is_ok(http_code)) {
             char *error_msg = NULL;
             if (depack->end_frame_size > 12) {
-                error_msg = apr_pstrmemdup(resp->pool, depack->end_frame + 12, depack->end_frame_size - 12);
+                error_msg = apr_pstrmemdup(resp->pool, (const char *)depack->end_frame + 12, depack->end_frame_size - 12);
             }
             aos_status_set(s, http_code, AOS_SELECT_OBJECT_ERROR, error_msg);
         } else {
@@ -1415,7 +1415,7 @@ void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_s
         if (!aos_http_is_ok(http_code)) {
             char *error_msg = NULL;
             if (depack->end_frame_size > 28) {
-                error_msg = apr_pstrmemdup(resp->pool, depack->end_frame + 12, depack->end_frame_size - 12);
+                error_msg = apr_pstrmemdup(resp->pool, (const char *)depack->end_frame + 12, depack->end_frame_size - 12);
             }
             aos_status_set(s, http_code, AOS_CREATE_SELECT_OBJECT_META_ERROR, error_msg);
         }
