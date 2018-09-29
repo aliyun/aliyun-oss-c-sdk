@@ -1004,7 +1004,6 @@ aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options
     aos_table_t **resp_headers)
 
 {
-    int res = AOSE_OK;
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;

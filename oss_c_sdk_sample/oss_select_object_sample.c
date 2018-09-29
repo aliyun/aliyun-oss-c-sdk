@@ -15,16 +15,9 @@ void select_object_to_buffer()
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
-    aos_buf_t *content = NULL;
-    char *buf = NULL;
-    int64_t len = 0;
-    int64_t size = 0;
-    int64_t pos = 0;
     oss_select_object_params_t *select_params = NULL;
 
     aos_pool_create(&p, NULL);
@@ -50,21 +43,6 @@ void select_object_to_buffer()
         printf("get object to buffer failed\n");  
     }
 
-    //get buffer len
-    aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
-        len += aos_buf_size(content);
-    }
-
-    buf = aos_pcalloc(p, (apr_size_t)(len + 1));
-    buf[len] = '\0';
-
-    //copy buffer content to memory
-    aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
-        size = aos_buf_size(content);
-        memcpy(buf + pos, content->pos, (size_t)size);
-        pos += size;
-    }
-
     aos_pool_destroy(p);
 }
 
@@ -75,14 +53,8 @@ void select_object_to_file()
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    char *buf = NULL;
-    int64_t len = 0;
-    int64_t size = 0;
-    int64_t pos = 0;
     oss_select_object_params_t *select_params = NULL;
     aos_string_t filename;
 
@@ -119,8 +91,6 @@ void create_select_object_meta()
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_select_object_meta_params_t *meta_params = NULL;

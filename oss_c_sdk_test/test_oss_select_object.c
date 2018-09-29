@@ -11,8 +11,8 @@
 #include "oss_test_util.h"
 #include "aos_crc64.h"
 
-char *test_local_file = "D:\\SDKRelease\\aliyun-oss-c-sdk\\oss_c_sdk_test\\sample_data.csv";
-char *test_local_file_gz = "D:\\SDKRelease\\aliyun-oss-c-sdk\\oss_c_sdk_test\\sample_data.csv.gz";
+char *test_local_file = "oss_c_sdk_test/sample_data.csv";
+char *test_local_file_gz = "oss_c_sdk_test/sample_data.csv.gz";
 
 
 static void test_select_object_setup(CuTest *tc)
@@ -61,8 +61,6 @@ void test_select_object_csv_data(CuTest *tc)
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
@@ -127,8 +125,6 @@ void test_select_object_with_output_header(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -166,8 +162,6 @@ void test_select_object_without_output_header(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -204,8 +198,6 @@ void test_select_object_with_keep_columns(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -242,8 +234,6 @@ void test_select_object_without_keep_columns(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -280,8 +270,6 @@ void test_select_object_with_output_raw(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -319,8 +307,6 @@ void test_select_object_without_output_raw(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -358,8 +344,6 @@ void test_select_object_with_skip_partial_data(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -397,8 +381,6 @@ void test_select_object_without_skip_partial_data(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -436,8 +418,6 @@ void test_select_object_with_crc(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -445,7 +425,6 @@ void test_select_object_with_crc(CuTest *tc)
     aos_string_t object;
     char *object_name = "oss_test_select_object_with_crc.csv";
     char *object_data = "abc,def\n";
-    char *select_data = NULL;
     char *sql = NULL;
 
     aos_pool_create(&p, NULL);
@@ -472,8 +451,6 @@ void test_select_object_without_crc(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -481,7 +458,6 @@ void test_select_object_without_crc(CuTest *tc)
     aos_string_t object;
     char *object_name = "oss_test_select_object_without_crc.csv";
     char *object_data = "abc,def\n";
-    char *select_data = NULL;
     char *sql = NULL;
 
     aos_pool_create(&p, NULL);
@@ -509,8 +485,6 @@ void test_select_object_with_output_delimiters(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -549,8 +523,6 @@ void test_select_object_with_line_range(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -592,8 +564,6 @@ void test_select_object_with_input_comment_character(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -631,8 +601,6 @@ void test_select_object_with_input_quote_character(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -679,8 +647,6 @@ void test_select_object_with_input_delimiters(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -722,8 +688,6 @@ void test_select_object_with_gzip_data(CuTest *tc)
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
@@ -781,8 +745,6 @@ void test_select_object_with_gzip_data_to_file(CuTest *tc)
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
@@ -842,8 +804,6 @@ void test_select_object_big_csv_data(CuTest *tc)
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t buffer;
@@ -896,8 +856,6 @@ void test_select_object_big_csv_data_to_file(CuTest *tc)
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_string_t filename;
@@ -1066,8 +1024,6 @@ void test_select_object_invalid(CuTest *tc)
     aos_pool_t *p = NULL;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
-    aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
     aos_list_t buffer;
     aos_status_t *s = NULL;
@@ -1075,7 +1031,6 @@ void test_select_object_invalid(CuTest *tc)
     aos_string_t object;
     char *object_name = "oss_test_select_object_invalid.csv";
     char *object_data = "abc,def|123,456|7891334\n\n777,888|999,222|012345\n\n";
-    char *select_data = NULL;
     char *sql = NULL;
 
     aos_pool_create(&p, NULL);

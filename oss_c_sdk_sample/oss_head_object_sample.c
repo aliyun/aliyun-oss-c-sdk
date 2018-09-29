@@ -39,7 +39,7 @@ void head_object()
 
         object_type = (char*)apr_table_get(resp_headers, OSS_OBJECT_TYPE);
         
-        printf("head object succeeded, object type:%s, content_length:%lld\n", 
+        printf("head object succeeded, object type:%s, content_length:%"APR_INT64_T_FMT"\n", 
                object_type, content_length);
     } else {
         printf("head object failed\n");
@@ -55,7 +55,6 @@ static void get_object_meta()
     aos_string_t object;
     int is_cname = 0;
     oss_request_options_t *options = NULL;
-    aos_table_t *headers = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     char *content_length_str = NULL;
@@ -67,7 +66,6 @@ static void get_object_meta()
     init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, OBJECT_NAME);
-    headers = aos_table_make(p, 0);
 
     s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
 
@@ -79,7 +77,7 @@ static void get_object_meta()
 
         object_type = (char*)apr_table_get(resp_headers, OSS_OBJECT_TYPE);
 
-        printf("get object meta succeeded, object type:%s, content_length:%lld\n",
+        printf("get object meta succeeded, object type:%s, content_length:%"APR_INT64_T_FMT"\n",
             object_type, content_length);
     }
     else {
