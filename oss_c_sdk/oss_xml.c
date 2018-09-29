@@ -2432,7 +2432,7 @@ static char *oss_build_create_select_object_meta_xml(aos_pool_t *p, const oss_se
         else {
             aos_str_set(&value, "false");
         }
-        set_xmlnode_value_str(input_node, "OverwriteIfExists", &value);
+        set_xmlnode_value_str(root_node, "OverwriteIfExists", &value);
     }
  
     // dump
