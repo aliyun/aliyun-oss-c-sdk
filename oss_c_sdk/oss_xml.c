@@ -2209,6 +2209,9 @@ static char *oss_build_select_object_xml(aos_pool_t *p, const aos_string_t *expr
     max_b64_expression_len = (expression->len + 1) * 4 / 3;
     if (max_b64_expression_len > sizeof(b64_buf)) {
         char *tmp = (char *)malloc(max_b64_expression_len);
+        if (!tmp) {
+            return NULL;
+        }
         b64_len = aos_base64_encode((unsigned char*)(expression->data), expression->len, tmp);
         value.data = tmp;
         value.len = b64_len;

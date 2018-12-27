@@ -329,7 +329,7 @@ static const uint32_t crc32Table[256] = {
 };
 uint32_t aos_crc32(uint32_t crc, const void *buf, size_t bufLen) 
 {
-    unsigned long crc32;
+    uint32_t crc32;
     unsigned char *byteBuf;
     size_t i;
 
