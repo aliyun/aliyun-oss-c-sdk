@@ -1014,7 +1014,7 @@ aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options
     char *buf = NULL;
     int64_t body_len;
     char *b64_value = NULL;
-    int b64_buf_len = (20 + 1) * 4 / 3;
+    int b64_buf_len = (AOS_MD5_DIGEST_LEN + 1) * 4 / 3;
     int b64_len;
 
     /*init query_params*/
@@ -1036,7 +1036,7 @@ aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options
     buf = aos_buf_list_content(options->pool, &body);
     md5 = aos_md5(options->pool, buf, (apr_size_t)body_len);
     b64_value = aos_pcalloc(options->pool, b64_buf_len);
-    b64_len = aos_base64_encode(md5, 20, b64_value);
+    b64_len = aos_base64_encode(md5, AOS_MD5_DIGEST_LEN, b64_value);
     b64_value[b64_len] = '\0';
     apr_table_addn(headers, OSS_CONTENT_MD5, b64_value);
 
