@@ -10,6 +10,14 @@
 
 OSS_CPP_START
 
+typedef struct {
+    long height;
+    long width;
+    long size;
+    char format[64];
+} image_info_t;
+
+ 
 #define test_object_base() do {                                         \
         aos_str_set(&bucket, bucket_name);                              \
         aos_str_set(&object, object_name);                              \
@@ -65,6 +73,9 @@ aos_status_t *create_test_live_channel(const oss_request_options_t *options, con
 aos_status_t *delete_test_live_channel(const oss_request_options_t *options, const char *bucket_name,
     const char *live_channel);
 
+aos_status_t *get_image_info(const oss_request_options_t *options, const char *bucket_name,
+    const char *object_name, image_info_t *info);
+
 char *gen_test_signed_url(const oss_request_options_t *options, const char *bucket_name,
     const char *object_name, int64_t expires, aos_http_request_t *req);
 
@@ -74,6 +85,10 @@ char *decrypt(const char *encrypted_str, aos_pool_t *pool);
 
 void percentage(int64_t consumed_bytes, int64_t total_bytes);
 void progress_callback(int64_t consumed_bytes, int64_t total_bytes);
+
+char *get_test_file_path();
+
+char *get_test_bucket_name(aos_pool_t *p, const char*prefix);
 
 OSS_CPP_END
 
