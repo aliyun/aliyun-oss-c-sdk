@@ -33,8 +33,7 @@ void get_object_meta()
         }
 
         object_type = (char*)apr_table_get(resp_headers, OSS_OBJECT_TYPE);
-        printf("get object meta succeeded, object type:%s, content_length:%ld\n", 
-               object_type, content_length);
+	    printf("get object meta succeeded, object type:%s, content length:%"APR_INT64_T_FMT"\n", object_type, content_length);
     } else {
         printf("req:%s, get object meta failed\n", s->req_id);
     }

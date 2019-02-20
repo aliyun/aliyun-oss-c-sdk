@@ -8,6 +8,7 @@ CMake*
 Makefile
 *.cmake
 test.h
+!CMakeLists.txt
 
 # Visual Studio
 *.suo

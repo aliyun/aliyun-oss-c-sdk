@@ -2,11 +2,9 @@
 #include "aos_log.h"
 #include "aos_http_io.h"
 #include "oss_config.h"
+#include "apr_env.h"
+#include "aos_string.h"
 
-extern CuSuite *test_xml();
-extern CuSuite *test_util();
-extern CuSuite *test_file();
-extern CuSuite *test_transport();
 extern CuSuite *test_oss_bucket();
 extern CuSuite *test_oss_object();
 extern CuSuite *test_oss_multipart();
@@ -14,8 +12,6 @@ extern CuSuite *test_oss_live();
 extern CuSuite *test_oss_image();
 extern CuSuite *test_oss_progress();
 extern CuSuite *test_oss_callback();
-extern CuSuite *test_oss_util();
-extern CuSuite *test_oss_xml();
 extern CuSuite *test_oss_crc();
 extern CuSuite *test_aos();
 extern CuSuite *test_oss_proxy();
@@ -39,6 +35,89 @@ static const struct testlist {
     {"LastTest", NULL}
 };
 
+static char *CFG_FILE_PATH = "";
+
+int has_cfg_info()
+{
+    return (TEST_OSS_ENDPOINT && TEST_ACCESS_KEY_ID && TEST_ACCESS_KEY_SECRET);
+}
+
+void load_cfg_from_env()
+{
+    char *str = NULL;
+    apr_env_get(&str, "OSS_TEST_ENDPOINT", aos_global_pool);
+    if (str) {
+        TEST_OSS_ENDPOINT = str;
+    }
+
+    str = NULL;
+    apr_env_get(&str, "OSS_TEST_ACCESS_KEY_ID", aos_global_pool);
+    if (str) {
+        TEST_ACCESS_KEY_ID = str;
+    }
+
+    str = NULL;
+    apr_env_get(&str, "OSS_TEST_ACCESS_KEY_SECRET", aos_global_pool);
+    if (str) {
+        TEST_ACCESS_KEY_SECRET = str;
+    }
+}
+
+void load_cfg_from_file()
+{
+    if (has_cfg_info())
+        return;
+
+    apr_file_t *file;
+
+    apr_status_t s = apr_file_open(&file, CFG_FILE_PATH, APR_READ, APR_UREAD | APR_GREAD, aos_global_pool);
+
+    if (s != APR_SUCCESS)
+        return;
+
+    char buffer[256];
+    char *ptr;
+
+    while (apr_file_gets(buffer, 256, file) == APR_SUCCESS) {
+        ptr = strchr(buffer, '=');
+        if (!ptr) {
+            continue;
+        }
+        aos_string_t str;
+
+        if (!strncmp(buffer, "AccessKeyId", 11)) {
+            aos_str_set(&str, ptr + 1);
+            aos_trip_space_and_cntrl(&str);
+            aos_unquote_str(&str);
+            TEST_ACCESS_KEY_ID = aos_pstrdup(aos_global_pool, &str);
+        }
+        else if (!strncmp(buffer, "AccessKeySecret", 15)) {
+            aos_str_set(&str, ptr + 1);
+            aos_trip_space_and_cntrl(&str);
+            aos_unquote_str(&str);
+            TEST_ACCESS_KEY_SECRET = aos_pstrdup(aos_global_pool, &str);
+        }
+        else if (!strncmp(buffer, "Endpoint", 8)) {
+            aos_str_set(&str, ptr + 1);
+            aos_trip_space_and_cntrl(&str);
+            aos_unquote_str(&str);
+            TEST_OSS_ENDPOINT = aos_pstrdup(aos_global_pool, &str);
+        }
+    }
+    apr_file_close(file);
+}
+
+int init_test_env()
+{
+    /*Get from env*/
+    load_cfg_from_env();
+
+    /*Get from file*/
+    load_cfg_from_file();
+
+    return has_cfg_info();
+}
+
 int run_all_tests(int argc, char *argv[])
 {
     int i;
@@ -60,11 +139,24 @@ int run_all_tests(int argc, char *argv[])
             }
             exit(0);
         }
+        if (!strcmp(argv[i], "-oss_cfg")) {
+            aos_string_t str;
+            aos_str_set(&str, argv[i + 1]);
+            aos_strip_space(&str);
+            CFG_FILE_PATH = aos_pstrdup(aos_global_pool, &str);
+            i++;
+            continue;
+        }
         if (argv[i][0] == '-') {
             fprintf(stderr, "invalid option: `%s'\n", argv[i]);
             exit(1);
         }
         list_provided = 1;
+    }
+
+    if (!init_test_env()) {
+        fprintf(stderr, "One of AK, SK or Endpoint is not configured.\n");
+        exit(1);
     }
 
     suite = CuSuiteNew();
@@ -81,6 +173,9 @@ int run_all_tests(int argc, char *argv[])
         for (i = 1; i < argc; i++) {
             found = 0;
             if (argv[i][0] == '-') {
+                if (!strcmp(argv[i], "-oss_cfg")) {
+                    i++;
+                }
                 continue;
             }
             for (j = 0; tests[j].func != NULL; j++) {
@@ -113,16 +208,6 @@ int run_all_tests(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     int exit_code = -1;
-
-    TEST_OSS_ENDPOINT = TEST_OSS_ENDPOINT != NULL ? 
-                        TEST_OSS_ENDPOINT : getenv("OSS_TEST_ENDPOINT");
-    TEST_ACCESS_KEY_ID = TEST_ACCESS_KEY_ID != NULL ? 
-                         TEST_ACCESS_KEY_ID : getenv("OSS_TEST_ACCESS_KEY_ID");
-    TEST_ACCESS_KEY_SECRET = TEST_ACCESS_KEY_SECRET != NULL ?
-                             TEST_ACCESS_KEY_SECRET : getenv("OSS_TEST_ACCESS_KEY_SECRET");
-    TEST_BUCKET_NAME = TEST_BUCKET_NAME != NULL ?
-                       TEST_BUCKET_NAME : getenv("OSS_TEST_BUCKET");
-
 
     if (aos_http_io_initialize(NULL, 0) != AOSE_OK) {
         exit(1);
