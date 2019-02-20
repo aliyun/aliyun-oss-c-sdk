@@ -44,6 +44,8 @@ void test_resumable_cleanup(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
+    oss_list_multipart_upload_params_t *params;
+    oss_list_multipart_upload_content_t *content;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -65,10 +67,9 @@ void test_resumable_cleanup(CuTest *tc)
     delete_test_object(options, TEST_BUCKET_NAME, "test_resumable_upload_content_type.ts");
     
     /* abort multipart uploads */
-    oss_list_multipart_upload_params_t *params = oss_create_list_multipart_upload_params(p);
+    params = oss_create_list_multipart_upload_params(p);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_list_multipart_upload(options, &bucket, params, &resp_headers);
-    oss_list_multipart_upload_content_t *content;
     if (aos_status_is_ok(s)) {
         aos_list_for_each_entry(oss_list_multipart_upload_content_t, content, &params->upload_list, node) {
             oss_abort_multipart_upload(options, &bucket, &content->key, &content->upload_id, &resp_headers);
@@ -970,7 +971,7 @@ void test_resumable_upload_with_uploadid_unavailable(CuTest *tc)
     apr_finfo_t finfo;
     oss_request_options_t *options = NULL;
     oss_resumable_clt_params_t *clt_params;
-    char *cp_path = "d:\\work\\oss\\test.ucp";
+    char *cp_path = "test.ucp";
     char *xml_doc = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
         "<Checkpoint><MD5></MD5><Type>1</Type><LocalFile>"
         "<Path>oss_c_sdk_test/BingWallpaper-2017-01-19.jpg</Path>"
