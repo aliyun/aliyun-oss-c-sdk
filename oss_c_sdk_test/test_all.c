@@ -65,25 +65,25 @@ void load_cfg_from_env()
 
 void load_cfg_from_file()
 {
+    apr_file_t *file;
+    apr_status_t s;
+    char buffer[256];
+    char *ptr;
+
     if (has_cfg_info())
         return;
 
-    apr_file_t *file;
-
-    apr_status_t s = apr_file_open(&file, CFG_FILE_PATH, APR_READ, APR_UREAD | APR_GREAD, aos_global_pool);
+    s = apr_file_open(&file, CFG_FILE_PATH, APR_READ, APR_UREAD | APR_GREAD, aos_global_pool);
 
     if (s != APR_SUCCESS)
         return;
 
-    char buffer[256];
-    char *ptr;
-
     while (apr_file_gets(buffer, 256, file) == APR_SUCCESS) {
+        aos_string_t str;
         ptr = strchr(buffer, '=');
         if (!ptr) {
             continue;
         }
-        aos_string_t str;
 
         if (!strncmp(buffer, "AccessKeyId", 11)) {
             aos_str_set(&str, ptr + 1);
