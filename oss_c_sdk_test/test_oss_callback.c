@@ -87,6 +87,10 @@ void test_callback_put_object_from_buffer(CuTest *tc)
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
         "}";
 
+    aos_log_level_e oldLogLevel;
+    oldLogLevel = aos_log_level;
+    aos_log_set_level(AOS_LOG_DEBUG);
+
     /* init test */
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -136,6 +140,8 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_pool_destroy(p);
+
+    aos_log_set_level(oldLogLevel);
 
     printf("test_callback_put_object_from_buffer ok\n");
 }

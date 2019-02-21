@@ -197,7 +197,7 @@ int aos_read_http_body_file(aos_http_request_t *req, char *buffer, int len)
     }
 
     if ((s = apr_file_read(req->file_buf->file, buffer, &nbytes)) != APR_SUCCESS) {
-        aos_error_log("apr_file_read filure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_read filure, file:%s, code:%d %s.", req->file_path, s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_READ_ERROR;
     }
     req->file_buf->file_pos += nbytes;
@@ -241,7 +241,7 @@ int aos_write_http_body_file(aos_http_response_t *resp, const char *buffer, int 
 
     assert(resp->file_buf->file != NULL);
     if ((s = apr_file_write(resp->file_buf->file, buffer, &nbytes)) != APR_SUCCESS) {
-        aos_error_log("apr_file_write fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        aos_error_log("apr_file_write fialure, file:%s, code:%d %s.", resp->file_path, s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_WRITE_ERROR;
     }
     
