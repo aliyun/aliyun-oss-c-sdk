@@ -2181,3 +2181,291 @@ int oss_checkpoint_parse_from_body(aos_pool_t *p, const char *xml_body, oss_chec
 
     return AOSE_OK;
 }
+
+static char *oss_build_select_object_xml(aos_pool_t *p, const aos_string_t *expression, 
+    const oss_select_object_params_t *params)
+{
+    char *select_object_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *input_node;
+    mxml_node_t *output_node;
+    mxml_node_t *option_node;
+    int b64_len;
+    char b64_buf[2048];
+    aos_string_t value;
+    int max_b64_expression_len = 0;
+    int32_t has_compression = 0;
+    int32_t has_csv = 0;
+
+    if (!expression || !params) {
+        return NULL;
+    }
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "SelectRequest");
+
+    // Expression
+    max_b64_expression_len = (expression->len + 1) * 4 / 3;
+    if (max_b64_expression_len > sizeof(b64_buf)) {
+        char *tmp = (char *)malloc(max_b64_expression_len);
+        if (!tmp) {
+            return NULL;
+        }
+        b64_len = aos_base64_encode((unsigned char*)(expression->data), expression->len, tmp);
+        value.data = tmp;
+        value.len = b64_len;
+        set_xmlnode_value_str(root_node, "Expression", &value);
+        free(tmp);
+    } else {
+        b64_len = aos_base64_encode((unsigned char*)(expression->data), expression->len, b64_buf);
+        value.data = b64_buf;
+        value.len  = b64_len;
+        set_xmlnode_value_str(root_node, "Expression", &value);
+    }
+
+    // InputSerialization
+    has_compression = !aos_string_is_empty(&params->input_param.compression_type);
+    has_csv = !aos_string_is_empty(&params->input_param.file_header_info) ||
+        !aos_string_is_empty(&params->input_param.record_delimiter) ||
+        !aos_string_is_empty(&params->input_param.field_delimiter)  ||
+        !aos_string_is_empty(&params->input_param.quote_character)  ||
+        !aos_string_is_empty(&params->input_param.comment_character)||
+        !aos_string_is_empty(&params->input_param.range);
+
+    if (has_compression || has_csv) {
+        
+        input_node = mxmlNewElement(root_node, "InputSerialization");
+        if (has_compression) {
+            set_xmlnode_value_str(input_node, "CompressionType", &params->input_param.compression_type);
+        }
+        
+        if (has_csv) {
+            mxml_node_t *csv_node = mxmlNewElement(input_node, "CSV");
+            if (!aos_string_is_empty(&params->input_param.file_header_info)) {
+                set_xmlnode_value_str(csv_node, "FileHeaderInfo", &params->input_param.file_header_info);
+            }
+            if (!aos_string_is_empty(&params->input_param.record_delimiter)) {
+                value = params->input_param.record_delimiter;
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+                value.data = b64_buf;
+                value.len = b64_len;
+                set_xmlnode_value_str(csv_node, "RecordDelimiter", &value);
+            }
+            if (!aos_string_is_empty(&params->input_param.field_delimiter)) {
+                value = params->input_param.field_delimiter;
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+                value.data = b64_buf;
+                value.len = b64_len;
+                set_xmlnode_value_str(csv_node, "FieldDelimiter", &value);
+            }
+            if (!aos_string_is_empty(&params->input_param.quote_character)) {
+                value = params->input_param.quote_character;
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+                value.data = b64_buf;
+                value.len = b64_len;
+                set_xmlnode_value_str(csv_node, "QuoteCharacter", &value);
+            }
+            if (!aos_string_is_empty(&params->input_param.comment_character)) {
+                value = params->input_param.comment_character;
+                b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+                value.data = b64_buf;
+                value.len = b64_len;
+                set_xmlnode_value_str(csv_node, "CommentCharacter", &value);
+            }
+            if (!aos_string_is_empty(&params->input_param.range)) {
+                set_xmlnode_value_str(csv_node, "Range", &params->input_param.range);
+            }
+        }
+    }
+
+    // OutputSerialization
+    has_csv = !aos_string_is_empty(&params->output_param.record_delimiter) ||
+        !aos_string_is_empty(&params->output_param.field_delimiter);
+    output_node = mxmlNewElement(root_node, "OutputSerialization");
+
+    if (has_csv) {
+        mxml_node_t *csv_node = mxmlNewElement(output_node, "CSV");
+        if (!aos_string_is_empty(&params->output_param.record_delimiter)) {
+            value = params->output_param.record_delimiter;
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+            value.data = b64_buf;
+            value.len = b64_len;
+            set_xmlnode_value_str(csv_node, "RecordDelimiter", &value);
+        }
+        if (!aos_string_is_empty(&params->output_param.field_delimiter)) {
+            value = params->output_param.field_delimiter;
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+            value.data = b64_buf;
+            value.len = b64_len;
+            set_xmlnode_value_str(csv_node, "FieldDelimiter", &value);
+        }
+    }
+
+    if (params->output_param.keep_all_columns != OSS_INVALID_VALUE) {
+        if (params->output_param.keep_all_columns) {
+            aos_str_set(&value, "true");
+        }
+        else {
+            aos_str_set(&value, "false");
+        }
+        set_xmlnode_value_str(output_node, "KeepAllColumns", &value);
+    }
+
+    if (params->output_param.output_rawdata != OSS_INVALID_VALUE) {
+        if (params->output_param.output_rawdata) {
+            aos_str_set(&value, "true");
+        }
+        else {
+            aos_str_set(&value, "false");
+        }
+        set_xmlnode_value_str(output_node, "OutputRawData", &value);
+    }
+
+    if (params->output_param.enable_payload_crc != OSS_INVALID_VALUE) {
+        if (params->output_param.enable_payload_crc) {
+            aos_str_set(&value, "true");
+        }
+        else {
+            aos_str_set(&value, "false");
+        }
+        set_xmlnode_value_str(output_node, "EnablePayloadCrc", &value);
+    }
+
+    aos_str_set(&value, "false");
+    if (params->output_param.output_header) {
+        aos_str_set(&value, "true");
+    }
+    set_xmlnode_value_str(output_node, "OutputHeader", &value);
+
+    //Options
+    option_node = mxmlNewElement(root_node, "Options");
+    aos_str_set(&value, "false");
+    if (params->option_param.skip_partial_data_record) {
+        aos_str_set(&value, "true");
+    }
+    set_xmlnode_value_str(option_node, "SkipPartialDataRecord", &value);
+
+    // dump
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    select_object_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return select_object_xml;
+}
+
+void oss_build_select_object_body(aos_pool_t *p,
+    const aos_string_t *expression,
+    const oss_select_object_params_t *params,
+    aos_list_t *body)
+{
+    char *select_object_xml;
+    aos_buf_t *b;
+    select_object_xml = oss_build_select_object_xml(p, expression, params);
+    aos_list_init(body);
+    b = aos_buf_pack(p, select_object_xml, strlen(select_object_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+
+static char *oss_build_create_select_object_meta_xml(aos_pool_t *p, const oss_select_object_meta_params_t *params)
+{
+    char *meta_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node;
+    mxml_node_t *input_node;
+    int b64_len;
+    char b64_buf[1024];
+    aos_string_t value;
+    int32_t has_csv = 0;
+
+    if (!params) {
+        return NULL;
+    }
+
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "CsvMetaRequest");
+
+    // InputSerialization
+    input_node = mxmlNewElement(root_node, "InputSerialization");
+    aos_str_set(&value, "None");
+    set_xmlnode_value_str(input_node, "CompressionType", &value);
+    has_csv = !aos_string_is_empty(&params->record_delimiter) ||
+        !aos_string_is_empty(&params->field_delimiter) ||
+        !aos_string_is_empty(&params->quote_character);
+    
+    if (has_csv) {
+        mxml_node_t *csv_node = mxmlNewElement(input_node, "CSV");
+        if (!aos_string_is_empty(&params->record_delimiter)) {
+            value = params->record_delimiter;
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+            value.data = b64_buf;
+            value.len = b64_len;
+            set_xmlnode_value_str(csv_node, "RecordDelimiter", &value);
+        }
+
+        if (!aos_string_is_empty(&params->field_delimiter)) {
+            value = params->field_delimiter;
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+            value.data = b64_buf;
+            value.len = b64_len;
+            set_xmlnode_value_str(csv_node, "FieldDelimiter", &value);
+        }
+
+        if (!aos_string_is_empty(&params->quote_character)) {
+            value = params->quote_character;
+            b64_len = aos_base64_encode((unsigned char*)value.data, value.len, b64_buf);
+            value.data = b64_buf;
+            value.len = b64_len;
+            set_xmlnode_value_str(csv_node, "QuoteCharacter", &value);
+        }
+    }
+
+    if (params->over_write_if_existing != OSS_INVALID_VALUE) {
+        if (params->over_write_if_existing) {
+            aos_str_set(&value, "true");
+        }
+        else {
+            aos_str_set(&value, "false");
+        }
+        set_xmlnode_value_str(root_node, "OverwriteIfExists", &value);
+    }
+ 
+    // dump
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    meta_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return meta_xml;
+}
+
+
+void oss_build_create_select_object_meta_body(aos_pool_t *p,
+    const oss_select_object_meta_params_t *params,
+    aos_list_t *body)
+{
+    char *meta_xml;
+    aos_buf_t *b;
+    meta_xml = oss_build_create_select_object_meta_xml(p, params);
+    aos_list_init(body);
+    b = aos_buf_pack(p, meta_xml, strlen(meta_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+
