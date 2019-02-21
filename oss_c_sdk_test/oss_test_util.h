@@ -61,6 +61,10 @@ aos_status_t *create_test_object_from_file(const oss_request_options_t *options,
 aos_status_t *delete_test_object(const oss_request_options_t *options,
     const char *bucket_name, const char *object_name);
 
+aos_status_t *delete_test_object_by_prefix(const oss_request_options_t *options,
+    const char *bucket_name,
+    const char *object_name_prefix);
+
 aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, const char *bucket_name, 
     const char *object_name, aos_string_t *upload_id);
 
@@ -85,6 +89,10 @@ char *decrypt(const char *encrypted_str, aos_pool_t *pool);
 
 void percentage(int64_t consumed_bytes, int64_t total_bytes);
 void progress_callback(int64_t consumed_bytes, int64_t total_bytes);
+
+char * get_text_file_data(aos_pool_t *pool, const char *filepath);
+
+
 
 char *get_test_file_path();
 

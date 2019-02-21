@@ -190,6 +190,54 @@ aos_status_t *delete_test_object(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *delete_test_object_by_prefix(const oss_request_options_t *options,
+                                const char *bucket_name,
+                                const char *object_name_prefix)
+{
+    aos_string_t bucket;
+    aos_status_t * s = NULL;
+    oss_list_object_params_t *params = NULL;
+    oss_list_object_content_t *content = NULL;
+    char *nextMarker = "";
+
+    aos_str_set(&bucket, bucket_name);
+
+    params = oss_create_list_object_params(options->pool);
+    params->max_ret = 100;
+    aos_str_set(&params->prefix, object_name_prefix);
+    aos_str_set(&params->marker, nextMarker);
+
+    do {
+        s = oss_list_object(options, &bucket, params, NULL);
+        if (!aos_status_is_ok(s))
+        {
+            return s;
+        }
+
+        aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+            char object_name[128];
+            sprintf(object_name, "%.*s", content->key.len, content->key.data);
+            s = delete_test_object(options, bucket_name, object_name);
+            if (!aos_status_is_ok(s))
+            {
+                return s;
+            }
+        }
+
+        nextMarker = apr_psprintf(options->pool, "%.*s", params->next_marker.len, params->next_marker.data);
+        aos_str_set(&params->marker, nextMarker);
+        aos_list_init(&params->object_list);
+        aos_list_init(&params->common_prefix_list);
+    } while (params->truncated == AOS_TRUE);
+
+    if (s == NULL) {
+        s = aos_status_create(options->pool);
+        aos_status_set(s, AOSE_OK, NULL, NULL);
+    }
+
+    return s;
+}
+
 aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, 
                                          const char *bucket_name, 
                                          const char *object_name, 
@@ -386,6 +434,35 @@ void progress_callback(int64_t consumed_bytes, int64_t total_bytes)
 void percentage(int64_t consumed_bytes, int64_t total_bytes) 
 {
     assert(total_bytes >= consumed_bytes);
+}
+
+char * get_text_file_data(aos_pool_t *pool, const char *filepath)
+{
+    apr_status_t s;
+    apr_file_t *thefile;
+    apr_finfo_t finfo;
+    apr_size_t nread = 0;
+    apr_off_t offset = 0;
+    char *buf = NULL;
+
+    s = apr_file_open(&thefile, filepath, APR_READ, APR_UREAD | APR_GREAD, pool);
+    if (s != APR_SUCCESS) {
+        return NULL;
+    }
+
+    s = apr_file_info_get(&finfo, APR_FINFO_SIZE | APR_FINFO_MTIME, thefile);
+    if (s != APR_SUCCESS) {
+        apr_file_close(thefile);
+        return NULL;
+    }
+
+    nread = (apr_size_t)finfo.size;
+    buf = aos_pcalloc(pool, nread + 1);
+    apr_file_seek(thefile, APR_SET, &offset);
+    apr_file_read(thefile, buf, &nread);
+    buf[nread] = '\0';
+    apr_file_close(thefile);
+    return buf;
 }
 
 char *get_test_file_path()
