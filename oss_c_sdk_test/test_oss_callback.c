@@ -18,6 +18,8 @@ void test_callback_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-callback");
+
     /* create test bucket */
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -85,6 +87,10 @@ void test_callback_put_object_from_buffer(CuTest *tc)
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
         "}";
 
+    aos_log_level_e oldLogLevel;
+    oldLogLevel = aos_log_level;
+    aos_log_set_level(AOS_LOG_DEBUG);
+
     /* init test */
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -134,6 +140,8 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_pool_destroy(p);
+
+    aos_log_set_level(oldLogLevel);
 
     printf("test_callback_put_object_from_buffer ok\n");
 }

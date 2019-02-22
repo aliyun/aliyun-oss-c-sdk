@@ -9,6 +9,15 @@
 #include "oss_xml.h"
 #include "oss_util.c"
 #include "aos_transport.c"
+#include "oss_test_util.h"
+
+
+static char test_file[1024];
+
+void test_aos_setup(CuTest *tc)
+{
+    sprintf(test_file, "%sBingWallpaper-2017-01-19.jpg", get_test_file_path());
+}
 
 /*
  * oss_xml.c
@@ -445,12 +454,6 @@ void test_aos_strtoull(CuTest *tc)
     CuAssertTrue(tc, val == UINT64_MAX);
 }
 
-#if defined(WIN32)
-static char *test_local_file = "..\\oss_c_sdk_test\\BingWallpaper-2017-01-19.jpg";
-#else
-static char *test_local_file = "oss_c_sdk_test/BingWallpaper-2017-01-19.jpg";
-#endif
-
 void test_oss_get_file_info(CuTest *tc) {
     aos_pool_t *p;
     apr_finfo_t finfo;
@@ -458,7 +461,7 @@ void test_oss_get_file_info(CuTest *tc) {
     apr_status_t s;
 
     aos_pool_create(&p, NULL);
-    aos_str_set(&filepath, test_local_file);
+    aos_str_set(&filepath, test_file);
 
     s = oss_get_file_info(&filepath, p, &finfo); 
     CuAssertIntEquals(tc, AOSE_OK, s);
@@ -483,7 +486,7 @@ void test_aos_open_file_for_read(CuTest *tc) {
     aos_pool_create(&p, NULL);
 
     fb = aos_create_file_buf(p);
-    s = aos_open_file_for_read(p, test_local_file, fb);
+    s = aos_open_file_for_read(p, test_file, fb);
     CuAssertIntEquals(tc, AOSE_OK, s);
     CuAssertTrue(tc, fb->file_pos == 0);
     CuAssertTrue(tc, fb->file_last == 769686);
@@ -496,7 +499,8 @@ void test_aos_open_file_for_read(CuTest *tc) {
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();
-
+    
+    SUITE_ADD_TEST(suite, test_aos_setup);
     SUITE_ADD_TEST(suite, test_get_xml_doc_with_empty_aos_list);
     SUITE_ADD_TEST(suite, test_aos_list_movelist_with_empty_list);
     SUITE_ADD_TEST(suite, test_starts_with_failed);
