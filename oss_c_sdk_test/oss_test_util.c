@@ -2,6 +2,7 @@
 #include "oss_config.h"
 #include "oss_api.h"
 #include "oss_test_util.h"
+#include "cjson.h"
 
 void make_rand_string(aos_pool_t *p, int len, aos_string_t *data)
 {
@@ -189,6 +190,54 @@ aos_status_t *delete_test_object(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *delete_test_object_by_prefix(const oss_request_options_t *options,
+                                const char *bucket_name,
+                                const char *object_name_prefix)
+{
+    aos_string_t bucket;
+    aos_status_t * s = NULL;
+    oss_list_object_params_t *params = NULL;
+    oss_list_object_content_t *content = NULL;
+    char *nextMarker = "";
+
+    aos_str_set(&bucket, bucket_name);
+
+    params = oss_create_list_object_params(options->pool);
+    params->max_ret = 100;
+    aos_str_set(&params->prefix, object_name_prefix);
+    aos_str_set(&params->marker, nextMarker);
+
+    do {
+        s = oss_list_object(options, &bucket, params, NULL);
+        if (!aos_status_is_ok(s))
+        {
+            return s;
+        }
+
+        aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+            char object_name[128];
+            sprintf(object_name, "%.*s", content->key.len, content->key.data);
+            s = delete_test_object(options, bucket_name, object_name);
+            if (!aos_status_is_ok(s))
+            {
+                return s;
+            }
+        }
+
+        nextMarker = apr_psprintf(options->pool, "%.*s", params->next_marker.len, params->next_marker.data);
+        aos_str_set(&params->marker, nextMarker);
+        aos_list_init(&params->object_list);
+        aos_list_init(&params->common_prefix_list);
+    } while (params->truncated == AOS_TRUE);
+
+    if (s == NULL) {
+        s = aos_status_create(options->pool);
+        aos_status_set(s, AOSE_OK, NULL, NULL);
+    }
+
+    return s;
+}
+
 aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, 
                                          const char *bucket_name, 
                                          const char *object_name, 
@@ -260,6 +309,72 @@ aos_status_t *delete_test_live_channel(const oss_request_options_t *options,
     return oss_delete_live_channel(options, &bucket, &channel_id, NULL);
 }
 
+aos_status_t *get_image_info(const oss_request_options_t *options,
+    const char *bucket_name, const char *object_name, image_info_t *info)
+{
+    aos_status_t *s = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t buffer;
+
+    aos_list_init(&buffer);
+    aos_str_set(&bucket, bucket_name);
+    aos_str_set(&object, object_name);
+
+    /* test get object to buffer */
+    params = aos_table_make(options->pool, 1);
+    apr_table_set(params, OSS_PROCESS, "image/info");
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, params, &buffer, &resp_headers);
+
+    if (aos_status_is_ok(s)) {
+        aos_buf_t *content = NULL;
+        char *buf = NULL;
+        int64_t len = 0;
+        int64_t size = 0;
+        int64_t pos = 0;
+        cJSON * root = NULL;
+        cJSON * item = NULL;
+
+        /* get buffer len */
+        len = aos_buf_list_len(&buffer);
+        buf = (char *)aos_pcalloc(options->pool, (apr_size_t)(len + 1));
+        buf[len] = '\0';
+        
+        /* copy buffer content to memory */
+        aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
+            size = aos_buf_size(content);
+            memcpy(buf + pos, content->pos, (size_t)size);
+            pos += size;
+        }
+        
+        /* parse image info from json */
+        root = cJSON_Parse(buf);
+        
+        item = cJSON_GetObjectItem(root, "ImageHeight");
+        item = cJSON_GetObjectItem(item, "value");
+        info->height = atol(item->valuestring);
+        
+        item = cJSON_GetObjectItem(root, "ImageWidth");
+        item = cJSON_GetObjectItem(item, "value");
+        info->width = atol(item->valuestring);
+        
+        item = cJSON_GetObjectItem(root, "FileSize");
+        item = cJSON_GetObjectItem(item, "value");
+        info->size = atol(item->valuestring);
+        
+        item = cJSON_GetObjectItem(root, "Format");
+        item = cJSON_GetObjectItem(item, "value");
+        apr_snprintf(info->format, 64, "%s", item->valuestring);
+        
+        cJSON_Delete(root);
+    }
+    return s;
+}
+
+
 char* gen_test_signed_url(const oss_request_options_t *options, 
                           const char *bucket_name,
                           const char *object_name, 
@@ -319,4 +434,61 @@ void progress_callback(int64_t consumed_bytes, int64_t total_bytes)
 void percentage(int64_t consumed_bytes, int64_t total_bytes) 
 {
     assert(total_bytes >= consumed_bytes);
+}
+
+char * get_text_file_data(aos_pool_t *pool, const char *filepath)
+{
+    apr_status_t s;
+    apr_file_t *thefile;
+    apr_finfo_t finfo;
+    apr_size_t nread = 0;
+    apr_off_t offset = 0;
+    char *buf = NULL;
+
+    s = apr_file_open(&thefile, filepath, APR_READ, APR_UREAD | APR_GREAD, pool);
+    if (s != APR_SUCCESS) {
+        return NULL;
+    }
+
+    s = apr_file_info_get(&finfo, APR_FINFO_SIZE | APR_FINFO_MTIME, thefile);
+    if (s != APR_SUCCESS) {
+        apr_file_close(thefile);
+        return NULL;
+    }
+
+    nread = (apr_size_t)finfo.size;
+    buf = aos_pcalloc(pool, nread + 1);
+    apr_file_seek(thefile, APR_SET, &offset);
+    apr_file_read(thefile, buf, &nread);
+    buf[nread] = '\0';
+    apr_file_close(thefile);
+    return buf;
+}
+
+char *get_test_file_path()
+{
+    static int flag = 0;
+    static char path[1024];
+#if defined(WIN32)
+    char ch = '\\';
+#else
+    char ch = '/';
+#endif
+    if (!flag) {
+        char *filepath = __FILE__;
+        char * pos = strrchr(filepath, ch);
+        if (pos) {
+            int len = (int)(pos - filepath + 1);
+            sprintf(path, "%.*s", len, filepath);
+        } else {
+            sprintf(path, "oss_c_sdk_test%c", ch);
+        }
+        flag = 1;
+    }
+    return path;
+}
+
+char *get_test_bucket_name(aos_pool_t *p, const char*prefix)
+{
+    return apr_psprintf(p, "%s-bucket-%"APR_TIME_T_FMT, prefix, apr_time_now());
 }

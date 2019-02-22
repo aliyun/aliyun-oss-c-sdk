@@ -4,6 +4,7 @@
 #include "aos_http_io.h"
 #include "aos_transport.h"
 #include "aos_crc64.h"
+#include "aos_status.h"
 
 static int aos_curl_code_to_status(CURLcode code);
 static void aos_init_curl_headers(aos_curl_http_transport_t *t);
@@ -18,6 +19,23 @@ static size_t aos_curl_default_header_callback(char *buffer, size_t size, size_t
 static size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata);
 static size_t aos_curl_default_read_callback(char *buffer, size_t size, size_t nitems, void *instream);
 
+static int aos_curl_debug_callback(void *handle, curl_infotype type, char *data, size_t size, void *userp)
+{
+    switch (type) {
+    default: 
+        break;
+    case CURLINFO_TEXT:
+        aos_debug_log("curl:%pp=> Info: %.*s", handle, (int)size, data);
+        break;
+    case CURLINFO_HEADER_OUT:
+        aos_debug_log("curl:%pp=> Send header: %.*s", handle, (int)size, data);
+        break;
+    case CURLINFO_HEADER_IN:
+        aos_debug_log("curl:%pp=> Recv header: %.*s", handle, (int)size, data);
+        break;
+    }
+    return 0;
+}
 static void aos_init_curl_headers(aos_curl_http_transport_t *t)
 {
     int pos;
@@ -203,6 +221,7 @@ static void aos_curl_transport_headers_done(aos_curl_http_transport_t *t)
     if ((code = curl_easy_getinfo(t->curl, CURLINFO_RESPONSE_CODE, &http_code)) != CURLE_OK) {
         t->controller->reason = apr_pstrdup(t->pool, curl_easy_strerror(code));
         t->controller->error_code = AOSE_INTERNAL_ERROR;
+        aos_error_log("get response status fail, curl code:%d, reason:%s", code, t->controller->reason);
         return;
     } else {
         t->resp->status = http_code;
@@ -253,8 +272,13 @@ size_t aos_curl_default_write_callback(char *ptr, size_t size, size_t nmemb, voi
 
     if ((bytes = t->resp->write_body(t->resp, ptr, len)) < 0) {
         aos_debug_log("write body failure, %d.", bytes);
-        t->controller->error_code = AOSE_WRITE_BODY_ERROR;
-        t->controller->reason = "write body failure.";
+        if (bytes == AOSE_SELECT_OBJECT_CRC_ERROR) {
+            t->controller->error_code = AOSE_SELECT_OBJECT_CRC_ERROR;
+            t->controller->reason = (char *)AOS_SELECT_OBJECT_CRC_ERROR;
+        } else {
+            t->controller->error_code = AOSE_WRITE_BODY_ERROR;
+            t->controller->reason = "write body failure.";
+        }
         return 0;
     }
 
@@ -424,6 +448,11 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
             break;
         default: // HTTP_GET
             break;
+    }
+
+    if (aos_log_level >= AOS_LOG_DEBUG) {
+        curl_easy_setopt_safe(CURLOPT_VERBOSE, 1L);   
+        curl_easy_setopt_safe(CURLOPT_DEBUGFUNCTION, aos_curl_debug_callback);
     }
     
 #undef curl_easy_setopt_safe

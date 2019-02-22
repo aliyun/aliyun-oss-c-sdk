@@ -31,6 +31,9 @@ void test_bucket_setup(CuTest *tc)
     aos_table_t *headers5 = NULL;
     int i = 0;
 
+    //set bucket name
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-bucket");
+
     //set log level, default AOS_LOG_WARN
     aos_log_set_level(AOS_LOG_WARN);
 
@@ -69,6 +72,36 @@ void test_bucket_setup(CuTest *tc)
 
 void test_bucket_cleanup(CuTest *tc)
 {
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    int is_cname = 0;
+    aos_string_t bucket;
+    aos_string_t prefix;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+    // delete objects
+    aos_str_set(&prefix, "oss_test_object");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    
+    aos_str_set(&prefix, "oss_tmp1");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
+    aos_str_set(&prefix, "oss_tmp2");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
+    aos_str_set(&prefix, "oss_tmp3");
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
+    /* delete test bucket */
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    oss_delete_bucket(options, &bucket, &resp_headers);
+
+    aos_pool_destroy(p);
 }
 
 void test_create_bucket(CuTest *tc)

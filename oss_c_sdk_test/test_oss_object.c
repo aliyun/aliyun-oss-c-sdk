@@ -10,6 +10,8 @@
 #include "oss_config.h"
 #include "oss_test_util.h"
 
+static char *TEST_BUCKET_NAME_2;
+
 void test_object_setup(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -18,14 +20,21 @@ void test_object_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
+    TEST_BUCKET_NAME   = get_test_bucket_name(aos_global_pool, "test-c-sdk-object");
+    TEST_BUCKET_NAME_2 = get_test_bucket_name(aos_global_pool, "test-c-sdk-object2");
+    
     /* create test bucket */
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
-
     CuAssertIntEquals(tc, 200, s->code);
+
+    s = create_test_bucket(options, TEST_BUCKET_NAME_2, oss_acl);
+    CuAssertIntEquals(tc, 200, s->code);
+
     aos_pool_destroy(p);
+
 }
 
 void test_object_cleanup(CuTest *tc)
@@ -65,6 +74,10 @@ void test_object_cleanup(CuTest *tc)
 
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
+    oss_delete_bucket(options, &bucket, &resp_headers);
+    apr_sleep(apr_time_from_sec(3));
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME_2);
     oss_delete_bucket(options, &bucket, &resp_headers);
     apr_sleep(apr_time_from_sec(3));
 
@@ -195,6 +208,8 @@ void test_put_object_from_buffer_with_specified(CuTest *tc)
         head_headers, &head_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
+
+	delete_test_object(options, TEST_BUCKET_NAME, object_name);
 
     printf("test_put_object_from_buffer_with_specified ok\n");
 }

@@ -271,6 +271,18 @@ void oss_live_channel_history_contents_parse(aos_pool_t *p, mxml_node_t *root, c
     aos_list_t *live_record_list);
 int oss_live_channel_history_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *live_record_list);
 
+/**
+* @brief build body for select object
+**/
+void oss_build_select_object_body(aos_pool_t *p,
+    const aos_string_t *expression,
+    const oss_select_object_params_t *params,
+    aos_list_t *body);
+
+void oss_build_create_select_object_meta_body(aos_pool_t *p,
+    const oss_select_object_meta_params_t *params,
+    aos_list_t *body);
+
 OSS_CPP_END
 
 #endif

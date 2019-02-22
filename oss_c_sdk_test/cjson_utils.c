@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "cjson_utils.h"
+#ifdef WIN32
+#pragma warning(disable:4996)
+#endif
 
 static int cJSONUtils_strcasecmp(const char *s1,const char *s2)
 {

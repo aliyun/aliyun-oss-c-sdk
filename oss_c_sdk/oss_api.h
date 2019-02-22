@@ -1289,6 +1289,109 @@ char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
                               const aos_string_t *play_list_name,
                               const int64_t expires);
 
+/*
+* @brief  select oss object to buffer
+* @param[in]   options             the oss request options
+* @param[in]   bucket              the oss bucket name
+* @param[in]   object              the oss object name
+* @param[in]   expression          sql select expression
+* @param[in]   select_params       select object parameters
+* @param[out]  buffer              the buffer containing object content
+* @param[out]  resp_headers        oss server response headers
+* @return  aos_status_t, code is 2xx success, other failure
+*/
+aos_status_t *oss_select_object_to_buffer(const oss_request_options_t *options,
+                            const aos_string_t *bucket,
+                            const aos_string_t *object,
+                            const aos_string_t *expression,
+                            oss_select_object_params_t *select_params,
+                            aos_list_t *buffer,
+                            aos_table_t **resp_headers);
+
+/*
+* @brief  select oss object to buffer
+* @param[in]   options             the oss request options
+* @param[in]   bucket              the oss bucket name
+* @param[in]   object              the oss object name
+* @param[in]   expression          sql select expression
+* @param[in]   select_params       select object parameters
+* @param[in]   headers             the headers for request
+* @param[in]   params              the params for request
+* @param[out]  buffer              the buffer containing object content
+* @param[in]   progress_callback   the progress callback function
+* @param[out]  resp_headers        oss server response headers
+* @return  aos_status_t, code is 2xx success, other failure
+*/
+aos_status_t *oss_do_select_object_to_buffer(const oss_request_options_t *options,
+                            const aos_string_t *bucket,
+                            const aos_string_t *object,
+                            const aos_string_t *expression,
+                            oss_select_object_params_t *select_params,
+                            aos_table_t *headers,
+                            aos_table_t *params,
+                            aos_list_t *buffer,
+                            oss_progress_callback progress_callback,
+                            aos_table_t **resp_headers);
+
+/*
+* @brief  select oss object to file
+* @param[in]   options             the oss request options
+* @param[in]   bucket              the oss bucket name
+* @param[in]   object              the oss object name
+* @param[in]   expression          sql select expression
+* @param[in]   select_params       select object parameters
+* @param[in]   filename            the filename storing object content
+* @param[out]  resp_headers        oss server response headers
+* @return  aos_status_t, code is 2xx success, other failure
+*/
+aos_status_t *oss_select_object_to_file(const oss_request_options_t *options,
+                            const aos_string_t *bucket,
+                            const aos_string_t *object,
+                            const aos_string_t *expression,
+                            oss_select_object_params_t *select_params,
+                            aos_string_t *filename,
+                            aos_table_t **resp_headers);
+
+/*
+* @brief  select oss object to file
+* @param[in]   options             the oss request options
+* @param[in]   bucket              the oss bucket name
+* @param[in]   object              the oss object name
+* @param[in]   expression          sql select expression
+* @param[in]   select_params       select object parameters
+* @param[in]   headers             the headers for request
+* @param[in]   params              the params for request
+* @param[in]   filename            the filename storing object content
+* @param[in]   progress_callback   the progress callback function
+* @param[out]  resp_headers        oss server response headers
+* @return  aos_status_t, code is 2xx success, other failure
+*/
+aos_status_t *oss_do_select_object_to_file(const oss_request_options_t *options,
+                            const aos_string_t *bucket,
+                            const aos_string_t *object,
+                            const aos_string_t *expression,
+                            oss_select_object_params_t *select_params,
+                            aos_table_t *headers,
+                            aos_table_t *params,
+                            aos_string_t *filename,
+                            oss_progress_callback progress_callback,
+                            aos_table_t **resp_headers);
+
+/*
+* @brief  create select oss object meta
+* @param[in]   options             the oss request options
+* @param[in]   bucket              the oss bucket name
+* @param[in]   object              the oss object name
+* @param[in]   meta_params         create select object meta parameters
+* @param[out]  resp_headers        oss server response headers
+* @return  aos_status_t, code is 2xx success, other failure
+*/
+aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    oss_select_object_meta_params_t *meta_params,
+    aos_table_t **resp_headers);
+
 OSS_CPP_END
 
 #endif
