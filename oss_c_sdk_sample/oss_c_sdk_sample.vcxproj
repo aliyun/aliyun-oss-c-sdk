@@ -177,6 +177,7 @@
     <ClCompile Include="oss_put_object_sample.c" />
     <ClCompile Include="oss_resumable_sample.c" />
     <ClCompile Include="oss_sample_util.c" />
+    <ClCompile Include="oss_select_object_sample.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="oss_config.h" />

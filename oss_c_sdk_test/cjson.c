@@ -31,6 +31,9 @@
 #include <limits.h>
 #include <ctype.h>
 #include "cjson.h"
+#ifdef WIN32
+#pragma warning(disable:4996)
+#endif
 
 static const char *global_ep;
 
