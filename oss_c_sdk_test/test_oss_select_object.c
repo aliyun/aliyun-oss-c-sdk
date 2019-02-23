@@ -723,14 +723,14 @@ void test_select_object_with_gzip_data(CuTest *tc)
     aos_list_t buffer;
     char *select_data = NULL;
     int32_t select_data_len = 0;
-    char *cmp_data = NULL;
-    int32_t cmp_data_len = 0;
+    //char *cmp_data = NULL;
+    //int32_t cmp_data_len = 0;
     long content_length = 0;
     char *sql = NULL;
     aos_string_t expression;
     oss_select_object_params_t *select_params;
     int64_t select_data_crc = 0;
-    int64_t cmp_data_crc = 0;
+    //int64_t cmp_data_crc = 0;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -764,9 +764,9 @@ void test_select_object_with_gzip_data(CuTest *tc)
     select_data_len = strlen(select_data);
     select_data_crc = aos_crc64(0, select_data, (size_t)select_data_len);
 
-    cmp_data = get_text_file_data(options->pool, test_file);
-    cmp_data_len = strlen(select_data);
-    cmp_data_crc = aos_crc64(0, cmp_data, (size_t)cmp_data_len);
+    //cmp_data = get_text_file_data(options->pool, test_file);
+    //cmp_data_len = strlen(select_data);
+    //cmp_data_crc = aos_crc64(0, cmp_data, (size_t)cmp_data_len);
     CuAssertTrue(tc, select_data_crc == 0x42DF5EE66341E3C3);
     aos_pool_destroy(p);
     printf("%s ok\n", __FUNCTION__);
@@ -785,8 +785,8 @@ void test_select_object_with_gzip_data_to_file(CuTest *tc)
     aos_list_t buffer;
     char *select_data = NULL;
     int32_t select_data_len = 0;
-    char *cmp_data = NULL;
-    int32_t cmp_data_len = 0;
+    //char *cmp_data = NULL;
+    //int32_t cmp_data_len = 0;
     char *tmpfile = "test_select_object_with_gzip_data.csv.tmp";
     long content_length = 0;
     char *sql = NULL;
@@ -794,7 +794,7 @@ void test_select_object_with_gzip_data_to_file(CuTest *tc)
     oss_select_object_params_t *select_params;
     aos_string_t filename;
     int64_t select_data_crc = 0;
-    int64_t cmp_data_crc = 0;
+    //int64_t cmp_data_crc = 0;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -828,9 +828,9 @@ void test_select_object_with_gzip_data_to_file(CuTest *tc)
     select_data_len = strlen(select_data);
     select_data_crc = aos_crc64(0, select_data, (size_t)select_data_len);
 
-    cmp_data = get_text_file_data(options->pool, test_file);
-    cmp_data_len = strlen(select_data);
-    cmp_data_crc = aos_crc64(0, cmp_data, (size_t)cmp_data_len);
+    //cmp_data = get_text_file_data(options->pool, test_file);
+    //cmp_data_len = strlen(select_data);
+    //cmp_data_crc = aos_crc64(0, cmp_data, (size_t)cmp_data_len);
     CuAssertTrue(tc, select_data_crc == 0x42DF5EE66341E3C3);
     aos_pool_destroy(p);
     printf("%s ok\n", __FUNCTION__);

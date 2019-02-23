@@ -1,5 +1,15 @@
 # ChangeLog - Aliyun OSS SDK for C
 
+## 版本号：3.7.0 日期：2019-02-23
+### 变更内容
+- 添加：支持oss_get_object_meta
+- 添加：支持oss_put_object_acl，oss_get_object_acl
+- 添加：支持windows x64 平台
+- 优化: 完善测试代码 
+- 添加：支持windows 下 使用cmake 方式构建
+- 添加：添加curl debug 日志信息
+- 添加：支持select object
+
 ## 版本号：3.6.0 日期：2018-04-19
 ### 变更内容
 - 添加：create_bucket支持指定存储类型，支持oss_restore_object
