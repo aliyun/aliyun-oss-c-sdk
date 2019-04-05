@@ -363,6 +363,18 @@ void oss_get_checkpoint_todo_parts(oss_checkpoint_t *checkpoint, int *part_num, 
     *part_num = idx;
 }
 
+static void oss_get_checkpoint_done_parts_size(oss_checkpoint_t *checkpoint, int64_t *size)
+{
+    int i = 0;
+    int64_t total = 0;
+    for (; i < checkpoint->part_num; i++) {
+        if (checkpoint->parts[i].completed) {
+            total += checkpoint->parts[i].size;
+        }
+    }
+    *size = total;
+}
+
 void * APR_THREAD_FUNC upload_part(apr_thread_t *thd, void *data) 
 {
     aos_status_t *s = NULL;
@@ -642,6 +654,7 @@ aos_status_t *oss_resumable_upload_file_with_cp(oss_request_options_t *options,
     ret = aos_status_create(parent_pool);
     parts = (oss_checkpoint_part_t *)aos_palloc(parent_pool, sizeof(oss_checkpoint_part_t) * (checkpoint->part_num));
     oss_get_checkpoint_todo_parts(checkpoint, &part_num, parts);
+    oss_get_checkpoint_done_parts_size(checkpoint, &consume_bytes);
     results = (oss_part_task_result_t *)aos_palloc(parent_pool, sizeof(oss_part_task_result_t) * part_num);
     thd_params = (oss_thread_params_t *)aos_palloc(parent_pool, sizeof(oss_thread_params_t) * part_num);
     oss_build_thread_params(thd_params, part_num, parent_pool, options, bucket, object, filepath, &upload_id, parts, results);
@@ -1024,6 +1037,7 @@ aos_status_t *oss_resumable_download_file_internal(oss_request_options_t *option
 
     parts = (oss_checkpoint_part_t *)aos_palloc(options->pool, sizeof(*parts) * checkpoint->part_num);
     oss_get_checkpoint_todo_parts(checkpoint, &part_num, parts);
+    oss_get_checkpoint_done_parts_size(checkpoint, &consume_bytes);
     results = (oss_part_task_result_t *)aos_palloc(options->pool, sizeof(*results) * part_num);
     thd_params = (oss_thread_params_t *)aos_palloc(options->pool, sizeof(*thd_params) * part_num);
     oss_build_thread_params(thd_params, part_num, options->pool, options, bucket, object, &tmp_filename, NULL, parts, results);
