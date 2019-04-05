@@ -123,7 +123,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define CR     (char) 13
 #define CRLF   "\x0d\x0a"
 
-#define AOS_VERSION    "3.7.0"
+#define AOS_VERSION    "3.7.1"
 #define AOS_VER        "aliyun-sdk-c/" AOS_VERSION
 
 #define AOS_HTTP_PREFIX   "http://"
