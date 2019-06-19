@@ -39,6 +39,7 @@
     <ClCompile Include="test_oss_image.c" />
     <ClCompile Include="test_oss_live.c" />
     <ClCompile Include="test_oss_multipart.c" />
+    <ClCompile Include="test_oss_object_tagging.c" />
     <ClCompile Include="test_oss_object.c" />
     <ClCompile Include="test_oss_progress.c" />
     <ClCompile Include="test_oss_proxy.c" />

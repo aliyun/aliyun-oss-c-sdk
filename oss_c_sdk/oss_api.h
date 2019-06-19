@@ -601,6 +601,23 @@ aos_status_t *oss_put_symlink(const oss_request_options_t *options,
                               aos_table_t **resp_headers);
 
 /*
+ * @brief  put symlink oss object
+ * @param[in]   options          the oss request options
+ * @param[in]   bucket           the oss bucket name
+ * @param[in]   sym_object       the oss symlink object name
+ * @param[in]   target_object    the oss target object game
+ * @param[in]   headers          the headers for request
+ * @param[out]  resp_headers     oss server response headers containing object meta
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_do_put_symlink(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *sym_object,
+    const aos_string_t *target_object,
+    aos_table_t *headers,
+    aos_table_t **resp_headers);
+
+/*
  * @brief  get symlink oss object
  * @param[in]   options          the oss request options
  * @param[in]   bucket           the oss bucket name
@@ -1391,6 +1408,50 @@ aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options
     const aos_string_t *object,
     oss_select_object_meta_params_t *meta_params,
     aos_table_t **resp_headers);
+
+/*
+ * @brief  put oss object tagging
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[out]  tag_list            the oss object tag list
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_put_object_tagging(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    aos_list_t *tag_list,
+    aos_table_t **resp_headers);
+
+/*
+ * @brief  get oss object tagging
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[out]  tag_list            the oss object tag list
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_get_object_tagging(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    aos_list_t *tag_list,
+    aos_table_t **resp_headers);
+
+/*
+ * @brief  delete oss object tagging
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[out]  resp_headers        oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_delete_object_tagging(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    aos_table_t **resp_headers);
+
 
 OSS_CPP_END
 

@@ -36,6 +36,7 @@ static const char *g_s_oss_sub_resource_list[] = {
     "x-oss-process",
     "security-token",
     "objectMeta",
+    "tagging",
     NULL,
 };
 
