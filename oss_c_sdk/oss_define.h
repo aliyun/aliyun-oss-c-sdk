@@ -111,6 +111,7 @@ extern const int OSS_PER_RET_NUM;
 extern const int MAX_SUFFIX_LEN;
 extern const char OSS_OBJECT_META[];
 extern const char OSS_SELECT_OBJECT_OUTPUT_RAW[];
+extern const char OSS_TAGGING[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 
@@ -470,5 +471,11 @@ typedef struct {
     PARAM_OUT uint64_t rows_count;
     PARAM_OUT uint32_t columns_count;
 } oss_select_object_meta_params_t;
+
+typedef struct {
+    aos_list_t node;
+    aos_string_t key;
+    aos_string_t value;
+} oss_tag_content_t;
 
 #endif

@@ -283,6 +283,17 @@ void oss_build_create_select_object_meta_body(aos_pool_t *p,
     const oss_select_object_meta_params_t *params,
     aos_list_t *body);
 
+/**
+* @brief build body for object tagging
+**/
+void build_object_tagging_body(aos_pool_t *p,
+    aos_list_t *tag_list,
+    aos_list_t *body);
+
+int oss_get_tagging_parse_from_body(aos_pool_t *p,
+    aos_list_t *bc, 
+    aos_list_t *tag_list);
+
 OSS_CPP_END
 
 #endif
