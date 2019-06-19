@@ -1416,3 +1416,8 @@ void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_s
         }
     }
 }
+
+oss_tag_content_t *oss_create_tag_content(aos_pool_t *p)
+{
+    return (oss_tag_content_t *)aos_pcalloc(p, sizeof(oss_tag_content_t));
+}

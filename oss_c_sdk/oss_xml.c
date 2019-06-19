@@ -2468,4 +2468,75 @@ void oss_build_create_select_object_meta_body(aos_pool_t *p,
     aos_list_add_tail(&b->node, body);
 }
 
+char *build_object_tagging_xml(aos_pool_t *p, aos_list_t *tag_list)
+{
+    char *tagging_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node, *tags_node;
+    oss_tag_content_t *content;
 
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "Tagging");
+    tags_node = mxmlNewElement(root_node, "TagSet");
+ 
+    aos_list_for_each_entry(oss_tag_content_t, content, tag_list, node) {
+        mxml_node_t *tag_node = mxmlNewElement(tags_node, "Tag");
+        mxml_node_t *key_node = mxmlNewElement(tag_node, "Key");
+        mxml_node_t *value_node = mxmlNewElement(tag_node, "Value");
+        mxmlNewText(key_node, 0, content->key.data);
+        mxmlNewText(value_node, 0, content->value.data);
+    }
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    tagging_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return tagging_xml;
+}
+
+void build_object_tagging_body(aos_pool_t *p, aos_list_t *tag_list, aos_list_t *body)
+{
+    char *tagging_xml;
+    aos_buf_t *b;
+    tagging_xml = build_object_tagging_xml(p, tag_list);
+    aos_list_init(body);
+    b = aos_buf_pack(p, tagging_xml, strlen(tagging_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+int oss_get_tagging_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *tag_list)
+{
+    mxml_node_t *doc = NULL;
+    mxml_node_t *tagging_node;
+    mxml_node_t *tagset_node;
+    int res;
+
+    res = get_xmldoc(bc, &doc);
+    if (res == AOSE_OK) {
+        tagging_node = mxmlFindElement(doc, doc, "Tagging", NULL, NULL, MXML_DESCEND);
+        if (tagging_node) {
+            tagset_node = mxmlFindElement(tagging_node, doc, "TagSet", NULL, NULL, MXML_DESCEND);
+            if (tagset_node) {
+                mxml_node_t * node = mxmlFindElement(tagset_node, doc, "Tag", NULL, NULL, MXML_DESCEND);
+                for (; node != NULL; ) {
+                    oss_tag_content_t *content = oss_create_tag_content(p);
+                    get_xmlnode_value_str(p, node, "Key", &content->key);
+                    get_xmlnode_value_str(p, node, "Value", &content->value);
+                    aos_list_add_tail(&content->node, tag_list);
+                    node = mxmlFindElement(node, tagset_node, "Tag", NULL, NULL, MXML_DESCEND);
+                }
+            }
+        }
+    }
+
+    mxmlDelete(doc);
+    return res;
+}

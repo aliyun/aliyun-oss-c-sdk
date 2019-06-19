@@ -382,6 +382,12 @@ int oss_init_create_select_object_meta_read_response_body(aos_pool_t *p, aos_htt
 void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_status_t *s,
     oss_select_object_meta_params_t *meta_params);
 
+/**
+* @brief  create oss tag content for tagging
+* @return oss tag content
+**/
+oss_tag_content_t *oss_create_tag_content(aos_pool_t *p);
+
 OSS_CPP_END
 
 #endif
