@@ -478,6 +478,135 @@ void test_upload_part_copy(CuTest *tc)
     printf("test_upload_part_copy ok\n");
 }
 
+void test_upload_part_copy_with_special_char(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_string_t upload_id;
+    oss_list_upload_part_params_t *list_upload_part_params = NULL;
+    oss_upload_part_copy_params_t *upload_part_copy_params1 = NULL;
+    oss_upload_part_copy_params_t *upload_part_copy_params2 = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_table_t *list_part_resp_headers = NULL;
+    aos_list_t complete_part_list;
+    oss_list_part_content_t *part_content = NULL;
+    oss_complete_part_content_t *complete_content = NULL;
+    aos_table_t *complete_resp_headers = NULL;
+    aos_status_t *s = NULL;
+    int part1 = 1;
+    int part2 = 2;
+    char *local_filename = "test_upload_part_copy.file";
+    char *download_filename = "test_upload_part_copy.file.download";
+    char *source_object_name = "oss_test_upload_part_copy_source_object_special_char+1";
+    char *dest_object_name = "oss_test_upload_part_copy_dest_object_special_char";
+    FILE *fd = NULL;
+    aos_string_t download_file;
+    aos_string_t dest_bucket;
+    aos_string_t dest_object;
+    int64_t range_start1 = 0;
+    int64_t range_end1 = 6000000;
+    int64_t range_start2 = 6000001;
+    int64_t range_end2;
+    aos_string_t data;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+
+    // create multipart upload local file    
+    make_rand_string(p, 10 * 1024 * 1024, &data);
+    fd = fopen(local_filename, "w");
+    CuAssertTrue(tc, fd != NULL);
+    fwrite(data.data, sizeof(data.data[0]), data.len, fd);
+    fclose(fd);
+
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    s = create_test_object_from_file(options, TEST_BUCKET_NAME, source_object_name,
+        local_filename, headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, headers);
+
+    //init mulitipart
+    s = init_test_multipart_upload(options, TEST_BUCKET_NAME, dest_object_name, &upload_id);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    //upload part copy 1
+    upload_part_copy_params1 = oss_create_upload_part_copy_params(p);
+    aos_str_set(&upload_part_copy_params1->source_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&upload_part_copy_params1->source_object, source_object_name);
+    aos_str_set(&upload_part_copy_params1->dest_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&upload_part_copy_params1->dest_object, dest_object_name);
+    aos_str_set(&upload_part_copy_params1->upload_id, upload_id.data);
+    upload_part_copy_params1->part_num = part1;
+    upload_part_copy_params1->range_start = range_start1;
+    upload_part_copy_params1->range_end = range_end1;
+
+    headers = aos_table_make(p, 0);
+    s = oss_upload_part_copy(options, upload_part_copy_params1, headers, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //upload part copy 2
+    resp_headers = NULL;
+    range_end2 = get_file_size(local_filename) - 1;
+    upload_part_copy_params2 = oss_create_upload_part_copy_params(p);
+    aos_str_set(&upload_part_copy_params2->source_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&upload_part_copy_params2->source_object, source_object_name);
+    aos_str_set(&upload_part_copy_params2->dest_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&upload_part_copy_params2->dest_object, dest_object_name);
+    aos_str_set(&upload_part_copy_params2->upload_id, upload_id.data);
+    upload_part_copy_params2->part_num = part2;
+    upload_part_copy_params2->range_start = range_start2;
+    upload_part_copy_params2->range_end = range_end2;
+
+    headers = aos_table_make(p, 0);
+    s = oss_upload_part_copy(options, upload_part_copy_params2, headers, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //list part
+    list_upload_part_params = oss_create_list_upload_part_params(p);
+    list_upload_part_params->max_ret = 10;
+    aos_list_init(&complete_part_list);
+
+    aos_str_set(&dest_bucket, TEST_BUCKET_NAME);
+    aos_str_set(&dest_object, dest_object_name);
+    s = oss_list_upload_part(options, &dest_bucket, &dest_object, &upload_id,
+        list_upload_part_params, &list_part_resp_headers);
+
+    aos_list_for_each_entry(oss_list_part_content_t, part_content, &list_upload_part_params->part_list, node) {
+        complete_content = oss_create_complete_part_content(p);
+        aos_str_set(&complete_content->part_number, part_content->part_number.data);
+        aos_str_set(&complete_content->etag, part_content->etag.data);
+        aos_list_add_tail(&complete_content->node, &complete_part_list);
+    }
+
+    //complete multipart
+    headers = aos_table_make(p, 0);
+    s = oss_complete_multipart_upload(options, &dest_bucket, &dest_object,
+        &upload_id, &complete_part_list, headers, &complete_resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, complete_resp_headers);
+
+    //check upload copy part content equal to local file
+    headers = aos_table_make(p, 0);
+    aos_str_set(&download_file, download_filename);
+    s = oss_get_object_to_file(options, &dest_bucket, &dest_object, headers,
+        query_params, &download_file, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, get_file_size(local_filename), get_file_size(download_filename));
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    remove(download_filename);
+    remove(local_filename);
+    aos_pool_destroy(p);
+
+    printf("test_upload_part_copy ok\n");
+}
+
 void test_upload_file_failed_without_uploadid(CuTest *tc) 
 {
     aos_pool_t *p = NULL;
@@ -802,6 +931,7 @@ CuSuite *test_oss_multipart()
     SUITE_ADD_TEST(suite, test_upload_file_from_recover);
     SUITE_ADD_TEST(suite, test_upload_file_from_recover_failed);
     SUITE_ADD_TEST(suite, test_upload_part_copy);
+    SUITE_ADD_TEST(suite, test_upload_part_copy_with_special_char);
     SUITE_ADD_TEST(suite, test_list_upload_part_with_empty);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part_with_empty);

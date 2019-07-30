@@ -884,7 +884,6 @@ void test_lifecycle_tag(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_list_t lifecycle_rule_list;
-    oss_lifecycle_rule_content_t *invalid_rule_content = NULL;
     oss_lifecycle_rule_content_t *rule_content = NULL;
     oss_lifecycle_rule_content_t *rule_content1 = NULL;
     oss_lifecycle_rule_content_t *rule_content2 = NULL;

@@ -87,11 +87,12 @@ void test_callback_put_object_from_buffer(CuTest *tc)
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
         "}";
-    sprintf(callback, callback_fmt, TEST_CALLBACK_URL);
 
     aos_log_level_e oldLogLevel;
     oldLogLevel = aos_log_level;
     aos_log_set_level(AOS_LOG_DEBUG);
+
+    sprintf(callback, callback_fmt, TEST_CALLBACK_URL);
 
     /* init test */
     aos_pool_create(&p, NULL);
