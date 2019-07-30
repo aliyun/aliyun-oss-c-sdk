@@ -289,6 +289,7 @@ typedef struct {
     aos_string_t date;
     aos_string_t created_before_date;
     oss_lifecycle_rule_date_t abort_multipart_upload_dt;
+    aos_list_t tag_list;
 } oss_lifecycle_rule_content_t;
 
 typedef struct {
