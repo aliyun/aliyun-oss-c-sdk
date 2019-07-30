@@ -875,6 +875,215 @@ void test_object_tagging_resumale_upload(CuTest *tc)
     printf("test_object_tagging_resumale_upload ok\n");
 }
 
+void test_lifecycle_tag(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t lifecycle_rule_list;
+    oss_lifecycle_rule_content_t *invalid_rule_content = NULL;
+    oss_lifecycle_rule_content_t *rule_content = NULL;
+    oss_lifecycle_rule_content_t *rule_content1 = NULL;
+    oss_lifecycle_rule_content_t *rule_content2 = NULL;
+    oss_lifecycle_rule_content_t *rule_content3 = NULL;
+    oss_lifecycle_rule_content_t *rule_content4 = NULL;
+    int size = 0;
+    char *rule_id = NULL;
+    char *prefix = NULL;
+    char *status = NULL;
+    int days = INT_MAX;
+    char* date = NULL;
+    char* created_before_date = NULL;
+    oss_tag_content_t *tag_content = NULL;
+    int tag_index = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+
+    //put lifecycle
+    resp_headers = NULL;
+    aos_list_init(&lifecycle_rule_list);
+    rule_content1 = oss_create_lifecycle_rule_content(p);
+    aos_str_set(&rule_content1->id, "1");
+    aos_str_set(&rule_content1->prefix, "pre1");
+    aos_str_set(&rule_content1->status, "Enabled");
+    rule_content1->days = 1;
+    tag_content = oss_create_tag_content(p);
+    aos_str_set(&tag_content->key, "pre1key1");
+    aos_str_set(&tag_content->value, "pre1value1");
+    aos_list_add_tail(&tag_content->node, &rule_content1->tag_list);
+    tag_content = oss_create_tag_content(p);
+    aos_str_set(&tag_content->key, "pre1key2");
+    aos_str_set(&tag_content->value, "pre1value2");
+    aos_list_add_tail(&tag_content->node, &rule_content1->tag_list);
+
+    rule_content2 = oss_create_lifecycle_rule_content(p);
+    aos_str_set(&rule_content2->id, "2");
+    aos_str_set(&rule_content2->prefix, "pre2");
+    aos_str_set(&rule_content2->status, "Enabled");
+    aos_str_set(&rule_content2->date, "2022-10-11T00:00:00.000Z");
+
+
+    rule_content3 = oss_create_lifecycle_rule_content(p);
+    aos_str_set(&rule_content3->id, "3");
+    aos_str_set(&rule_content3->prefix, "pre3");
+    aos_str_set(&rule_content3->status, "Enabled");
+    aos_str_set(&rule_content3->created_before_date, "2017-10-11T00:00:00.000Z");
+    rule_content3->abort_multipart_upload_dt.days = 1;
+
+    rule_content4 = oss_create_lifecycle_rule_content(p);
+    aos_str_set(&rule_content4->id, "4");
+    aos_str_set(&rule_content4->prefix, "pre4");
+    aos_str_set(&rule_content4->status, "Enabled");
+    aos_str_set(&rule_content4->created_before_date, "2017-10-11T00:00:00.000Z");
+    aos_str_set(&rule_content4->abort_multipart_upload_dt.created_before_date, "2012-10-11T00:00:00.000Z");
+
+    aos_list_add_tail(&rule_content1->node, &lifecycle_rule_list);
+    aos_list_add_tail(&rule_content2->node, &lifecycle_rule_list);
+    aos_list_add_tail(&rule_content3->node, &lifecycle_rule_list);
+    aos_list_add_tail(&rule_content4->node, &lifecycle_rule_list);
+
+    s = oss_put_bucket_lifecycle(options, &bucket, &lifecycle_rule_list,
+        &resp_headers);
+    if (s->error_msg) {
+        TEST_CASE_LOG("%s %s\n", s->error_msg, s->error_code);
+    }
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //get lifecycle
+    resp_headers = NULL;
+    aos_list_init(&lifecycle_rule_list);
+    s = oss_get_bucket_lifecycle(options, &bucket, &lifecycle_rule_list,
+        &resp_headers);
+    if (s->error_msg) {
+        printf("%s %s", s->error_msg, s->error_code);
+    }
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_list_for_each_entry(oss_lifecycle_rule_content_t, rule_content, &lifecycle_rule_list, node) {
+        if (size == 0) {
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len,
+                rule_content->id.data);
+            CuAssertStrEquals(tc, "1", rule_id);
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len,
+                rule_content->prefix.data);
+            CuAssertStrEquals(tc, "pre1", prefix);
+            date = apr_psprintf(p, "%.*s", rule_content->date.len,
+                rule_content->date.data);
+            CuAssertStrEquals(tc, "", date);
+            status = apr_psprintf(p, "%.*s", rule_content->status.len,
+                rule_content->status.data);
+            CuAssertStrEquals(tc, "Enabled", status);
+            days = rule_content->days;
+            CuAssertIntEquals(tc, 1, days);
+            tag_index = 0;
+            aos_list_for_each_entry(oss_tag_content_t, tag_content, &rule_content->tag_list, node) {
+                if (tag_index == 0) {
+                    CuAssertStrEquals(tc, "pre1key1", tag_content->key.data);
+                    CuAssertStrEquals(tc, "pre1value1", tag_content->value.data);
+                }
+                else if (tag_index == 1) {
+                    CuAssertStrEquals(tc, "pre1key2", tag_content->key.data);
+                    CuAssertStrEquals(tc, "pre1value2", tag_content->value.data);
+                }
+                tag_index++;
+            }
+            CuAssertIntEquals(tc, 2, tag_index);
+        }
+        else if (size == 1) {
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len,
+                rule_content->id.data);
+            CuAssertStrEquals(tc, "2", rule_id);
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len,
+                rule_content->prefix.data);
+            CuAssertStrEquals(tc, "pre2", prefix);
+            date = apr_psprintf(p, "%.*s", rule_content->date.len,
+                rule_content->date.data);
+            CuAssertStrEquals(tc, "2022-10-11T00:00:00.000Z", date);
+            status = apr_psprintf(p, "%.*s", rule_content->status.len,
+                rule_content->status.data);
+            CuAssertStrEquals(tc, "Enabled", status);
+            days = rule_content->days;
+            CuAssertIntEquals(tc, INT_MAX, days);
+            CuAssertIntEquals(tc, 1, aos_list_empty(&rule_content->tag_list));
+        }
+        else if (size == 2) {
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len,
+                rule_content->id.data);
+            CuAssertStrEquals(tc, "3", rule_id);
+
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len,
+                rule_content->prefix.data);
+            CuAssertStrEquals(tc, "pre3", prefix);
+
+            date = apr_psprintf(p, "%.*s", rule_content->date.len,
+                rule_content->date.data);
+            CuAssertStrEquals(tc, "", date);
+
+            created_before_date = apr_psprintf(p, "%.*s", rule_content->created_before_date.len,
+                rule_content->created_before_date.data);
+            CuAssertStrEquals(tc, "2017-10-11T00:00:00.000Z", created_before_date);
+
+            days = rule_content->abort_multipart_upload_dt.days;
+            CuAssertIntEquals(tc, 1, days);
+
+            status = apr_psprintf(p, "%.*s", rule_content->status.len,
+                rule_content->status.data);
+            CuAssertStrEquals(tc, "Enabled", status);
+            days = rule_content->days;
+            CuAssertIntEquals(tc, INT_MAX, days);
+            CuAssertIntEquals(tc, 1, aos_list_empty(&rule_content->tag_list));
+        }
+        else if (size == 3) {
+            rule_id = apr_psprintf(p, "%.*s", rule_content->id.len,
+                rule_content->id.data);
+            CuAssertStrEquals(tc, "4", rule_id);
+
+            prefix = apr_psprintf(p, "%.*s", rule_content->prefix.len,
+                rule_content->prefix.data);
+            CuAssertStrEquals(tc, "pre4", prefix);
+
+            created_before_date = apr_psprintf(p, "%.*s", rule_content->created_before_date.len,
+                rule_content->created_before_date.data);
+            CuAssertStrEquals(tc, "2017-10-11T00:00:00.000Z", created_before_date);
+
+            created_before_date = apr_psprintf(p, "%.*s",
+                rule_content->abort_multipart_upload_dt.created_before_date.len,
+                rule_content->abort_multipart_upload_dt.created_before_date.data);
+            CuAssertStrEquals(tc, "2012-10-11T00:00:00.000Z", created_before_date);
+
+            days = rule_content->abort_multipart_upload_dt.days;
+            CuAssertIntEquals(tc, INT_MAX, days);
+
+            status = apr_psprintf(p, "%.*s", rule_content->status.len,
+                rule_content->status.data);
+            CuAssertStrEquals(tc, "Enabled", status);
+            days = rule_content->days;
+            CuAssertIntEquals(tc, INT_MAX, days);
+            CuAssertIntEquals(tc, 1, aos_list_empty(&rule_content->tag_list));
+        }
+
+        ++size;
+    }
+    CuAssertIntEquals(tc, 4, size);
+
+    //delete lifecycle
+    resp_headers = NULL;
+    s = oss_delete_bucket_lifecycle(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 204, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_pool_destroy(p);
+
+    printf("test_lifecycle ok\n");
+}
+
 CuSuite *test_oss_object_tagging()
 {
     CuSuite* suite = CuSuiteNew();   
@@ -888,6 +1097,7 @@ CuSuite *test_oss_object_tagging()
     SUITE_ADD_TEST(suite, test_object_tagging_copy_object);
     SUITE_ADD_TEST(suite, test_object_tagging_multipart_upload);
     SUITE_ADD_TEST(suite, test_object_tagging_resumale_upload);
+    SUITE_ADD_TEST(suite, test_lifecycle_tag);
     SUITE_ADD_TEST(suite, test_object_tagging_cleanup);
     
     return suite;
