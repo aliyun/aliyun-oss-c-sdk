@@ -17,6 +17,7 @@ extern CuSuite *test_aos();
 extern CuSuite *test_oss_proxy();
 extern CuSuite *test_oss_resumable();
 extern CuSuite *test_oss_select_object();
+extern CuSuite *test_oss_object_tagging();
 
 static const struct testlist {
     const char *testname;
@@ -34,6 +35,7 @@ static const struct testlist {
     {"test_oss_resumable", test_oss_resumable},
     {"test_aos", test_aos},
     {"test_oss_select_object", test_oss_select_object },
+    {"test_oss_object_tagging", test_oss_object_tagging },
     {"LastTest", NULL}
 };
 
@@ -62,6 +64,12 @@ void load_cfg_from_env()
     apr_env_get(&str, "OSS_TEST_ACCESS_KEY_SECRET", aos_global_pool);
     if (str) {
         TEST_ACCESS_KEY_SECRET = str;
+    }
+
+    str = NULL;
+    apr_env_get(&str, "OSS_TEST_CALLBACK_URL", aos_global_pool);
+    if (str) {
+        TEST_CALLBACK_URL = str;
     }
 }
 
@@ -104,6 +112,12 @@ void load_cfg_from_file()
             aos_trip_space_and_cntrl(&str);
             aos_unquote_str(&str);
             TEST_OSS_ENDPOINT = aos_pstrdup(aos_global_pool, &str);
+        }
+        else if (!strncmp(buffer, "CallbackServer", 14)) {
+            aos_str_set(&str, ptr + 1);
+            aos_trip_space_and_cntrl(&str);
+            aos_unquote_str(&str);
+            TEST_CALLBACK_URL = aos_pstrdup(aos_global_pool, &str);
         }
     }
     apr_file_close(file);

@@ -333,6 +333,8 @@ aos_status_t *oss_upload_part_copy(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     char *copy_source = NULL;
     char *copy_source_range = NULL;
+    char buffer[AOS_MAX_QUERY_ARG_LEN * 3 + 1];
+    int res = -1;
 
     s = aos_status_create(options->pool);
 
@@ -342,10 +344,15 @@ aos_status_t *oss_upload_part_copy(const oss_request_options_t *options,
     aos_table_add_int(query_params, OSS_PARTNUMBER, params->part_num);
 
     //init headers
+    res = aos_url_encode(buffer, params->source_object.data, AOS_MAX_QUERY_ARG_LEN);
+    if (res != AOSE_OK) {
+        aos_status_set(s, res, AOS_URL_ENCODE_ERROR_CODE, NULL);
+        return s;
+    }
     headers = aos_table_create_if_null(options, headers, 2);
-    copy_source = apr_psprintf(options->pool, "/%.*s/%.*s", 
+    copy_source = apr_psprintf(options->pool, "/%.*s/%s", 
         params->source_bucket.len, params->source_bucket.data, 
-        params->source_object.len, params->source_object.data);
+        buffer);
     apr_table_add(headers, OSS_COPY_SOURCE, copy_source);
     copy_source_range = apr_psprintf(options->pool, 
             "bytes=%" APR_INT64_T_FMT "-%" APR_INT64_T_FMT,
