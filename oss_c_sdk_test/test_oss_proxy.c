@@ -66,6 +66,7 @@ void init_test_proxy_request_options(oss_request_options_t *options, int is_cnam
     options->config->proxy_port = 3128;
 
     options->ctl = aos_http_controller_create(options->pool, 0);
+    options->ctl->options = aos_http_request_options_create(options->pool);
     oss_config_resolve(options->pool, options->config, options->ctl);
 }
 

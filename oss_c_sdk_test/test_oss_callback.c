@@ -78,10 +78,11 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     int64_t pos = 0;
     char b64_buf[1024];
     int b64_len;
+    char callback[1024];
     
     /* JSON format */
-    char *callback =  "{"
-        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
+    char *callback_fmt =  "{"
+        "\"callbackUrl\":\"%s\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
@@ -90,6 +91,8 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     aos_log_level_e oldLogLevel;
     oldLogLevel = aos_log_level;
     aos_log_set_level(AOS_LOG_DEBUG);
+
+    sprintf(callback, callback_fmt, TEST_CALLBACK_URL);
 
     /* init test */
     aos_pool_create(&p, NULL);
@@ -114,6 +117,8 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     /* test put object */
     s = oss_do_put_object_from_buffer(options, &bucket, &object, &buffer, 
         headers, NULL, NULL, &resp_headers, &resp_body);
+
+    aos_log_set_level(oldLogLevel);
     CuAssertIntEquals(tc, 200, s->code);
 
     /* get buffer len */
@@ -140,8 +145,6 @@ void test_callback_put_object_from_buffer(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
 
     aos_pool_destroy(p);
-
-    aos_log_set_level(oldLogLevel);
 
     printf("test_callback_put_object_from_buffer ok\n");
 }
@@ -172,14 +175,17 @@ void test_callback_multipart_from_buffer(CuTest *tc)
     int64_t pos = 0;
     char b64_buf[1024];
     int b64_len;
+    char callback[1024];
 
     /* JSON format */
-    char *callback =  "{"
-        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
+    char *callback_fmt =  "{"
+        "\"callbackUrl\":\"%s\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
         "}";
+    sprintf(callback, callback_fmt, TEST_CALLBACK_URL);
+
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);

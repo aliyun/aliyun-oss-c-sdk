@@ -80,4 +80,5 @@ const int OSS_PER_RET_NUM = 1000;
 const int MAX_SUFFIX_LEN = 1024;
 const char OSS_OBJECT_META[] = "objectMeta";
 const char OSS_SELECT_OBJECT_OUTPUT_RAW[] = "x-oss-select-output-raw";
+const char OSS_TAGGING[] = "tagging";
 

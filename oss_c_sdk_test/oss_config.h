@@ -9,6 +9,7 @@ extern char* TEST_OSS_ENDPOINT;
 extern char* TEST_ACCESS_KEY_ID;
 extern char* TEST_ACCESS_KEY_SECRET;
 extern char* TEST_BUCKET_NAME;
+extern char* TEST_CALLBACK_URL;
 
 OSS_CPP_END
 

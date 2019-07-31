@@ -399,21 +399,29 @@ aos_status_t *oss_get_object_acl(const oss_request_options_t *options,
     return s;
 }
 
-aos_status_t *oss_put_symlink(const oss_request_options_t *options, 
+aos_status_t *oss_put_symlink(const oss_request_options_t *options,
+                              const aos_string_t *bucket,
+                              const aos_string_t *sym_object,
+                              const aos_string_t *target_object,
+                              aos_table_t **resp_headers)
+{
+    return oss_do_put_symlink(options, bucket, sym_object, target_object, NULL, resp_headers);
+}
+
+aos_status_t *oss_do_put_symlink(const oss_request_options_t *options, 
                               const aos_string_t *bucket, 
                               const aos_string_t *sym_object,
                               const aos_string_t *target_object,
+                              aos_table_t *headers,
                               aos_table_t **resp_headers)
 {
     aos_status_t *s = NULL;
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
-    aos_table_t *headers = NULL;
 
-    headers = aos_table_make(options->pool, 1);
+    headers = aos_table_create_if_null(options, headers, 1);
     apr_table_set(headers, OSS_CANNONICALIZED_HEADER_SYMLINK, target_object->data);
-    headers = aos_table_create_if_null(options, headers, 0);    
 
     query_params = aos_table_create_if_null(options, query_params, 0);
     apr_table_add(query_params, OSS_SYMLINK, "");
@@ -1047,6 +1055,98 @@ aos_status_t *oss_create_select_object_meta(const oss_request_options_t *options
    
     oss_fill_read_response_header(resp, resp_headers);
     oss_check_create_select_object_meta_status(resp, s, meta_params);
+
+    return s;
+}
+
+aos_status_t *oss_put_object_tagging(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    aos_list_t *tag_list,
+    aos_table_t **resp_headers)
+{
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    apr_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
+    aos_list_t body;
+
+    //init query_params
+    query_params = aos_table_create_if_null(options, query_params, 1);
+    apr_table_add(query_params, OSS_TAGGING, "");
+
+    //init headers
+    headers = aos_table_create_if_null(options, headers, 0);
+
+    oss_init_object_request(options, bucket, object, HTTP_PUT,
+        &req, query_params, headers, NULL, 0, &resp);
+
+    build_object_tagging_body(options->pool, tag_list, &body);
+    oss_write_request_body_from_buffer(&body, req);
+    s = oss_process_request(options, req, resp);
+
+    oss_fill_read_response_header(resp, resp_headers);
+
+    return s;
+}
+
+aos_status_t *oss_get_object_tagging(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    aos_list_t *tag_list,
+    aos_table_t **resp_headers)
+{
+    aos_status_t *s = NULL;
+    int res;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
+
+    query_params = aos_table_create_if_null(options, query_params, 1);
+    apr_table_add(query_params, OSS_TAGGING, "");
+
+    headers = aos_table_create_if_null(options, headers, 0);
+
+    oss_init_object_request(options, bucket, object, HTTP_GET,
+        &req, query_params, headers, NULL, 0, &resp);
+
+    s = oss_process_request(options, req, resp);
+    oss_fill_read_response_header(resp, resp_headers);
+    if (!aos_status_is_ok(s)) {
+        return s;
+    }
+
+    res = oss_get_tagging_parse_from_body(options->pool, &resp->body, tag_list);
+    if (res != AOSE_OK) {
+        aos_xml_error_status_set(s, res);
+    }
+
+    return s;
+}
+
+aos_status_t *oss_delete_object_tagging(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    aos_table_t **resp_headers)
+{
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
+
+    query_params = aos_table_create_if_null(options, query_params, 1);
+    apr_table_add(query_params, OSS_TAGGING, "");
+
+    headers = aos_table_create_if_null(options, headers, 0);
+
+    oss_init_object_request(options, bucket, object, HTTP_DELETE,
+        &req, query_params, headers, NULL, 0, &resp);
+
+    s = oss_process_request(options, req, resp);
+    oss_fill_read_response_header(resp, resp_headers);
 
     return s;
 }

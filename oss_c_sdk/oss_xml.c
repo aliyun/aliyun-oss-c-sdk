@@ -902,6 +902,7 @@ char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list)
     doc = mxmlNewXML("1.0");
     root_node = mxmlNewElement(doc, "LifecycleConfiguration");
     aos_list_for_each_entry(oss_lifecycle_rule_content_t, content, lifecycle_rule_list, node) {
+        oss_tag_content_t *tag = NULL;
         mxml_node_t *rule_node = mxmlNewElement(root_node, "Rule");
         mxml_node_t *id_node = mxmlNewElement(rule_node, "ID");
         mxml_node_t *prefix_node = mxmlNewElement(rule_node, "Prefix");
@@ -933,6 +934,15 @@ char *build_lifecycle_xml(aos_pool_t *p, aos_list_t *lifecycle_rule_list)
             mxml_node_t *abort_mulpart_node = mxmlNewElement(rule_node, "AbortMultipartUpload");
             mxml_node_t *abort_date_node = mxmlNewElement(abort_mulpart_node, "CreatedBeforeDate");
             mxmlNewText(abort_date_node, 0, content->abort_multipart_upload_dt.created_before_date.data);
+        }
+        
+        //tag
+        aos_list_for_each_entry(oss_tag_content_t, tag, &content->tag_list, node) {
+            mxml_node_t *tag_node = mxmlNewElement(rule_node, "Tag");
+            mxml_node_t *key_node = mxmlNewElement(tag_node, "Key");
+            mxml_node_t *value_node = mxmlNewElement(tag_node, "Value");
+            mxmlNewText(key_node, 0, tag->key.data);
+            mxmlNewText(value_node, 0, tag->value.data);
         }
     }
     
@@ -1270,6 +1280,14 @@ void oss_lifecycle_rule_content_parse(aos_pool_t *p, mxml_node_t * xml_node,
     if (NULL != node) {
         oss_lifecycle_rule_date_parse(p, node, &content->abort_multipart_upload_dt);
     }
+
+    node = mxmlFindElement(xml_node, xml_node, "Tag", NULL, NULL, MXML_DESCEND);
+    for (; node != NULL; ) {
+        oss_tag_content_t *tag = oss_create_tag_content(p);
+        oss_lifecycle_rule_tag_parse(p, node, tag);
+        aos_list_add_tail(&tag->node, &content->tag_list);
+        node = mxmlFindElement(node, xml_node, "Tag", NULL, NULL, MXML_DESCEND);
+    }
 }
 
 void oss_lifecycle_rule_date_parse(aos_pool_t *p, mxml_node_t * xml_node,
@@ -1325,6 +1343,29 @@ void oss_lifecycle_rule_expire_parse(aos_pool_t *p, mxml_node_t * xml_node,
         created_before_date = apr_pstrdup(p, (char *)node_content);
         aos_str_set(&content->created_before_date, created_before_date);
     } 
+}
+
+void oss_lifecycle_rule_tag_parse(aos_pool_t *p, mxml_node_t * xml_node,
+    oss_tag_content_t *tag)
+{
+    mxml_node_t *node;
+    char *node_content;
+
+    node = mxmlFindElement(xml_node, xml_node, "Key", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        char *key;
+        node_content = node->child->value.opaque;
+        key = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&tag->key, key);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Value", NULL, NULL, MXML_DESCEND);
+    if (NULL != node) {
+        char *value;
+        node_content = node->child->value.opaque;
+        value = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&tag->value, value);
+    }
 }
 
 void oss_delete_objects_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
@@ -2468,4 +2509,75 @@ void oss_build_create_select_object_meta_body(aos_pool_t *p,
     aos_list_add_tail(&b->node, body);
 }
 
+char *build_object_tagging_xml(aos_pool_t *p, aos_list_t *tag_list)
+{
+    char *tagging_xml;
+    char *xml_buff;
+    aos_string_t xml_doc;
+    mxml_node_t *doc;
+    mxml_node_t *root_node, *tags_node;
+    oss_tag_content_t *content;
 
+    doc = mxmlNewXML("1.0");
+    root_node = mxmlNewElement(doc, "Tagging");
+    tags_node = mxmlNewElement(root_node, "TagSet");
+ 
+    aos_list_for_each_entry(oss_tag_content_t, content, tag_list, node) {
+        mxml_node_t *tag_node = mxmlNewElement(tags_node, "Tag");
+        mxml_node_t *key_node = mxmlNewElement(tag_node, "Key");
+        mxml_node_t *value_node = mxmlNewElement(tag_node, "Value");
+        mxmlNewText(key_node, 0, content->key.data);
+        mxmlNewText(value_node, 0, content->value.data);
+    }
+
+    xml_buff = new_xml_buff(doc);
+    if (xml_buff == NULL) {
+        return NULL;
+    }
+    aos_str_set(&xml_doc, xml_buff);
+    tagging_xml = aos_pstrdup(p, &xml_doc);
+
+    free(xml_buff);
+    mxmlDelete(doc);
+
+    return tagging_xml;
+}
+
+void build_object_tagging_body(aos_pool_t *p, aos_list_t *tag_list, aos_list_t *body)
+{
+    char *tagging_xml;
+    aos_buf_t *b;
+    tagging_xml = build_object_tagging_xml(p, tag_list);
+    aos_list_init(body);
+    b = aos_buf_pack(p, tagging_xml, strlen(tagging_xml));
+    aos_list_add_tail(&b->node, body);
+}
+
+int oss_get_tagging_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *tag_list)
+{
+    mxml_node_t *doc = NULL;
+    mxml_node_t *tagging_node;
+    mxml_node_t *tagset_node;
+    int res;
+
+    res = get_xmldoc(bc, &doc);
+    if (res == AOSE_OK) {
+        tagging_node = mxmlFindElement(doc, doc, "Tagging", NULL, NULL, MXML_DESCEND);
+        if (tagging_node) {
+            tagset_node = mxmlFindElement(tagging_node, doc, "TagSet", NULL, NULL, MXML_DESCEND);
+            if (tagset_node) {
+                mxml_node_t * node = mxmlFindElement(tagset_node, doc, "Tag", NULL, NULL, MXML_DESCEND);
+                for (; node != NULL; ) {
+                    oss_tag_content_t *content = oss_create_tag_content(p);
+                    get_xmlnode_value_str(p, node, "Key", &content->key);
+                    get_xmlnode_value_str(p, node, "Value", &content->value);
+                    aos_list_add_tail(&content->node, tag_list);
+                    node = mxmlFindElement(node, tagset_node, "Tag", NULL, NULL, MXML_DESCEND);
+                }
+            }
+        }
+    }
+
+    mxmlDelete(doc);
+    return res;
+}

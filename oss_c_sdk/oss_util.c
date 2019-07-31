@@ -596,6 +596,7 @@ oss_lifecycle_rule_content_t *oss_create_lifecycle_rule_content(aos_pool_t *p)
     aos_str_set(&rule->created_before_date, "");
     rule->days = INT_MAX;
     oss_init_lifecycle_rule_date(&rule->abort_multipart_upload_dt);
+    aos_list_init(&rule->tag_list);
     return rule;
 }
 
@@ -1415,4 +1416,9 @@ void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_s
             }
         }
     }
+}
+
+oss_tag_content_t *oss_create_tag_content(aos_pool_t *p)
+{
+    return (oss_tag_content_t *)aos_pcalloc(p, sizeof(oss_tag_content_t));
 }

@@ -1161,8 +1161,9 @@ void test_resumable_upload_callback_without_checkpoint(CuTest *tc)
     int64_t len = 0;
     int64_t size = 0;
     int64_t pos = 0;
-    char *callback =  "{"
-        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
+    char callback[1024];
+    char *callback_fmt =  "{"
+        "\"callbackUrl\":\"%s\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
@@ -1171,6 +1172,8 @@ void test_resumable_upload_callback_without_checkpoint(CuTest *tc)
         "\"x:var1\":\"value1\","
         "\"x:var2\":\"value2\""
         "}";
+
+    sprintf(callback, callback_fmt, TEST_CALLBACK_URL);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1294,8 +1297,9 @@ void test_resumable_upload_callback_with_checkpoint(CuTest *tc)
     int64_t len = 0;
     int64_t size = 0;
     int64_t pos = 0;
-    char *callback =  "{"
-        "\"callbackUrl\":\"http://oss-demo.aliyuncs.com:23450\","
+    char callback[1024];
+    char *callback_fmt =  "{"
+        "\"callbackUrl\":\"%s\","
         "\"callbackHost\":\"oss-cn-hangzhou.aliyuncs.com\","
         "\"callbackBody\":\"bucket=${bucket}&object=${object}&size=${size}&mimeType=${mimeType}\","
         "\"callbackBodyType\":\"application/x-www-form-urlencoded\""
@@ -1304,6 +1308,7 @@ void test_resumable_upload_callback_with_checkpoint(CuTest *tc)
         "\"x:var1\":\"value1\","
         "\"x:var2\":\"value2\""
         "}";
+    sprintf(callback, callback_fmt, TEST_CALLBACK_URL);
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
