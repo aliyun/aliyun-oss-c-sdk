@@ -209,6 +209,8 @@ void oss_lifecycle_rule_contents_parse(aos_pool_t *p, mxml_node_t *root, const c
 int oss_lifecycle_rules_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *lifecycle_rule_list);
 void oss_lifecycle_rule_date_parse(aos_pool_t *p, mxml_node_t * xml_node,
     oss_lifecycle_rule_date_t *rule_date);
+void oss_lifecycle_rule_tag_parse(aos_pool_t *p, mxml_node_t * xml_node,
+    oss_tag_content_t *tag);
 
 /**
   * @brief parse delete objects contents from xml body
@@ -282,6 +284,17 @@ void oss_build_select_object_body(aos_pool_t *p,
 void oss_build_create_select_object_meta_body(aos_pool_t *p,
     const oss_select_object_meta_params_t *params,
     aos_list_t *body);
+
+/**
+* @brief build body for object tagging
+**/
+void build_object_tagging_body(aos_pool_t *p,
+    aos_list_t *tag_list,
+    aos_list_t *body);
+
+int oss_get_tagging_parse_from_body(aos_pool_t *p,
+    aos_list_t *bc, 
+    aos_list_t *tag_list);
 
 OSS_CPP_END
 
