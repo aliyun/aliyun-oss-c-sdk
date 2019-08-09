@@ -1,4 +1,9 @@
 # ChangeLog - Aliyun OSS SDK for C
+## 版本号：3.8.0 日期：2019-08-09
+### 变更内容
+- 添加：支持object tagging功能
+- 修复：oss_upload_part_copy源文件名没有url编码的问题
+
 ## 版本号：3.7.1 日期：2019-04-05
 ### 变更内容
 - 修复：断点续传下载进度条更新不正确的问题
