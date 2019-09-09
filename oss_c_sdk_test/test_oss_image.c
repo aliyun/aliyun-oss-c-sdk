@@ -409,6 +409,96 @@ void put_example_image(CuTest *tc)
     aos_pool_destroy(p);
 }
 
+void test_get_object_with_sign_origin_only(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_http_request_t *req = NULL;
+    aos_list_t buffer;
+    aos_status_t *s = NULL;
+    aos_string_t url;
+    apr_time_t now;
+    int two_minute = 120;
+    int is_cname = 0;
+    aos_string_t bucket;
+    aos_string_t object;
+    int64_t effective_time;
+    char *url_str = NULL;
+    char tmp_buff[1024];
+    image_info_t image_info;
+
+    /* put original image */
+    put_example_image(tc);
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, original_image);
+
+    now = apr_time_now();
+    effective_time = now / 1000000 + two_minute;
+
+    /* not use x-oss-sign-origin-only for get_object_to_buffer */
+    req->method = HTTP_GET;
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
+        original_image, effective_time, req);
+    aos_str_set(&url, url_str);
+    aos_list_init(&buffer);
+
+    s = oss_get_object_to_buffer_by_url(options, &url, headers, params,
+        &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    sprintf(tmp_buff, "%s&%s", url_str, "x-oss-process=image/crop,w_100,h_100,x_100,y_100,r_1");
+    aos_str_set(&url, tmp_buff);
+    aos_list_init(&buffer);
+    s = oss_get_object_to_buffer_by_url(options, &url, headers, params,
+        &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 403, s->code);
+
+    /* use x-oss-sign-origin-only for get_object_to_buffer */
+    req->method = HTTP_GET;
+    apr_table_set(req->query_params, OSS_SIGN_ORIGIN_ONLY, "");
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
+        original_image, effective_time, req);
+    aos_str_set(&url, url_str);
+    CuAssertTrue(tc, strstr(url_str, "x-oss-sign-origin-only") != NULL);
+    aos_list_init(&buffer);
+    s = oss_get_object_to_buffer_by_url(options, &url, headers, params,
+        &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    sprintf(tmp_buff, "%s&%s", url_str, "x-oss-process=image/crop,w_110,h_120,x_100,y_100,r_1");
+    aos_str_set(&url, tmp_buff);
+    aos_list_init(&buffer);
+    s = oss_get_object_to_buffer_by_url(options, &url, headers, params,
+        &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    /* put processed image */
+    aos_str_set(&object, processed_image);
+    s = oss_put_object_from_buffer(options, &bucket, &object, &buffer,
+        headers, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    /* check processed image */
+    s = get_image_info(options, TEST_BUCKET_NAME, processed_image, &image_info);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 120, image_info.height);
+    CuAssertIntEquals(tc, 110, image_info.width);
+    CuAssertStrEquals(tc, "jpg", image_info.format);
+
+    aos_pool_destroy(p);
+
+    printf("test_get_object_with_sign_origin_only ok\n");
+}
+
 CuSuite *test_oss_image()
 {
     CuSuite* suite = CuSuiteNew();
@@ -420,6 +510,7 @@ CuSuite *test_oss_image()
     SUITE_ADD_TEST(suite, test_sharpen_image);
     SUITE_ADD_TEST(suite, test_watermark_image);
     SUITE_ADD_TEST(suite, test_format_image);
+    SUITE_ADD_TEST(suite, test_get_object_with_sign_origin_only);
     SUITE_ADD_TEST(suite, test_image_cleanup);
 
     return suite;
