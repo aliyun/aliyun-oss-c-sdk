@@ -112,6 +112,7 @@ extern const int MAX_SUFFIX_LEN;
 extern const char OSS_OBJECT_META[];
 extern const char OSS_SELECT_OBJECT_OUTPUT_RAW[];
 extern const char OSS_TAGGING[];
+extern const char OSS_SIGN_ORIGIN_ONLY[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 

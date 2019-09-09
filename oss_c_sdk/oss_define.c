@@ -81,4 +81,5 @@ const int MAX_SUFFIX_LEN = 1024;
 const char OSS_OBJECT_META[] = "objectMeta";
 const char OSS_SELECT_OBJECT_OUTPUT_RAW[] = "x-oss-select-output-raw";
 const char OSS_TAGGING[] = "tagging";
+const char OSS_SIGN_ORIGIN_ONLY[] = "x-oss-sign-origin-only";
 
