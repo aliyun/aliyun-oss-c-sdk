@@ -256,7 +256,7 @@ void test_object_tagging_tag_list(CuTest *tc)
     aos_list_init(&tag_list);
     s = oss_put_object_tagging(options, &bucket, &object,
         &tag_list, &head_resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, head_resp_headers);
 
     aos_pool_destroy(p);
