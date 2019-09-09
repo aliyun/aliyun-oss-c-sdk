@@ -1,4 +1,8 @@
 # ChangeLog - Aliyun OSS SDK for C
+## 版本号：3.9.0 日期：2019-09-09
+### 变更内容
+- 添加：支持x-oss-sign-origin-only 签名子资源
+
 ## 版本号：3.8.0 日期：2019-08-09
 ### 变更内容
 - 添加：支持object tagging功能
