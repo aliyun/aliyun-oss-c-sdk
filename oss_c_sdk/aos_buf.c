@@ -82,7 +82,7 @@ int aos_open_file_for_read(aos_pool_t *p, const char *path, aos_file_buf_t *fb)
 
     if ((s = apr_file_open(&fb->file, path, APR_READ, APR_UREAD | APR_GREAD, p)) != APR_SUCCESS) {
         aos_error_log("apr_file_open failure, path:%s, code:%d %s.", (path ? path : ""), s, apr_strerror(s, buf, sizeof(buf)));
-        assert(fb->file == NULL);
+        //assert(fb->file == NULL);
         return AOSE_OPEN_FILE_ERROR;
     }
 
@@ -135,7 +135,7 @@ int aos_open_file_for_write(aos_pool_t *p, const char *path, aos_file_buf_t *fb)
     if ((s = apr_file_open(&fb->file, path, APR_CREATE | APR_WRITE | APR_TRUNCATE,
                 APR_UREAD | APR_UWRITE | APR_GREAD, p)) != APR_SUCCESS) {
         aos_error_log("apr_file_open failure, path:%s, code:%d %s.", (path ? path : ""), s, apr_strerror(s, buf, sizeof(buf)));
-        assert(fb->file == NULL);
+        //assert(fb->file == NULL);
         return AOSE_OPEN_FILE_ERROR;
     }
     fb->owner = 1;
@@ -151,7 +151,7 @@ int aos_open_file_for_write_notrunc(aos_pool_t *p, const char *path, aos_file_bu
     if ((s = apr_file_open(&fb->file, path, APR_CREATE | APR_WRITE,
                 APR_UREAD | APR_UWRITE | APR_GREAD, p)) != APR_SUCCESS) {
         aos_error_log("apr_file_open failure, path:%s, code:%d %s.", (path ? path : ""), s, apr_strerror(s, buf, sizeof(buf)));
-        assert(fb->file == NULL);
+        //assert(fb->file == NULL);
         return AOSE_OPEN_FILE_ERROR;
     }
     fb->owner = 1;

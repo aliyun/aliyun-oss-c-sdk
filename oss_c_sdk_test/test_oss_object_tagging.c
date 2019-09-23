@@ -217,6 +217,18 @@ void test_object_tagging_basic(CuTest *tc)
     CuAssertIntEquals(tc, 0, index);
     aos_pool_destroy(p);
 
+    /*get object tagging with invalid bucketname*/
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    aos_str_set(&bucket, "InvalidBucketName");
+    aos_str_set(&object, object_name);
+    init_test_request_options(options, is_cname);
+    aos_list_init(&tag_list);
+    s = oss_get_object_tagging(options, &bucket, &object,
+        &tag_list, &head_resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+    aos_pool_destroy(p);
+
     printf("test_object_tagging_basic ok\n");
 }
 

@@ -245,7 +245,9 @@ void test_crc_combine(CuTest *tc)
     crc64_combine_test(tc, str1, len1, crc1);
     crc64_combine_test(tc, str2, len2, crc2);
 
-     printf("test_crc_combine ok\n");
+    CuAssertTrue(tc, aos_crc64_combine(crc1, crc2, 0) == crc1);
+
+    printf("test_crc_combine ok\n");
 }
 
 void test_crc_negative(CuTest *tc)
@@ -287,6 +289,24 @@ void test_crc_negative(CuTest *tc)
     printf("test_crc_negative ok\n");
 }
 
+void test_crc_big_endian(CuTest *tc)
+{
+    char *str1 = "12345678";
+    char *str2 = "87654321";
+    char *str3 = "123456789";
+    uint64_t crc1;
+    uint64_t crc2;
+
+    crc1 = aos_crc64_test(0, str1, 8, 0);
+    crc2 = aos_crc64_test(0, str2, 8, 1);
+
+    CuAssertTrue(tc, crc1 == crc2);
+
+    crc1 = aos_crc64_test(0, str3, 9, 0);
+
+    printf("test_crc_big_endian ok\n");
+}
+
 CuSuite *test_oss_crc()
 {
     CuSuite* suite = CuSuiteNew();
@@ -297,6 +317,7 @@ CuSuite *test_oss_crc()
     SUITE_ADD_TEST(suite, test_crc_disable_crc);
     SUITE_ADD_TEST(suite, test_crc_combine);
     SUITE_ADD_TEST(suite, test_crc_negative);
+    SUITE_ADD_TEST(suite, test_crc_big_endian);
     SUITE_ADD_TEST(suite, test_crc_cleanup);
 
     return suite;

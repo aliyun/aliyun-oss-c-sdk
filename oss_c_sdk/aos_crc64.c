@@ -208,6 +208,11 @@ uint64_t aos_crc64(uint64_t crc, void *buf, size_t len)
                          crc64_big(crc, buf, len);
 }
 
+uint64_t aos_crc64_test(uint64_t crc, void *buf, size_t len, int little)
+{
+    return little ? crc64_little(crc, buf, len): crc64_big(crc, buf, len);
+}
+
 #define GF2_DIM 64      /* dimension of GF(2) vectors (length of CRC) */
 
 static uint64_t gf2_matrix_times(uint64_t *mat, uint64_t vec)

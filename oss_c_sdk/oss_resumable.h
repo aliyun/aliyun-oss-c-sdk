@@ -116,6 +116,10 @@ int oss_load_checkpoint(aos_pool_t *pool, const aos_string_t *filepath, oss_chec
 
 int oss_is_upload_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *checkpoint, apr_finfo_t *finfo);
 
+int oss_is_download_checkpoint_valid(aos_pool_t *pool, oss_checkpoint_t *checkpoint, const char *object_name,
+    int64_t object_size, const char *object_last_modified,
+    const char *object_etag);
+
 void oss_update_checkpoint(aos_pool_t *pool, oss_checkpoint_t *checkpoint, int32_t part_index, 
         aos_string_t *etag, uint64_t crc64);
 
