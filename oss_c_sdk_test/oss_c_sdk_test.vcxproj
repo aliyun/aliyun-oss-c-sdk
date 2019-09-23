@@ -45,6 +45,7 @@
     <ClCompile Include="test_oss_proxy.c" />
     <ClCompile Include="test_oss_resumable.c" />
     <ClCompile Include="test_oss_select_object.c" />
+    <ClCompile Include="test_oss_xml.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6373CC30-480D-4FC2-9EB5-2E9835DBB1C4}</ProjectGuid>

@@ -832,6 +832,12 @@ void test_select_object_with_gzip_data_to_file(CuTest *tc)
     //cmp_data_len = strlen(select_data);
     //cmp_data_crc = aos_crc64(0, cmp_data, (size_t)cmp_data_len);
     CuAssertTrue(tc, select_data_crc == 0x42DF5EE66341E3C3);
+
+    //to invalid filepath
+    aos_str_set(&filename, "g:/invalid-path");
+    s = oss_select_object_to_file(options, &bucket, &object, &expression, select_params, &filename, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
     aos_pool_destroy(p);
     printf("%s ok\n", __FUNCTION__);
 }

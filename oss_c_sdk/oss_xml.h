@@ -147,6 +147,8 @@ int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
 /**
   * @bried  parse bucket cors from xml body for get_bucket_cors
 **/
+void oss_cors_rule_content_parse(aos_pool_t *p, mxml_node_t *xml_node, 
+    aos_list_t *node_list);
 int oss_get_bucket_cors_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     aos_list_t *rule_list);
 
@@ -160,6 +162,7 @@ int oss_upload_id_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_string_t *u
 **/
 void oss_list_node_contents_parse(aos_pool_t *p, mxml_node_t *root, const char *xml_path,
      aos_list_t *node_list, NODE_PARSE_FUN parse_funptr);
+void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list);
 int oss_list_buckets_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     oss_list_buckets_params_t *params);
 

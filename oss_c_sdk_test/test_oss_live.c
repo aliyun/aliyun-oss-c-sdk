@@ -70,6 +70,7 @@ void test_create_live_channel_default(CuTest *tc)
     oss_live_channel_publish_url_t *publish_url;
     oss_live_channel_play_url_t *play_url;
     char *content = NULL;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -81,9 +82,18 @@ void test_create_live_channel_default(CuTest *tc)
     aos_str_set(&config->name, live_channel_name);
     aos_str_set(&config->description, live_channel_desc);
 
+
     // create
     aos_list_init(&publish_url_list);
     aos_list_init(&play_url_list);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_create_live_channel(options, &invalidbucket, config, &publish_url_list,
+        &play_url_list, NULL);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    //valid bucketname
     s = oss_create_live_channel(options, &bucket, config, &publish_url_list,
         &play_url_list, NULL);
     CuAssertIntEquals(tc, 200, s->code);
@@ -120,6 +130,11 @@ void test_create_live_channel_default(CuTest *tc)
     // delete
     s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
+
+    // get info
+    //invalid bucketname
+    s = oss_get_live_channel_info(options, &invalidbucket, &channel_name, &info, NULL);
+    CuAssertIntEquals(tc, 400, s->code);
 
     aos_pool_destroy(p);
 
@@ -370,11 +385,13 @@ void test_list_live_channel(CuTest *tc)
     oss_live_channel_publish_url_t *publish_url;
     oss_live_channel_play_url_t *play_url;
     int channel_count = 0;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&invalidbucket, "INVALID");
 
     // create
     s = create_test_live_channel(options, TEST_BUCKET_NAME, "test_live_channel_list1");
@@ -514,6 +531,10 @@ void test_list_live_channel(CuTest *tc)
     s = delete_test_live_channel(options, TEST_BUCKET_NAME, "test_live_channel_list5");
     CuAssertIntEquals(tc, 204, s->code);
 
+    //invalid bucket name
+    s = oss_list_live_channel(options, &invalidbucket, params, NULL);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_list_live_channel ok\n");
@@ -530,12 +551,14 @@ void test_get_live_channel_history(CuTest *tc)
     aos_string_t bucket;
     aos_string_t channel_name;
     aos_string_t content;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&channel_name, live_channel_name);
+    aos_str_set(&invalidbucket, "INVALID");
 
     // create
     s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_name);
@@ -552,6 +575,10 @@ void test_get_live_channel_history(CuTest *tc)
         CuAssertIntEquals(tc, 1, aos_ends_with(&live_record->end_time, &content));
         CuAssertTrue(tc, live_record->remote_addr.len >= (int)strlen("0.0.0.0:0"));
     }
+
+    // get fail with invalid bucket name
+    s = oss_get_live_channel_history(options, &invalidbucket, &channel_name, &live_record_list, NULL);
+    CuAssertIntEquals(tc, 400, s->code);
 
     // delete
     s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
@@ -656,6 +683,19 @@ void test_gen_rtmp_signed_url(CuTest *tc)
     printf("test_gen_rtmp_signed_url ok\n");
 }
 
+void test_live_channel_misc_functions(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_live_record_content_t *content = NULL;
+    aos_pool_create(&p, NULL);
+
+    content = oss_create_live_record_content(p);
+    CuAssertTrue(tc, content != NULL);
+
+    aos_pool_destroy(p);
+    printf("test_live_channel_misc_functions ok\n");
+}
+
 CuSuite *test_oss_live()
 {
     CuSuite* suite = CuSuiteNew();
@@ -670,6 +710,7 @@ CuSuite *test_oss_live()
     SUITE_ADD_TEST(suite, test_get_live_channel_history);
     SUITE_ADD_TEST(suite, test_gen_vod_play_list);
     SUITE_ADD_TEST(suite, test_gen_rtmp_signed_url);
+    SUITE_ADD_TEST(suite, test_live_channel_misc_functions);
     SUITE_ADD_TEST(suite, test_live_cleanup);
 
     return suite;

@@ -254,6 +254,24 @@ void test_put_object_from_file(CuTest *tc)
     content_type = (char*)(apr_table_get(head_resp_headers, OSS_CONTENT_TYPE));
     CuAssertStrEquals(tc, "application/octet-stream", content_type);
 
+    aos_pool_destroy(p);
+
+    //NG Test
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 5);
+
+    s = create_test_object_from_file(options, "InvalidBucketName",
+        object_name, filename, headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    s = create_test_object_from_file(options, TEST_BUCKET_NAME,
+        object_name, "", headers);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
+    aos_pool_destroy(p);
+
     printf("test_put_object_from_file ok\n");
 }
 
@@ -672,6 +690,18 @@ void test_get_object_to_file(CuTest *tc)
     CuAssertStrEquals(tc, "image/jpeg", content_type);
     CuAssertPtrNotNull(tc, resp_headers);
 
+    /* Invalid Bucket */
+    aos_str_set(&bucket, "InvalidBucketName");
+    s = oss_get_object_to_file(options, &bucket, &object, headers,
+        params, &file, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&file, "g:/invalid-path");
+    s = oss_get_object_to_file(options, &bucket, &object, headers,
+        params, &file, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
     remove(filename);
     aos_pool_destroy(p);
 
@@ -866,7 +896,11 @@ void test_get_object_acl_object_null(CuTest *tc){
     s = oss_get_object_acl(options, &bucket, NULL, &oss_acl_str, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
     CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
-    
+
+    s = oss_get_object_acl(options, NULL, NULL, &oss_acl_str, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+
     aos_pool_destroy(p);
 
     printf("test_get_object_acl_object_null ok\n");
@@ -1205,7 +1239,9 @@ void test_object_by_url(CuTest *tc)
     int64_t effective_time;
     char *url_str = NULL;
     aos_buf_t *content = NULL;
-   
+    char special_query[AOS_MAX_QUERY_ARG_LEN + 1];
+
+
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
@@ -1266,6 +1302,55 @@ void test_object_by_url(CuTest *tc)
     s = oss_head_object_by_url(options, &url, headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    /* test invalid-bucketname url for put_object_from_file */
+    req->method = HTTP_PUT;
+    url_str = gen_test_signed_url(options, "InvalidBucketName",
+        object_name, effective_time, req);
+    resp_headers = NULL;
+    s = oss_put_object_from_file_by_url(options, &url, &file,
+        headers, &resp_headers);
+    CuAssertIntEquals(tc, 403, s->code);
+
+    /* test invalid filepath url for put_object_from_file */
+    req->method = HTTP_PUT;
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
+        object_name, effective_time, req);
+    resp_headers = NULL;
+    aos_str_set(&file, "g:/invalid-path");
+    s = oss_put_object_from_file_by_url(options, &url, &file,
+        headers, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
+
+    /* test invalid-bucketname url for get_object_from_file */
+    req->method = HTTP_GET;
+    url_str = gen_test_signed_url(options, "InvalidBucketName",
+        object_name, effective_time, req);
+    resp_headers = NULL;
+    aos_str_set(&file, filename_download);
+    s = oss_get_object_to_file_by_url(options, &url, headers,
+        headers, &file, &resp_headers);
+    CuAssertIntEquals(tc, 403, s->code);
+
+    /* test invalid filepath url for get_object_from_file */
+    req->method = HTTP_GET;
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
+        object_name, effective_time, req);
+    resp_headers = NULL;
+    aos_str_set(&file, "g:/invalid-path");
+    s = oss_get_object_to_file_by_url(options, &url, headers,
+        headers, &file, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
+    /* test long query url fail*/
+    memset(special_query, 0x30, AOS_MAX_QUERY_ARG_LEN);
+    special_query[AOS_MAX_QUERY_ARG_LEN] = '\0';
+    req->method = HTTP_GET;
+    apr_table_set(req->query_params, "x-oss-process", special_query);
+    url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
+        object_name, effective_time, req);
+    CuAssertTrue(tc, url_str == NULL);
 
     remove(filename_download);
     aos_pool_destroy(p);
@@ -1353,9 +1438,68 @@ void test_append_object_from_file(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
+    //Invalid BucketNmae
+    aos_str_set(&bucket, "InvalidBucketName");
+    s = oss_append_object_from_file(options, &bucket, &object, position,
+        &append_file, headers, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    aos_str_set(&bucket, "TEST_BUCKET_NAME");
+    aos_str_set(&append_file, "");
+    s = oss_append_object_from_file(options, &bucket, &object, position,
+        &append_file, headers, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_append_object_from_file ok\n");
+}
+
+void test_do_append_object_from_file(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "oss_test_do_append_object_from_file";
+    aos_string_t bucket;
+    aos_string_t object;
+    char *filename = __FILE__;
+    aos_string_t append_file;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    int64_t position = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_request_options_t *options = NULL;
+    aos_list_t resp_body;
+
+    /* test append object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_str_set(&append_file, filename);
+
+    s = oss_do_append_object_from_file(options, &bucket, &object, position,
+        0, &append_file, headers, NULL, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //Invalid BucketNmae
+    aos_str_set(&bucket, "InvalidBucketName");
+    s = oss_do_append_object_from_file(options, &bucket, &object, position,
+        0, &append_file, headers, NULL, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    aos_str_set(&bucket, "TEST_BUCKET_NAME");
+    aos_str_set(&append_file, "");
+    s = oss_do_append_object_from_file(options, &bucket, &object, position,
+        0, &append_file, headers, NULL, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_do_append_object_from_file ok\n");
 }
 
 void test_get_not_exist_object_to_file(CuTest *tc)
@@ -1389,6 +1533,31 @@ void test_get_not_exist_object_to_file(CuTest *tc)
     aos_pool_destroy(p);
 
     printf("test_get_not_exist_object_to_file ok\n");
+}
+
+void test_put_object_from_buffer_with_invalid_endpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "oss_test_put_object_invalid_endpoint.ts";
+    char *str = "test oss c sdk";
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    oss_request_options_t *options = NULL;
+
+    /* test put object */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&options->config->endpoint, "192.168.1.1");
+    headers = aos_table_make(p, 1);
+    apr_table_set(headers, "x-oss-meta-author", "oss");
+    s = create_test_object(options, TEST_BUCKET_NAME, object_name, str, headers);
+    CuAssertIntEquals(tc, AOSE_CONNECTION_FAILED, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_put_object_from_buffer_with_invalid_endpoint ok\n");
 }
 
 CuSuite *test_oss_object()
@@ -1427,6 +1596,9 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_delete_object);
     SUITE_ADD_TEST(suite, test_append_object_from_buffer);
     SUITE_ADD_TEST(suite, test_append_object_from_file);
+    SUITE_ADD_TEST(suite, test_do_append_object_from_file);
+    SUITE_ADD_TEST(suite, test_get_not_exist_object_to_file);
+    SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_invalid_endpoint);
     SUITE_ADD_TEST(suite, test_object_cleanup); 
     
     return suite;
