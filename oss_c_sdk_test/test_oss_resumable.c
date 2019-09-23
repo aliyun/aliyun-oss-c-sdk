@@ -2389,6 +2389,196 @@ void test_resumable_download_with_checkpoint_crc64_mismatch(CuTest *tc)
     printf("test_resumable_download_with_checkpoint_crc64_mismatch ok\n");
 }
 
+static void test_oss_get_thread_num_negative(CuTest *tc)
+{
+    int ret;
+    ret = oss_get_thread_num(NULL);
+    CuAssertIntEquals(tc, 1, ret);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_get_upload_checkpoint_path_negative(CuTest *tc)
+{
+    aos_string_t checkpoint_path;
+    oss_get_upload_checkpoint_path(NULL, NULL, NULL, NULL);
+    oss_get_upload_checkpoint_path(NULL, NULL, NULL, &checkpoint_path);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_get_download_checkpoint_path_negative(CuTest *tc)
+{
+    aos_string_t checkpoint_path;
+    oss_get_download_checkpoint_path(NULL, NULL, NULL, NULL);
+    oss_get_download_checkpoint_path(NULL, NULL, NULL, &checkpoint_path);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_is_upload_checkpoint_valid_negative(CuTest *tc)
+{
+    oss_checkpoint_t checkpoint;
+    apr_finfo_t finfo;
+    int ret;
+  
+    finfo.mtime = 1000;
+    finfo.size = 100;
+    checkpoint.cp_type = OSS_CP_UPLOAD;
+    checkpoint.file_size = 100;
+    checkpoint.file_last_modified = 1000;
+    ret = oss_is_upload_checkpoint_valid(NULL, &checkpoint, &finfo);
+    CuAssertIntEquals(tc, 1, ret);
+
+    checkpoint.cp_type = OSS_CP_DOWNLOAD;
+    ret = oss_is_upload_checkpoint_valid(NULL, &checkpoint, &finfo);
+    CuAssertIntEquals(tc, 0, ret);
+
+    checkpoint.cp_type = OSS_CP_UPLOAD;
+    checkpoint.file_size = 101;
+    ret = oss_is_upload_checkpoint_valid(NULL, &checkpoint, &finfo);
+    CuAssertIntEquals(tc, 0, ret);
+
+    checkpoint.cp_type = OSS_CP_UPLOAD;
+    checkpoint.file_size = 100;
+    checkpoint.file_last_modified = 1001;
+    ret = oss_is_upload_checkpoint_valid(NULL, &checkpoint, &finfo);
+    CuAssertIntEquals(tc, 0, ret);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_is_download_checkpoint_valid_negative(CuTest *tc)
+{
+    oss_checkpoint_t checkpoint;
+    int64_t object_size = 100;
+    const char *object_last_modified = "last modified";
+    const char *object_etag = "etag";
+    int ret;
+
+    checkpoint.cp_type = OSS_CP_DOWNLOAD;
+    checkpoint.object_size = object_size;
+    aos_str_set(&checkpoint.object_last_modified, object_last_modified);
+    aos_str_set(&checkpoint.object_etag, object_etag);
+    ret = oss_is_download_checkpoint_valid(NULL, &checkpoint, NULL, object_size, object_last_modified, object_etag);
+    CuAssertIntEquals(tc, 1, ret);
+
+    checkpoint.cp_type = OSS_CP_UPLOAD;
+    checkpoint.object_size = object_size;
+    aos_str_set(&checkpoint.object_last_modified, object_last_modified);
+    aos_str_set(&checkpoint.object_etag, object_etag);
+    ret = oss_is_download_checkpoint_valid(NULL, &checkpoint, NULL, object_size, object_last_modified, object_etag);
+    CuAssertIntEquals(tc, 0, ret);
+
+    checkpoint.cp_type = OSS_CP_DOWNLOAD;
+    checkpoint.object_size = object_size + 1;
+    aos_str_set(&checkpoint.object_last_modified, object_last_modified);
+    aos_str_set(&checkpoint.object_etag, object_etag);
+    ret = oss_is_download_checkpoint_valid(NULL, &checkpoint, NULL, object_size, object_last_modified, object_etag);
+    CuAssertIntEquals(tc, 0, ret);
+
+    checkpoint.cp_type = OSS_CP_DOWNLOAD;
+    checkpoint.object_size = object_size;
+    aos_str_set(&checkpoint.object_last_modified, "");
+    aos_str_set(&checkpoint.object_etag, object_etag);
+    ret = oss_is_download_checkpoint_valid(NULL, &checkpoint, NULL, object_size, object_last_modified, object_etag);
+    CuAssertIntEquals(tc, 0, ret);
+
+    checkpoint.cp_type = OSS_CP_DOWNLOAD;
+    checkpoint.object_size = object_size;
+    aos_str_set(&checkpoint.object_last_modified, object_last_modified);
+    aos_str_set(&checkpoint.object_etag, "");
+    ret = oss_is_download_checkpoint_valid(NULL, &checkpoint, NULL, object_size, object_last_modified, object_etag);
+    CuAssertIntEquals(tc, 0, ret);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_dump_checkpoint_negative(CuTest *tc)
+{
+    int ret;
+    ret = oss_dump_checkpoint(NULL, NULL);
+    CuAssertIntEquals(tc, AOSE_OUT_MEMORY, ret);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_resumable_upload_file_without_cp_negative(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_oss_resumable_upload_file_without_cp_negative.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    int64_t part_size = 100 * 1024;
+    apr_finfo_t finfo;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, "InvalideBucketName");
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_file);
+    finfo.size = 1000 * 1024;
+
+    // upload object
+    s = oss_resumable_upload_file_without_cp(options, &bucket, &object, &filename, headers, NULL,
+        1, part_size, &finfo, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 400, s->code);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_resumable_upload_file_with_cp_negative(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_oss_resumable_upload_file_without_cp_negative.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    int64_t part_size = 100 * 1024;
+    apr_finfo_t finfo;
+    aos_string_t checkpoint_path;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, "InvalideBucketName");
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_file);
+    finfo.size = 1000 * 1024;
+    aos_str_set(&checkpoint_path, "");
+
+    // upload object
+    s = oss_resumable_upload_file_with_cp(options, &bucket, &object, &filename, headers, NULL,
+        1, part_size, &checkpoint_path, &finfo, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 400, s->code);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+//
+// 
+//
+//
+
 CuSuite *test_oss_resumable()
 {
     CuSuite* suite = CuSuiteNew();
@@ -2437,6 +2627,14 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_resumable_download_without_checkpoint_random_failure);
     SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_random_failure);
     SUITE_ADD_TEST(suite, test_resumable_download_with_checkpoint_crc64_mismatch);
+    SUITE_ADD_TEST(suite, test_oss_get_thread_num_negative);
+    SUITE_ADD_TEST(suite, test_oss_get_upload_checkpoint_path_negative);
+    SUITE_ADD_TEST(suite, test_oss_get_download_checkpoint_path_negative);
+    SUITE_ADD_TEST(suite, test_oss_is_upload_checkpoint_valid_negative);
+    SUITE_ADD_TEST(suite, test_oss_is_download_checkpoint_valid_negative);
+    SUITE_ADD_TEST(suite, test_oss_dump_checkpoint_negative);
+    SUITE_ADD_TEST(suite, test_oss_resumable_upload_file_without_cp_negative);
+    SUITE_ADD_TEST(suite, test_oss_resumable_upload_file_with_cp_negative);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;
