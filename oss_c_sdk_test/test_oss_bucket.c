@@ -97,6 +97,11 @@ void test_bucket_cleanup(CuTest *tc)
     aos_str_set(&prefix, "oss_tmp3");
     oss_delete_objects_by_prefix(options, &bucket, &prefix);
 
+    // delete all objects
+    prefix.data = NULL;
+    prefix.len = 0;
+    oss_delete_objects_by_prefix(options, &bucket, &prefix);
+
     /* delete test bucket */
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     oss_delete_bucket(options, &bucket, &resp_headers);
@@ -265,6 +270,7 @@ void test_get_bucket_acl(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_string_t oss_acl;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -274,6 +280,12 @@ void test_get_bucket_acl(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, "public-read-write", oss_acl.data);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_acl(options, &invalidbucket, &oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_get_bucket_acl ok\n");
@@ -288,6 +300,7 @@ void test_get_bucket_location(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_string_t oss_location;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -299,6 +312,12 @@ void test_get_bucket_location(CuTest *tc)
     TEST_CASE_LOG("endpoint: %s, location: %s\n", TEST_OSS_ENDPOINT, oss_location.data);
     CuAssertIntEquals(tc, 1, oss_location.len != 0);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_location(options, &invalidbucket, &oss_location, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("%s ok\n", __FUNCTION__);
@@ -349,6 +368,7 @@ void test_get_bucket_stat(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_bucket_stat_t bucket_stat;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -360,6 +380,11 @@ void test_get_bucket_stat(CuTest *tc)
             (int)bucket_stat.storage_in_bytes, (int)bucket_stat.object_count, (int)bucket_stat.multipart_upload_count);
     CuAssertTrue(tc, bucket_stat.object_count > 0);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_stat(options, &invalidbucket, &bucket_stat, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
 
     aos_pool_destroy(p);
 
@@ -402,6 +427,7 @@ void test_get_bucket_storage_capacity(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     long oss_storage_capacity = 0;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -411,6 +437,11 @@ void test_get_bucket_storage_capacity(CuTest *tc)
     TEST_CASE_LOG("get storage capacity %ld\n", oss_storage_capacity);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_storage_capacity(options, &invalidbucket, &oss_storage_capacity, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
 
     aos_pool_destroy(p);
 
@@ -502,6 +533,7 @@ void test_get_bucket_logging(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_logging_config_content_t *content = NULL;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -517,6 +549,12 @@ void test_get_bucket_logging(CuTest *tc)
 
     TEST_CASE_LOG("%s: bucket:%s, prefix:%s\n", __FUNCTION__, 
                 content->target_bucket.data, content->prefix.data);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_logging(options, &invalidbucket, content, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("%s ok\n", __FUNCTION__);
@@ -571,6 +609,7 @@ void test_list_object(CuTest *tc)
     oss_list_object_content_t *content = NULL;
     int size = 0;
     char *key = NULL;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -607,6 +646,12 @@ void test_list_object(CuTest *tc)
     CuAssertIntEquals(tc, 1 ,size);
     CuAssertStrEquals(tc, "oss_test_object2", key);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_list_object(options, &invalidbucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_list_object ok\n");
@@ -815,6 +860,7 @@ void test_lifecycle(CuTest *tc)
     int days = INT_MAX;
     char* date = NULL;
     char* created_before_date = NULL;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -979,6 +1025,18 @@ void test_lifecycle(CuTest *tc)
     s = oss_delete_bucket_lifecycle(options, &bucket, &resp_headers);
     CuAssertIntEquals(tc, 204, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_delete_bucket_lifecycle(options, &invalidbucket, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    resp_headers = NULL;
+    aos_list_init(&lifecycle_rule_list);
+    s = oss_get_bucket_lifecycle(options, &invalidbucket, &lifecycle_rule_list,
+        &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_lifecycle ok\n");
@@ -1027,6 +1085,7 @@ void test_get_bucket_website(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_website_config_t website_config;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1037,6 +1096,11 @@ void test_get_bucket_website(CuTest *tc)
     CuAssertStrEquals(tc, "index.html", website_config.suffix_str.data);
     CuAssertStrEquals(tc, "errorDocument.html", website_config.key_str.data);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_website(options, &invalidbucket, &website_config, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
 
     aos_pool_destroy(p);
 
@@ -1112,6 +1176,7 @@ void test_get_bucket_referer(CuTest *tc)
     oss_referer_config_t referer_config;
     oss_referer_t *referer;
     int match_num = 0;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1131,6 +1196,11 @@ void test_get_bucket_referer(CuTest *tc)
 
     CuAssertIntEquals(tc, 2, match_num);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_referer(options, &invalidbucket, &referer_config, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
 
     aos_pool_destroy(p);
 
@@ -1211,6 +1281,7 @@ void test_get_bucket_cors(CuTest *tc)
     oss_cors_rule_t *cors_rule = NULL;
     oss_sub_cors_rule_t *sub_cors_rule = NULL;
     int size = 0;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1249,6 +1320,11 @@ void test_get_bucket_cors(CuTest *tc)
 
     CuAssertIntEquals(tc, 2, size);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_get_bucket_cors(options, &invalidbucket, &cors_rule_list, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
 
     aos_pool_destroy(p);
 
@@ -1292,6 +1368,7 @@ void test_delete_objects_quiet(CuTest *tc)
     aos_list_t object_list;
     aos_list_t deleted_object_list;
     int is_quiet = 1;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1312,6 +1389,13 @@ void test_delete_objects_quiet(CuTest *tc)
 
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_delete_objects(options, &invalidbucket, &object_list, is_quiet,
+        &resp_headers, &deleted_object_list);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_delete_objects_quiet ok\n");
@@ -1370,7 +1454,8 @@ void test_delete_objects_by_prefix(CuTest *tc)
     aos_string_t bucket;
     aos_status_t *s = NULL;
     aos_string_t prefix;
-    
+    aos_string_t invalidbucket;
+
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
@@ -1394,9 +1479,43 @@ void test_delete_objects_by_prefix(CuTest *tc)
     s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
     CuAssertIntEquals(tc, 200, s->code);
 
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_delete_objects_by_prefix(options, &invalidbucket, &prefix);
+    CuAssertIntEquals(tc, 400, s->code);
+
+
     aos_pool_destroy(p);
 
     printf("test_delete_object_by_prefix ok\n");
+}
+
+void test_oss_head_bucket(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_string_t invalidbucket;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_head_bucket(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_head_bucket(options, &invalidbucket, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
 }
 
 CuSuite *test_oss_bucket()
@@ -1435,6 +1554,7 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_delete_objects_quiet);
     SUITE_ADD_TEST(suite, test_delete_objects_not_quiet);
     SUITE_ADD_TEST(suite, test_create_bucket_with_storage_class);
+    SUITE_ADD_TEST(suite, test_oss_head_bucket);
     SUITE_ADD_TEST(suite, test_bucket_cleanup);
 
     return suite;

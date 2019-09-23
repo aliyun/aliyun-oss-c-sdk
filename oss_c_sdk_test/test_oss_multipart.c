@@ -111,6 +111,7 @@ void test_list_multipart_upload(CuTest *tc)
     aos_table_t *resp_headers;
     oss_list_multipart_upload_params_t *params = NULL;
     char *expect_next_key_marker = "oss_test_abort_multipart_upload1";
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -142,6 +143,12 @@ void test_list_multipart_upload(CuTest *tc)
     CuAssertIntEquals(tc, 204, s->code);
     s = abort_test_multipart_upload(options, TEST_BUCKET_NAME, object_name2, &upload_id2);
     CuAssertIntEquals(tc, 204, s->code);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_list_multipart_upload(options, &invalidbucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
     aos_pool_destroy(p);
 
     printf("test_list_multipart_upload ok\n");    
@@ -281,6 +288,7 @@ void test_multipart_upload_from_file(CuTest *tc)
     aos_string_t data;
     int part_num = 1;
     int part_num1 = 2;
+    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -342,6 +350,13 @@ void test_multipart_upload_from_file(CuTest *tc)
             &complete_part_list, NULL, &complete_resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
+
+    //invalid bucketname
+    aos_str_set(&invalidbucket, "INVALID");
+    s = oss_upload_part_from_file(options, &invalidbucket, &object, &upload_id,
+        part_num1, upload_file, &upload_part_resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+
 
     remove(file_path);
     aos_pool_destroy(p);
@@ -470,6 +485,22 @@ void test_upload_part_copy(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertIntEquals(tc, get_file_size(local_filename), get_file_size(download_filename));    
     CuAssertPtrNotNull(tc, resp_headers);
+
+    //invalid bucketname
+    resp_headers = NULL;
+    range_end2 = get_file_size(local_filename) - 1;
+    upload_part_copy_params2 = oss_create_upload_part_copy_params(p);
+    aos_str_set(&upload_part_copy_params2->source_bucket, "INVALID");
+    aos_str_set(&upload_part_copy_params2->source_object, source_object_name);
+    aos_str_set(&upload_part_copy_params2->dest_bucket, "INVALID");
+    aos_str_set(&upload_part_copy_params2->dest_object, dest_object_name);
+    aos_str_set(&upload_part_copy_params2->upload_id, upload_id.data);
+    upload_part_copy_params2->part_num = part2;
+    upload_part_copy_params2->range_start = range_start2;
+    upload_part_copy_params2->range_end = range_end2;
+    headers = aos_table_make(p, 0);
+    s = oss_upload_part_copy(options, upload_part_copy_params2, headers, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
 
     remove(download_filename);
     remove(local_filename);
@@ -630,6 +661,12 @@ void test_upload_file_failed_without_uploadid(CuTest *tc)
     s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
                         part_size, NULL);
     CuAssertIntEquals(tc, 404, s->code);
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&filepath, "");
+    s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath,
+        part_size, NULL);
+    CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
 
     aos_pool_destroy(p);
 

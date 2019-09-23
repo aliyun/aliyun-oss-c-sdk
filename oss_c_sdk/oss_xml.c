@@ -2086,6 +2086,10 @@ char *oss_build_checkpoint_xml(aos_pool_t *p, const oss_checkpoint_t *checkpoint
     mxml_node_t *parts_node;
     int i = 0;
 
+    if (p == NULL) {
+        return NULL;
+    }
+
     doc = mxmlNewXML("1.0");
     root_node = mxmlNewElement(doc, "Checkpoint");
 

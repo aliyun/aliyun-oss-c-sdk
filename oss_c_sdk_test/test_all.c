@@ -18,6 +18,7 @@ extern CuSuite *test_oss_proxy();
 extern CuSuite *test_oss_resumable();
 extern CuSuite *test_oss_select_object();
 extern CuSuite *test_oss_object_tagging();
+extern CuSuite *test_oss_xml();
 
 static const struct testlist {
     const char *testname;
@@ -36,6 +37,7 @@ static const struct testlist {
     {"test_aos", test_aos},
     {"test_oss_select_object", test_oss_select_object },
     {"test_oss_object_tagging", test_oss_object_tagging },
+    {"test_oss_xml", test_oss_xml },
     {"LastTest", NULL}
 };
 
@@ -163,6 +165,10 @@ int run_all_tests(int argc, char *argv[])
             i++;
             continue;
         }
+        if (!strcmp(argv[i], "-d")) {
+            aos_log_set_level(AOS_LOG_DEBUG);
+            continue;
+        }
         if (argv[i][0] == '-') {
             fprintf(stderr, "invalid option: `%s'\n", argv[i]);
             exit(1);
@@ -229,6 +235,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    aos_log_set_print(aos_log_print_default);
+    aos_log_set_format(aos_log_format_default);
     aos_log_set_level(AOS_LOG_OFF);
     exit_code = run_all_tests(argc, argv);
 

@@ -445,7 +445,11 @@ void oss_fill_read_response_header(aos_http_response_t *resp,
 
 void *oss_create_api_result_content(aos_pool_t *p, size_t size)
 {
-    void *result_content = aos_palloc(p, size);
+    void *result_content = NULL;
+    if (NULL == p) {
+        return NULL;
+    }
+    result_content = aos_palloc(p, size);
     if (NULL == result_content) {
         return NULL;
     }
@@ -611,6 +615,9 @@ void oss_create_sub_cors_rule(aos_pool_t *p, aos_list_t *list, char *rule_conten
 oss_cors_rule_t *oss_create_cors_rule(aos_pool_t *p)
 {
     oss_cors_rule_t *rule;
+    if (p == NULL) {
+        return NULL;
+    }
     rule = (oss_cors_rule_t *)aos_pcalloc(p, sizeof(oss_cors_rule_t));
     aos_list_init(&rule->allowed_origin_list);
     aos_list_init(&rule->allowed_method_list);
