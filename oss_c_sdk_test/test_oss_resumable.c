@@ -21,7 +21,7 @@ void test_resumable_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
-    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-resumable");
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "resumable");
 
     /* create test bucket */
     aos_pool_create(&p, NULL);
@@ -2523,7 +2523,7 @@ static void test_oss_resumable_upload_file_without_cp_negative(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     headers = aos_table_make(p, 0);
-    aos_str_set(&bucket, "InvalideBucketName");
+    aos_str_set(&bucket, "c-sdk-no-exist");
     aos_str_set(&object, object_name);
     aos_list_init(&resp_body);
     aos_str_set(&filename, test_file);
@@ -2532,7 +2532,7 @@ static void test_oss_resumable_upload_file_without_cp_negative(CuTest *tc)
     // upload object
     s = oss_resumable_upload_file_without_cp(options, &bucket, &object, &filename, headers, NULL,
         1, part_size, &finfo, NULL, &resp_headers, &resp_body);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
     aos_pool_destroy(p);
 
     printf("%s ok\n", __FUNCTION__);
@@ -2559,7 +2559,7 @@ static void test_oss_resumable_upload_file_with_cp_negative(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     headers = aos_table_make(p, 0);
-    aos_str_set(&bucket, "InvalideBucketName");
+    aos_str_set(&bucket, "c-sdk-no-exist");
     aos_str_set(&object, object_name);
     aos_list_init(&resp_body);
     aos_str_set(&filename, test_file);
@@ -2569,15 +2569,50 @@ static void test_oss_resumable_upload_file_with_cp_negative(CuTest *tc)
     // upload object
     s = oss_resumable_upload_file_with_cp(options, &bucket, &object, &filename, headers, NULL,
         1, part_size, &checkpoint_path, &finfo, NULL, &resp_headers, &resp_body);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
     aos_pool_destroy(p);
 
     printf("%s ok\n", __FUNCTION__);
 }
-//
-// 
-//
-//
+
+void test_resumable_invalid_parameter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_status_t *s = NULL;
+        aos_table_t *resp_headers = NULL;
+        aos_table_t *headers = NULL;
+        aos_table_t *params = NULL;
+        aos_str_set(&bucket, invalid_name_list[i]);
+        headers = aos_table_make(p, 1);
+
+        s = oss_resumable_upload_file(options, &bucket, NULL, NULL, headers, params, NULL, NULL, &resp_headers, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_resumable_download_file(options, &bucket, NULL, NULL, headers, params, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+    }
+    aos_pool_destroy(p);
+
+    printf("test_multipart_invalid_parameter ok\n");
+}
+
 
 CuSuite *test_oss_resumable()
 {
@@ -2635,6 +2670,7 @@ CuSuite *test_oss_resumable()
     SUITE_ADD_TEST(suite, test_oss_dump_checkpoint_negative);
     SUITE_ADD_TEST(suite, test_oss_resumable_upload_file_without_cp_negative);
     SUITE_ADD_TEST(suite, test_oss_resumable_upload_file_with_cp_negative);
+    SUITE_ADD_TEST(suite, test_resumable_invalid_parameter);
     SUITE_ADD_TEST(suite, test_resumable_cleanup);
 
     return suite;

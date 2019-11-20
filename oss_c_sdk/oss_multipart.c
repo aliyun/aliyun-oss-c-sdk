@@ -21,6 +21,8 @@ aos_status_t *oss_init_multipart_upload(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_UPLOADS, "");
@@ -58,6 +60,8 @@ aos_status_t *oss_abort_multipart_upload(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_UPLOAD_ID, upload_id->data);
@@ -87,6 +91,8 @@ aos_status_t *oss_list_upload_part(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 3);
@@ -128,6 +134,8 @@ aos_status_t *oss_list_multipart_upload(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 6);
@@ -188,6 +196,8 @@ aos_status_t *oss_do_complete_multipart_upload(const oss_request_options_t *opti
     apr_table_t *query_params = NULL;
     aos_list_t body;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init query_params
     query_params = aos_table_create_if_null(options, params, 1);
     apr_table_add(query_params, OSS_UPLOAD_ID, upload_id->data);
@@ -237,6 +247,8 @@ aos_status_t *oss_do_upload_part_from_buffer(const oss_request_options_t *option
     aos_http_request_t *req = NULL;
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, params, 2);
@@ -292,6 +304,8 @@ aos_status_t *oss_do_upload_part_from_file(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     int res = AOSE_OK;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     s = aos_status_create(options->pool);
 
     //init query_params
@@ -335,6 +349,8 @@ aos_status_t *oss_upload_part_copy(const oss_request_options_t *options,
     char *copy_source_range = NULL;
     char buffer[AOS_MAX_QUERY_ARG_LEN * 3 + 1];
     int res = -1;
+
+    oss_ensure_bucket_name_valid(&params->dest_bucket);
 
     s = aos_status_create(options->pool);
 
@@ -388,6 +404,8 @@ aos_status_t *oss_get_sorted_uploaded_part(oss_request_options_t *options,
     oss_complete_part_content_t *complete_content = NULL;
     aos_table_t *list_part_resp_headers = NULL;
     char *part_num_str = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     parent_pool = options->pool;
     part_arr = aos_palloc(parent_pool, OSS_MAX_PART_NUM * sizeof(oss_upload_part_t *));
@@ -465,6 +483,8 @@ aos_status_t *oss_upload_file(oss_request_options_t *options,
     aos_list_t complete_part_list;
     oss_complete_part_content_t *complete_content = NULL;
     aos_table_t *complete_resp_headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     aos_list_init(&complete_part_list);
     parent_pool = options->pool;
