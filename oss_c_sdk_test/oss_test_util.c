@@ -4,6 +4,8 @@
 #include "oss_test_util.h"
 #include "cjson.h"
 
+char bucket_prefix[64];
+
 void make_rand_string(aos_pool_t *p, int len, aos_string_t *data)
 {
     char *str = NULL;
@@ -238,6 +240,108 @@ aos_status_t *delete_test_object_by_prefix(const oss_request_options_t *options,
     return s;
 }
 
+void clean_bucket(const oss_request_options_t *options, const char* bucket_name)
+{
+    aos_table_t *resp_headers = NULL;
+    oss_list_multipart_upload_params_t *list_upload_params = NULL;
+    oss_list_live_channel_params_t *live_channel_params = NULL;
+    aos_string_t bucket;
+
+    // delete all objects
+    delete_test_object_by_prefix(options, bucket_name, "");
+
+    // upload
+    aos_str_set(&bucket, bucket_name);
+    list_upload_params = oss_create_list_multipart_upload_params(options->pool);
+    do {
+        aos_status_t *s;
+        oss_list_multipart_upload_content_t *upload_content;
+        aos_list_init(&list_upload_params->upload_list);
+
+        s = oss_list_multipart_upload(options, &bucket, list_upload_params, &resp_headers);
+
+        if (!aos_status_is_ok(s)) {
+            break;
+        }
+
+        aos_list_for_each_entry(oss_list_multipart_upload_content_t, upload_content, &list_upload_params->upload_list, node) {
+            abort_test_multipart_upload(options, bucket_name, upload_content->key.data, &upload_content->upload_id);
+        }
+
+        if (!list_upload_params->truncated) {
+            break;
+        }
+
+        aos_str_set(&list_upload_params->key_marker, list_upload_params->next_key_marker.data);
+        aos_str_set(&list_upload_params->upload_id_marker, list_upload_params->next_upload_id_marker.data);
+
+    } while (1);
+
+    // live channel
+    live_channel_params = oss_create_list_live_channel_params(options->pool);
+    do {
+        aos_status_t *s;
+        oss_live_channel_content_t *live_chan;
+        aos_list_init(&live_channel_params->live_channel_list);
+
+        s = oss_list_live_channel(options, &bucket, live_channel_params, NULL);
+
+        if (!aos_status_is_ok(s)) {
+            break;
+        }
+
+        aos_list_for_each_entry(oss_live_channel_content_t, live_chan, &live_channel_params->live_channel_list, node) {
+            printf("live_chan->name.data:%s\n", live_chan->name.data);
+            oss_delete_live_channel(options, &bucket, &live_chan->name, NULL);
+        }
+
+        if (!live_channel_params->truncated) {
+            break;
+        }
+
+        aos_str_set(&live_channel_params->marker, live_channel_params->next_marker.data);
+
+    } while (1);
+
+    /* delete test bucket */
+    oss_delete_bucket(options, &bucket, &resp_headers);
+
+    //printf("clean bucket %s done\n", bucket_name);
+}
+
+void clean_bucket_by_prefix(const char* prefix)
+{
+    //printf("clean_bucket_by_prefix:%s\n", prefix);
+
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_buckets_params_t *params = NULL;
+    oss_list_bucket_content_t *content = NULL;
+    int size = 0;
+
+    /* list all buckets */
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    params = oss_create_list_buckets_params(p);
+    params->max_keys = 100;
+    aos_str_set(&params->prefix, prefix);
+    s = oss_list_bucket(options, params, &resp_headers);
+
+    if (!aos_status_is_ok(s)) {
+        return;
+    }
+
+    aos_list_for_each_entry(oss_list_bucket_content_t, content, &params->bucket_list, node) {
+        clean_bucket(options, content->name.data);
+    }
+
+    aos_pool_destroy(p);
+}
+
 aos_status_t *init_test_multipart_upload(const oss_request_options_t *options, 
                                          const char *bucket_name, 
                                          const char *object_name, 
@@ -303,7 +407,7 @@ aos_status_t *delete_test_live_channel(const oss_request_options_t *options,
     aos_string_t bucket;
     aos_string_t channel_id;
 
-    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&bucket, bucket_name);
     aos_str_set(&channel_id, live_channel);
 
     return oss_delete_live_channel(options, &bucket, &channel_id, NULL);
@@ -488,7 +592,13 @@ char *get_test_file_path()
     return path;
 }
 
-char *get_test_bucket_name(aos_pool_t *p, const char*prefix)
+char *get_test_bucket_name(aos_pool_t *p, const char* suffix)
 {
-    return apr_psprintf(p, "%s-bucket-%"APR_TIME_T_FMT, prefix, apr_time_now());
+    return apr_psprintf(p, "%s-%s-bucket", bucket_prefix, suffix);
 }
+
+void set_test_bucket_prefix(const char* prefix)
+{
+    sprintf(bucket_prefix, "%s", prefix);
+}
+

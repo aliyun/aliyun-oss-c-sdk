@@ -96,7 +96,11 @@ char * get_text_file_data(aos_pool_t *pool, const char *filepath);
 
 char *get_test_file_path();
 
-char *get_test_bucket_name(aos_pool_t *p, const char*prefix);
+char *get_test_bucket_name(aos_pool_t *p, const char* suffix);
+
+void set_test_bucket_prefix(const char*prefix);
+
+void clean_bucket_by_prefix(const char* prefix);
 
 OSS_CPP_END
 

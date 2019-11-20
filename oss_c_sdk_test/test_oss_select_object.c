@@ -22,7 +22,7 @@ static void test_select_object_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
-    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-selectobject");
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "selectobject");
 
     /* create test bucket */
     aos_pool_create(&p, NULL);
@@ -1141,6 +1141,47 @@ void test_select_object_create_meta_invalid(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
+void test_select_object_invalid_parameter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_status_t *s = NULL;
+        aos_table_t *resp_headers = NULL;
+        aos_table_t *headers = NULL;
+        aos_table_t *params = NULL;
+        aos_str_set(&bucket, invalid_name_list[i]);
+        headers = aos_table_make(p, 1);
+
+        s = oss_select_object_to_buffer(options, &bucket, NULL, NULL, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_select_object_to_file(options, &bucket, NULL, NULL, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_create_select_object_meta(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+    }
+    aos_pool_destroy(p);
+
+    printf("test_select_object_invalid_parameter ok\n");
+}
 
 CuSuite *test_oss_select_object()
 {
@@ -1171,6 +1212,7 @@ CuSuite *test_oss_select_object()
     SUITE_ADD_TEST(suite, test_select_object_create_meta_quote_character);
     SUITE_ADD_TEST(suite, test_select_object_invalid);
     SUITE_ADD_TEST(suite, test_select_object_create_meta_invalid);
+    SUITE_ADD_TEST(suite, test_select_object_invalid_parameter);
     SUITE_ADD_TEST(suite, test_select_object_cleanup);
     
     return suite;

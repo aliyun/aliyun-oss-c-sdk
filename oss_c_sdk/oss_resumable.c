@@ -791,6 +791,8 @@ aos_status_t *oss_resumable_upload_file(oss_request_options_t *options,
     aos_status_t *s;
     int res;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     thread_num = oss_get_thread_num(clt_params);
 
     aos_pool_create(&sub_pool, options->pool);
@@ -1170,6 +1172,8 @@ aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
     aos_string_t checkpoint_path;
     aos_pool_t *sub_pool;
     aos_status_t *s;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     thread_num = oss_get_thread_num(clt_params);
     aos_pool_create(&sub_pool, options->pool);

@@ -8,6 +8,7 @@
 #include "oss_xml.h"
 #include "oss_api.h"
 
+
 aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
                                       const aos_string_t *bucket,
                                       oss_live_channel_configuration_t *config,
@@ -22,6 +23,8 @@ aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
     aos_list_t body;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -66,6 +69,8 @@ aos_status_t *oss_put_live_channel_status(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -97,6 +102,8 @@ aos_status_t *oss_get_live_channel_info(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -137,6 +144,8 @@ aos_status_t *oss_get_live_channel_stat(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -174,6 +183,8 @@ aos_status_t *oss_delete_live_channel(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -201,6 +212,8 @@ aos_status_t *oss_list_live_channel(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init params
     query_params = aos_table_create_if_null(options, query_params, 4);
@@ -244,6 +257,8 @@ aos_status_t *oss_get_live_channel_history(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init params
     query_params = aos_table_create_if_null(options, query_params, 2);
     apr_table_add(query_params, OSS_LIVE_CHANNEL, "");
@@ -285,6 +300,8 @@ aos_status_t *oss_gen_vod_play_list(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     char *resource = NULL;
     aos_string_t resource_str;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init params
     query_params = aos_table_create_if_null(options, query_params, 3);

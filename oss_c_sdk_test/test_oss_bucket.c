@@ -32,7 +32,7 @@ void test_bucket_setup(CuTest *tc)
     int i = 0;
 
     //set bucket name
-    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-bucket");
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "bucket");
 
     //set log level, default AOS_LOG_WARN
     aos_log_set_level(AOS_LOG_WARN);
@@ -270,7 +270,6 @@ void test_get_bucket_acl(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_string_t oss_acl;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -281,10 +280,10 @@ void test_get_bucket_acl(CuTest *tc)
     CuAssertStrEquals(tc, "public-read-write", oss_acl.data);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_acl(options, &invalidbucket, &oss_acl, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_acl(options, &bucket, &oss_acl, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -300,7 +299,6 @@ void test_get_bucket_location(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     aos_string_t oss_location;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -313,10 +311,10 @@ void test_get_bucket_location(CuTest *tc)
     CuAssertIntEquals(tc, 1, oss_location.len != 0);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_location(options, &invalidbucket, &oss_location, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_location(options, &bucket, &oss_location, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -368,7 +366,6 @@ void test_get_bucket_stat(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_bucket_stat_t bucket_stat;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -381,10 +378,10 @@ void test_get_bucket_stat(CuTest *tc)
     CuAssertTrue(tc, bucket_stat.object_count > 0);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_stat(options, &invalidbucket, &bucket_stat, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_stat(options, &bucket, &bucket_stat, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -427,7 +424,6 @@ void test_get_bucket_storage_capacity(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     long oss_storage_capacity = 0;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -438,10 +434,10 @@ void test_get_bucket_storage_capacity(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_storage_capacity(options, &invalidbucket, &oss_storage_capacity, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_storage_capacity(options, &bucket, &oss_storage_capacity, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -533,7 +529,6 @@ void test_get_bucket_logging(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_logging_config_content_t *content = NULL;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -550,10 +545,10 @@ void test_get_bucket_logging(CuTest *tc)
     TEST_CASE_LOG("%s: bucket:%s, prefix:%s\n", __FUNCTION__, 
                 content->target_bucket.data, content->prefix.data);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_logging(options, &invalidbucket, content, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_logging(options, &bucket, content, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -609,7 +604,6 @@ void test_list_object(CuTest *tc)
     oss_list_object_content_t *content = NULL;
     int size = 0;
     char *key = NULL;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -647,10 +641,10 @@ void test_list_object(CuTest *tc)
     CuAssertStrEquals(tc, "oss_test_object2", key);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_list_object(options, &invalidbucket, params, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_list_object(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -860,7 +854,6 @@ void test_lifecycle(CuTest *tc)
     int days = INT_MAX;
     char* date = NULL;
     char* created_before_date = NULL;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1026,16 +1019,16 @@ void test_lifecycle(CuTest *tc)
     CuAssertIntEquals(tc, 204, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_delete_bucket_lifecycle(options, &invalidbucket, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_delete_bucket_lifecycle(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     resp_headers = NULL;
     aos_list_init(&lifecycle_rule_list);
-    s = oss_get_bucket_lifecycle(options, &invalidbucket, &lifecycle_rule_list,
+    s = oss_get_bucket_lifecycle(options, &bucket, &lifecycle_rule_list,
         &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -1085,7 +1078,6 @@ void test_get_bucket_website(CuTest *tc)
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
     oss_website_config_t website_config;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1097,10 +1089,10 @@ void test_get_bucket_website(CuTest *tc)
     CuAssertStrEquals(tc, "errorDocument.html", website_config.key_str.data);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_website(options, &invalidbucket, &website_config, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_website(options, &bucket, &website_config, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -1176,7 +1168,6 @@ void test_get_bucket_referer(CuTest *tc)
     oss_referer_config_t referer_config;
     oss_referer_t *referer;
     int match_num = 0;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1197,10 +1188,10 @@ void test_get_bucket_referer(CuTest *tc)
     CuAssertIntEquals(tc, 2, match_num);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_referer(options, &invalidbucket, &referer_config, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_referer(options, &bucket, &referer_config, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -1281,7 +1272,6 @@ void test_get_bucket_cors(CuTest *tc)
     oss_cors_rule_t *cors_rule = NULL;
     oss_sub_cors_rule_t *sub_cors_rule = NULL;
     int size = 0;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1321,10 +1311,10 @@ void test_get_bucket_cors(CuTest *tc)
     CuAssertIntEquals(tc, 2, size);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_get_bucket_cors(options, &invalidbucket, &cors_rule_list, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_bucket_cors(options, &bucket, &cors_rule_list, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -1368,7 +1358,6 @@ void test_delete_objects_quiet(CuTest *tc)
     aos_list_t object_list;
     aos_list_t deleted_object_list;
     int is_quiet = 1;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1390,11 +1379,11 @@ void test_delete_objects_quiet(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_delete_objects(options, &invalidbucket, &object_list, is_quiet,
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_delete_objects(options, &bucket, &object_list, is_quiet,
         &resp_headers, &deleted_object_list);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -1454,7 +1443,6 @@ void test_delete_objects_by_prefix(CuTest *tc)
     aos_string_t bucket;
     aos_status_t *s = NULL;
     aos_string_t prefix;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1479,11 +1467,10 @@ void test_delete_objects_by_prefix(CuTest *tc)
     s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
     CuAssertIntEquals(tc, 200, s->code);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_delete_objects_by_prefix(options, &invalidbucket, &prefix);
-    CuAssertIntEquals(tc, 400, s->code);
-
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_delete_objects_by_prefix(options, &bucket, &prefix);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -1498,7 +1485,6 @@ void test_oss_head_bucket(CuTest *tc)
     oss_request_options_t *options = NULL;
     aos_table_t *resp_headers = NULL;
     aos_status_t *s = NULL;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -1508,14 +1494,154 @@ void test_oss_head_bucket(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_head_bucket(options, &invalidbucket, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_head_bucket(options, &bucket, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
     printf("%s ok\n", __FUNCTION__);
+}
+
+void test_bucket_invalid_parameter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_status_t *s = NULL;
+        aos_table_t *resp_headers = NULL;
+        aos_str_set(&bucket, invalid_name_list[i]);
+
+        s = oss_create_bucket(options, &bucket, OSS_ACL_DEFAULT, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_create_bucket_with_storage_class(options, &bucket, OSS_ACL_DEFAULT, OSS_STORAGE_CLASS_STANDARD, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_bucket(options, &bucket, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_acl(options, &bucket, OSS_ACL_DEFAULT, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_acl(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_head_bucket(options, &bucket, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_location(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_info(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_stat(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_referer(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_storage_capacity(options, &bucket, 1024L, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_storage_capacity(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_list_object(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_logging(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_logging(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_bucket_logging(options, &bucket, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_lifecycle(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_cors(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_cors(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_bucket_cors(options, &bucket, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_referer(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_bucket_website(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_website(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_bucket_website(options, &bucket, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_bucket_lifecycle(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_bucket_lifecycle(options, &bucket, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_objects(options, &bucket, NULL, 0, &resp_headers, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_objects_by_prefix(options, &bucket, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+    }
+
+    aos_pool_destroy(p);
+
+    printf("test_bucket_invalid_parameter ok\n");
 }
 
 CuSuite *test_oss_bucket()
@@ -1555,7 +1681,8 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_delete_objects_not_quiet);
     SUITE_ADD_TEST(suite, test_create_bucket_with_storage_class);
     SUITE_ADD_TEST(suite, test_oss_head_bucket);
+    SUITE_ADD_TEST(suite, test_bucket_invalid_parameter);
     SUITE_ADD_TEST(suite, test_bucket_cleanup);
-
+    
     return suite;
 }

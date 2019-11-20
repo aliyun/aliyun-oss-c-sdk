@@ -19,6 +19,8 @@ extern CuSuite *test_oss_resumable();
 extern CuSuite *test_oss_select_object();
 extern CuSuite *test_oss_object_tagging();
 extern CuSuite *test_oss_xml();
+extern void set_test_bucket_prefix(const char*prefix);
+extern void clean_bucket_by_prefix(const char* prefix);
 
 static const struct testlist {
     const char *testname;
@@ -42,6 +44,7 @@ static const struct testlist {
 };
 
 static char *CFG_FILE_PATH = "";
+static char BUCKET_PREIFX[64];
 
 int has_cfg_info()
 {
@@ -133,7 +136,16 @@ int init_test_env()
     /*Get from file*/
     load_cfg_from_file();
 
+    /*gen bucket prefix*/
+    sprintf(BUCKET_PREIFX, "test-c-sdk-%"APR_TIME_T_FMT, apr_time_now()/1000);
+    set_test_bucket_prefix(BUCKET_PREIFX);
+
     return has_cfg_info();
+}
+
+void deinit_test_env()
+{
+    clean_bucket_by_prefix(BUCKET_PREIFX);
 }
 
 int run_all_tests(int argc, char *argv[])
@@ -223,6 +235,8 @@ int run_all_tests(int argc, char *argv[])
 
     CuSuiteFreeDeep(suite);
     CuStringFree(output);
+
+    deinit_test_env();
 
     return exit_code;
 }

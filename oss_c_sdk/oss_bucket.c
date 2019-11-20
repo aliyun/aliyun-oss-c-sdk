@@ -21,6 +21,8 @@ static aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *
     aos_table_t *headers = NULL;
     aos_table_t *query_params = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 0);
 
     //init headers
@@ -91,6 +93,8 @@ aos_status_t *oss_delete_bucket(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     headers = aos_table_create_if_null(options, headers, 0);
     query_params = aos_table_create_if_null(options, query_params, 0);
 
@@ -114,6 +118,8 @@ aos_status_t *oss_put_bucket_acl(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
     const char *oss_acl_str = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
@@ -144,6 +150,8 @@ aos_status_t *oss_get_bucket_acl(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_ACL, "");
@@ -177,6 +185,8 @@ aos_status_t *oss_head_bucket(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 0);
     headers = aos_table_create_if_null(options, headers, 0);    
 
@@ -203,6 +213,8 @@ aos_status_t *oss_get_bucket_location(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LOCATION, "");
@@ -238,6 +250,8 @@ aos_status_t *oss_get_bucket_info(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_BUCKETINFO, "");
 
@@ -271,6 +285,8 @@ aos_status_t *oss_get_bucket_stat(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_BUCKETSTAT, "");
@@ -306,6 +322,8 @@ aos_status_t *oss_get_bucket_referer(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_REFERER, "");
 
@@ -340,6 +358,8 @@ aos_status_t *oss_put_bucket_storage_capacity(const oss_request_options_t *optio
     aos_table_t *headers = NULL;
     aos_list_t body;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_addn(query_params, OSS_QOS, "");
 
@@ -368,6 +388,8 @@ aos_status_t *oss_get_bucket_storage_capacity(const oss_request_options_t *optio
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_QOS, "");
@@ -402,6 +424,8 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 4);
@@ -490,6 +514,8 @@ aos_status_t *oss_put_bucket_logging(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     aos_list_t body;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LOGGING, "");
@@ -520,6 +546,8 @@ aos_status_t *oss_get_bucket_logging(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LOGGING, "");
@@ -553,6 +581,8 @@ aos_status_t *oss_delete_bucket_logging(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_LOGGING, "");
 
@@ -578,6 +608,8 @@ aos_status_t *oss_put_bucket_lifecycle(const oss_request_options_t *options,
     apr_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
     aos_list_t body;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -609,6 +641,8 @@ aos_status_t *oss_put_bucket_cors(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     aos_list_t body;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_CORS, "");
@@ -638,6 +672,8 @@ aos_status_t *oss_get_bucket_cors(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_CORS, "");
@@ -671,6 +707,8 @@ aos_status_t *oss_delete_bucket_cors(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_CORS, "");
 
@@ -696,6 +734,8 @@ aos_status_t *oss_put_bucket_referer(const oss_request_options_t *options,
     apr_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
     aos_list_t body;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -727,6 +767,8 @@ aos_status_t *oss_put_bucket_website(const oss_request_options_t *options,
     aos_table_t *headers = NULL;
     aos_list_t body;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_WEBSITE, "");
@@ -756,6 +798,8 @@ aos_status_t *oss_get_bucket_website(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_WEBSITE, "");
@@ -789,6 +833,8 @@ aos_status_t *oss_delete_bucket_website(const oss_request_options_t *options,
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
 
+    oss_ensure_bucket_name_valid(bucket);
+
     query_params = aos_table_create_if_null(options, query_params, 1);
     apr_table_add(query_params, OSS_WEBSITE, "");
 
@@ -814,6 +860,8 @@ aos_status_t *oss_get_bucket_lifecycle(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -849,6 +897,8 @@ aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
     aos_http_response_t *resp = NULL;
     aos_table_t *query_params = NULL;
     aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -886,6 +936,8 @@ aos_status_t *oss_delete_objects(const oss_request_options_t *options,
     char *b64_value = NULL;
     int b64_buf_len = (20 + 1) * 4 / 3;
     int b64_len;
+
+    oss_ensure_bucket_name_valid(bucket);
 
     //init query_params
     query_params = aos_table_create_if_null(options, query_params, 1);
@@ -943,7 +995,9 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
     oss_list_object_params_t *params = NULL;
     int list_object_count = 0;
     const char *next_marker = NULL;
-    
+   
+    oss_ensure_bucket_name_valid(bucket);
+
     parent_pool = options->pool;
     params = oss_create_list_object_params(parent_pool);
     if (prefix->data == NULL) {
