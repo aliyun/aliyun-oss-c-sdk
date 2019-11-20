@@ -19,7 +19,7 @@ void test_proxy_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
-    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-proxy");
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "proxy");
 
     /* create test bucket */
     aos_pool_create(&p, NULL);

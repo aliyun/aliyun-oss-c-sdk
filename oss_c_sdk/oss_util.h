@@ -388,6 +388,19 @@ void oss_check_create_select_object_meta_status(aos_http_response_t *resp, aos_s
 **/
 oss_tag_content_t *oss_create_tag_content(aos_pool_t *p);
 
+/**
+  * @brief  check if bucket name is valid.
+**/
+int oss_is_valid_bucket_name(const aos_string_t *str);
+
+aos_status_t *oss_get_bucket_name_invalid_error();
+
+#define oss_ensure_bucket_name_valid(a) do {       \
+        if (!oss_is_valid_bucket_name(a)) {        \
+            return oss_get_bucket_name_invalid_error(); \
+        } \
+    } while(0) 
+
 OSS_CPP_END
 
 #endif

@@ -20,7 +20,7 @@ void test_object_tagging_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
-    TEST_BUCKET_NAME   = get_test_bucket_name(aos_global_pool, "test-c-sdk-object-tagging");
+    TEST_BUCKET_NAME   = get_test_bucket_name(aos_global_pool, "tagging");
     
     /* create test bucket */
     aos_pool_create(&p, NULL);
@@ -217,16 +217,16 @@ void test_object_tagging_basic(CuTest *tc)
     CuAssertIntEquals(tc, 0, index);
     aos_pool_destroy(p);
 
-    /*get object tagging with invalid bucketname*/
+    //negative case
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
-    aos_str_set(&bucket, "InvalidBucketName");
+    aos_str_set(&bucket, "c-sdk-no-exist");
     aos_str_set(&object, object_name);
     init_test_request_options(options, is_cname);
     aos_list_init(&tag_list);
     s = oss_get_object_tagging(options, &bucket, &object,
         &tag_list, &head_resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
     aos_pool_destroy(p);
 
     printf("test_object_tagging_basic ok\n");
@@ -1095,6 +1095,49 @@ void test_lifecycle_tag(CuTest *tc)
     printf("test_lifecycle ok\n");
 }
 
+void test_object_tagging_invalid_parameter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_status_t *s = NULL;
+        aos_table_t *resp_headers = NULL;
+        aos_table_t *headers = NULL;
+        aos_table_t *params = NULL;
+        aos_str_set(&bucket, invalid_name_list[i]);
+        headers = aos_table_make(p, 1);
+
+        s = oss_put_object_tagging(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_object_tagging(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_object_tagging(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+    }
+    aos_pool_destroy(p);
+
+    printf("test_object_tagging_invalid_parameter ok\n");
+}
+
+
 CuSuite *test_oss_object_tagging()
 {
     CuSuite* suite = CuSuiteNew();   
@@ -1109,6 +1152,7 @@ CuSuite *test_oss_object_tagging()
     SUITE_ADD_TEST(suite, test_object_tagging_multipart_upload);
     SUITE_ADD_TEST(suite, test_object_tagging_resumale_upload);
     SUITE_ADD_TEST(suite, test_lifecycle_tag);
+    SUITE_ADD_TEST(suite, test_object_tagging_invalid_parameter);
     SUITE_ADD_TEST(suite, test_object_tagging_cleanup);
     
     return suite;

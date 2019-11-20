@@ -21,7 +21,7 @@ void test_live_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
-    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-live");
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "live");
 
     //create test bucket
     aos_pool_create(&p, NULL);
@@ -70,7 +70,6 @@ void test_create_live_channel_default(CuTest *tc)
     oss_live_channel_publish_url_t *publish_url;
     oss_live_channel_play_url_t *play_url;
     char *content = NULL;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -87,13 +86,14 @@ void test_create_live_channel_default(CuTest *tc)
     aos_list_init(&publish_url_list);
     aos_list_init(&play_url_list);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_create_live_channel(options, &invalidbucket, config, &publish_url_list,
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_create_live_channel(options, &bucket, config, &publish_url_list,
         &play_url_list, NULL);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
 
     //valid bucketname
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_create_live_channel(options, &bucket, config, &publish_url_list,
         &play_url_list, NULL);
     CuAssertIntEquals(tc, 200, s->code);
@@ -131,10 +131,10 @@ void test_create_live_channel_default(CuTest *tc)
     s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
-    // get info
-    //invalid bucketname
-    s = oss_get_live_channel_info(options, &invalidbucket, &channel_name, &info, NULL);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_live_channel_info(options, &bucket, &channel_name, &info, NULL);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -385,13 +385,11 @@ void test_list_live_channel(CuTest *tc)
     oss_live_channel_publish_url_t *publish_url;
     oss_live_channel_play_url_t *play_url;
     int channel_count = 0;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
-    aos_str_set(&invalidbucket, "INVALID");
 
     // create
     s = create_test_live_channel(options, TEST_BUCKET_NAME, "test_live_channel_list1");
@@ -531,9 +529,10 @@ void test_list_live_channel(CuTest *tc)
     s = delete_test_live_channel(options, TEST_BUCKET_NAME, "test_live_channel_list5");
     CuAssertIntEquals(tc, 204, s->code);
 
-    //invalid bucket name
-    s = oss_list_live_channel(options, &invalidbucket, params, NULL);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_list_live_channel(options, &bucket, params, NULL);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -551,14 +550,12 @@ void test_get_live_channel_history(CuTest *tc)
     aos_string_t bucket;
     aos_string_t channel_name;
     aos_string_t content;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, 0);
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&channel_name, live_channel_name);
-    aos_str_set(&invalidbucket, "INVALID");
 
     // create
     s = create_test_live_channel(options, TEST_BUCKET_NAME, live_channel_name);
@@ -576,11 +573,13 @@ void test_get_live_channel_history(CuTest *tc)
         CuAssertTrue(tc, live_record->remote_addr.len >= (int)strlen("0.0.0.0:0"));
     }
 
-    // get fail with invalid bucket name
-    s = oss_get_live_channel_history(options, &invalidbucket, &channel_name, &live_record_list, NULL);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_get_live_channel_history(options, &bucket, &channel_name, &live_record_list, NULL);
+    CuAssertIntEquals(tc, 404, s->code);
 
     // delete
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
     s = oss_delete_live_channel(options, &bucket, &channel_name, NULL);
     CuAssertIntEquals(tc, 204, s->code);
 
@@ -696,6 +695,68 @@ void test_live_channel_misc_functions(CuTest *tc)
     printf("test_live_channel_misc_functions ok\n");
 }
 
+void test_live_invalid_parameter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_status_t *s = NULL;
+        aos_table_t *resp_headers = NULL;
+        aos_table_t *headers = NULL;
+        aos_table_t *params = NULL;
+        aos_str_set(&bucket, invalid_name_list[i]);
+        headers = aos_table_make(p, 1);
+
+        s = oss_create_live_channel(options, &bucket, NULL, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_live_channel_status(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_live_channel_info(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_live_channel_stat(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_live_channel(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_list_live_channel(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_live_channel_history(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_gen_vod_play_list(options, &bucket, NULL, NULL, 0, 10, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+    }
+    aos_pool_destroy(p);
+
+    printf("test_live_invalid_parameter ok\n");
+}
+
 CuSuite *test_oss_live()
 {
     CuSuite* suite = CuSuiteNew();
@@ -711,6 +772,7 @@ CuSuite *test_oss_live()
     SUITE_ADD_TEST(suite, test_gen_vod_play_list);
     SUITE_ADD_TEST(suite, test_gen_rtmp_signed_url);
     SUITE_ADD_TEST(suite, test_live_channel_misc_functions);
+    SUITE_ADD_TEST(suite, test_live_invalid_parameter);
     SUITE_ADD_TEST(suite, test_live_cleanup);
 
     return suite;
