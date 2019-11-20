@@ -1506,6 +1506,30 @@ static void test_oss_get_rtmp_signed_url_negative(CuTest *tc) {
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_is_valid_bucket_name(CuTest *tc) {
+    int i;
+    aos_string_t name;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_str_set(&name, invalid_name_list[i]);
+        CuAssertIntEquals(tc, 0, oss_is_valid_bucket_name(&name));
+    }
+
+    aos_str_null(&name);
+    CuAssertIntEquals(tc, 0, oss_is_valid_bucket_name(&name));
+
+    CuAssertIntEquals(tc, 0, oss_is_valid_bucket_name(NULL));
+
+    aos_str_set(&name, "valid-bucket-name-1234");
+    CuAssertIntEquals(tc, 1, oss_is_valid_bucket_name(&name));
+
+    printf("%s ok\n", __FUNCTION__);
+}
 
 CuSuite *test_aos()
 {
@@ -1574,6 +1598,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_get_oss_request_signature_negative);
     SUITE_ADD_TEST(suite, test_oss_get_signed_url_negative);
     SUITE_ADD_TEST(suite, test_oss_get_rtmp_signed_url_negative);
+    SUITE_ADD_TEST(suite, test_oss_is_valid_bucket_name);
 
     return suite;
 }

@@ -1429,3 +1429,42 @@ oss_tag_content_t *oss_create_tag_content(aos_pool_t *p)
 {
     return (oss_tag_content_t *)aos_pcalloc(p, sizeof(oss_tag_content_t));
 }
+
+int oss_is_valid_bucket_name(const aos_string_t *str)
+{
+    int i;
+
+    if (aos_string_is_empty(str)) {
+        return 0;
+    }
+
+    if (str->len < 3 || str->len > 63) {
+        return 0;
+    }
+
+    if (str->data[0] == '-' || str->data[str->len - 1] == '-') {
+        return 0;
+    }
+
+    for (i = 0; i < str->len; i++) {
+        char c = str->data[i];
+        if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-')) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+aos_status_t *oss_get_bucket_name_invalid_error()
+{
+    static aos_status_t oss_bucket_name_invalid_error = {
+        AOSE_INVALID_ARGUMENT,
+        (char *)AOS_BUCKET_NAME_INVALID_ERROR,
+        "The bucket name is invalid, please check.",
+        NULL
+    };
+
+    return &oss_bucket_name_invalid_error;
+}
+
+

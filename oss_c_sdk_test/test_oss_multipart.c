@@ -21,7 +21,7 @@ void test_multipart_setup(CuTest *tc)
     oss_request_options_t *options = NULL;
     oss_acl_e oss_acl = OSS_ACL_PRIVATE;
 
-    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "test-c-sdk-multipart");
+    TEST_BUCKET_NAME = get_test_bucket_name(aos_global_pool, "multipart");
 
     //create test bucket
     aos_pool_create(&p, NULL);
@@ -111,7 +111,6 @@ void test_list_multipart_upload(CuTest *tc)
     aos_table_t *resp_headers;
     oss_list_multipart_upload_params_t *params = NULL;
     char *expect_next_key_marker = "oss_test_abort_multipart_upload1";
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -144,10 +143,10 @@ void test_list_multipart_upload(CuTest *tc)
     s = abort_test_multipart_upload(options, TEST_BUCKET_NAME, object_name2, &upload_id2);
     CuAssertIntEquals(tc, 204, s->code);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_list_multipart_upload(options, &invalidbucket, params, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_list_multipart_upload(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
 
     aos_pool_destroy(p);
 
@@ -288,7 +287,6 @@ void test_multipart_upload_from_file(CuTest *tc)
     aos_string_t data;
     int part_num = 1;
     int part_num1 = 2;
-    aos_string_t invalidbucket;
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -351,12 +349,11 @@ void test_multipart_upload_from_file(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, complete_resp_headers);
 
-    //invalid bucketname
-    aos_str_set(&invalidbucket, "INVALID");
-    s = oss_upload_part_from_file(options, &invalidbucket, &object, &upload_id,
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_upload_part_from_file(options, &bucket, &object, &upload_id,
         part_num1, upload_file, &upload_part_resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
-
+    CuAssertIntEquals(tc, 404, s->code);
 
     remove(file_path);
     aos_pool_destroy(p);
@@ -486,13 +483,13 @@ void test_upload_part_copy(CuTest *tc)
     CuAssertIntEquals(tc, get_file_size(local_filename), get_file_size(download_filename));    
     CuAssertPtrNotNull(tc, resp_headers);
 
-    //invalid bucketname
+    //negative case
     resp_headers = NULL;
     range_end2 = get_file_size(local_filename) - 1;
     upload_part_copy_params2 = oss_create_upload_part_copy_params(p);
-    aos_str_set(&upload_part_copy_params2->source_bucket, "INVALID");
+    aos_str_set(&upload_part_copy_params2->source_bucket, "c-sdk-no-exist");
     aos_str_set(&upload_part_copy_params2->source_object, source_object_name);
-    aos_str_set(&upload_part_copy_params2->dest_bucket, "INVALID");
+    aos_str_set(&upload_part_copy_params2->dest_bucket, "c-sdk-no-exist");
     aos_str_set(&upload_part_copy_params2->dest_object, dest_object_name);
     aos_str_set(&upload_part_copy_params2->upload_id, upload_id.data);
     upload_part_copy_params2->part_num = part2;
@@ -500,7 +497,7 @@ void test_upload_part_copy(CuTest *tc)
     upload_part_copy_params2->range_end = range_end2;
     headers = aos_table_make(p, 0);
     s = oss_upload_part_copy(options, upload_part_copy_params2, headers, &resp_headers);
-    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertIntEquals(tc, 404, s->code);
 
     remove(download_filename);
     remove(local_filename);
@@ -654,7 +651,7 @@ void test_upload_file_failed_without_uploadid(CuTest *tc)
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
-    aos_str_set(&bucket, "invalid_bucket");
+    aos_str_set(&bucket, "c-sdk-no-exist");
     aos_str_set(&object, object_name);
     aos_str_null(&upload_id);
     aos_str_set(&filepath, __FILE__);
@@ -762,7 +759,7 @@ void test_upload_file_from_recover_failed(CuTest *tc)
     CuAssertIntEquals(tc, 200, s->code);
     
     aos_str_set(&filepath, __FILE__);
-    aos_str_set(&bucket, "invalid_bucket");
+    aos_str_set(&bucket, "c-sdk-no-exist");
     s = oss_upload_file(options, &bucket, &object, &upload_id, &filepath, 
                         part_size, NULL);
     CuAssertIntEquals(tc, 404, s->code);
@@ -954,6 +951,80 @@ void test_oss_get_sorted_uploaded_part_with_empty(CuTest *tc)
     printf("test_oss_get_sorted_uploaded_part_with_empty ok\n");
 }
 
+void test_multipart_invalid_parameter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    int i;
+    char *invalid_name_list[] =
+    { "a", "1", "!", "aa", "12", "a1",
+        "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
+        "1234567890123456789012345678901234567890123456789012345678901234", ""
+    };
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    for (i = 0; i < sizeof(invalid_name_list) / sizeof(invalid_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_status_t *s = NULL;
+        aos_table_t *resp_headers = NULL;
+        aos_table_t *headers = NULL;
+        aos_list_t part_list;
+        oss_upload_part_copy_params_t *copy_params = NULL;
+        aos_str_set(&bucket, invalid_name_list[i]);
+        headers = aos_table_make(p, 1);
+        aos_list_init(&part_list);
+
+        s = oss_init_multipart_upload(options, &bucket, NULL, NULL, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_abort_multipart_upload(options, &bucket, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_list_upload_part(options, &bucket, NULL, NULL, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_list_multipart_upload(options, &bucket, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_complete_multipart_upload(options, &bucket, NULL, NULL, NULL, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_upload_part_from_buffer(options, &bucket, NULL, NULL, 1, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_upload_part_from_file(options, &bucket, NULL, NULL, 1, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        copy_params = oss_create_upload_part_copy_params(p);
+        aos_str_set(&copy_params->dest_bucket, invalid_name_list[i]);
+        s = oss_upload_part_copy(options, copy_params, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_sorted_uploaded_part(options, &bucket, NULL, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_upload_file(options, &bucket, NULL, NULL, NULL, 1000LL, headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+    }
+    aos_pool_destroy(p);
+
+    printf("test_multipart_invalid_parameter ok\n");
+}
+
 CuSuite *test_oss_multipart()
 {
     CuSuite* suite = CuSuiteNew();
@@ -972,6 +1043,7 @@ CuSuite *test_oss_multipart()
     SUITE_ADD_TEST(suite, test_list_upload_part_with_empty);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part);
     SUITE_ADD_TEST(suite, test_oss_get_sorted_uploaded_part_with_empty);
+    SUITE_ADD_TEST(suite, test_multipart_invalid_parameter);
     SUITE_ADD_TEST(suite, test_multipart_cleanup);
 
     return suite;
