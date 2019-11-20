@@ -209,7 +209,7 @@ void image_format() {
     init_sample_request_options(options, is_cname);
     aos_str_set(&bucket, BUCKET_NAME);
     aos_str_set(&object, sample_image);
-    aos_str_set(&filename, "example-new.jpg");
+    aos_str_set(&filename, "example-new.png");
 
     params = aos_table_make(p, 1);
     apr_table_set(params, OSS_PROCESS, "image/format,png");
@@ -226,7 +226,7 @@ void image_format() {
     aos_pool_destroy(p);
 }
 
-void iamge_info()
+void image_info()
 {
     aos_pool_t *p = NULL;
     aos_string_t bucket;
@@ -275,7 +275,65 @@ void iamge_info()
         memcpy(buf + pos, content->pos, (size_t)size);
         pos += size;
     }
+
+    printf("image info:%s\n", buf);
     
+    aos_pool_destroy(p);
+}
+
+void image_tones()
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+    aos_buf_t *content = NULL;
+    char *buf = NULL;
+    int64_t len = 0;
+    int64_t size = 0;
+    int64_t pos = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_sample_request_options(options, is_cname);
+    aos_str_set(&bucket, BUCKET_NAME);
+    aos_str_set(&object, sample_image);
+    aos_list_init(&buffer);
+
+    params = aos_table_make(p, 1);
+    apr_table_set(params, OSS_PROCESS, "image/average-hue");
+
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers,
+        params, &buffer, &resp_headers);
+    if (aos_status_is_ok(s)) {
+        printf("put object from file succeeded\n");
+    }
+    else {
+        printf("put object from file failed\n");
+    }
+
+    /* get buffer len */
+    len = aos_buf_list_len(&buffer);
+
+    buf = (char *)aos_pcalloc(p, (apr_size_t)(len + 1));
+    buf[len] = '\0';
+
+    /* copy buffer content to memory */
+    aos_list_for_each_entry(aos_buf_t, content, &buffer, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, (size_t)size);
+        pos += size;
+    }
+
+    printf("image tone:%s\n", buf);
+
     aos_pool_destroy(p);
 }
 
@@ -356,5 +414,7 @@ void image_sample()
     image_sharpen();
     image_watermark();
     image_format();
-    iamge_info();
+    image_info();
+    image_tones();
+
 }
