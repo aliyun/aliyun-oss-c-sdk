@@ -1,4 +1,8 @@
 # ChangeLog - Aliyun OSS SDK for C
+## 版本号：3.9.0 日期：2019-11-22
+### 变更内容
+- 添加：bucket名字的合法性检查 
+
 ## 版本号：3.9.0 日期：2019-09-09
 ### 变更内容
 - 添加：支持x-oss-sign-origin-only 签名子资源
