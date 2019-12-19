@@ -393,6 +393,11 @@ oss_tag_content_t *oss_create_tag_content(aos_pool_t *p);
 **/
 int oss_is_valid_bucket_name(const aos_string_t *str);
 
+/**
+  * @brief  pre-process endpoint, just keep host and port.
+**/
+void oss_preprocess_endpoint(aos_string_t *endpoint);
+
 aos_status_t *oss_get_bucket_name_invalid_error();
 
 #define oss_ensure_bucket_name_valid(a) do {       \
