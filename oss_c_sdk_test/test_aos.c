@@ -1531,6 +1531,62 @@ static void test_oss_is_valid_bucket_name(CuTest *tc) {
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_preprocess_endpoint(CuTest *tc) {
+    int i;
+    aos_string_t name;
+    char *endpoints[] =
+    {
+        "www.test.com/abc",
+        "www.test.com/abc?test=1",
+        "www.test.com/abc?test=1#segment",
+        "www.test.com?test=1#segment",
+        "www.test.com"
+    };
+
+    char *ip_endpoints[] = 
+    {
+        "192.168.1.1:8080/abc",
+        "192.168.1.1:8080/abc?test=1",
+        "192.168.1.1:8080?test=1#segment",
+        "192.168.1.1:8080"
+    };
+
+    char *ip_endpoints2[] =
+    {
+        "192.168.1.1/abc",
+        "192.168.1.1/abc?test=1",
+        "192.168.1.1?test=1#segment",
+        "192.168.1.1"
+    };
+
+    for (i = 0; i < sizeof(endpoints) / sizeof(endpoints[0]); i++) {
+        aos_str_set(&name, endpoints[i]);
+        oss_preprocess_endpoint(&name);
+        CuAssertIntEquals(tc, strlen("www.test.com"), name.len);
+        CuAssertIntEquals(tc, 0, strncmp("www.test.com", name.data, name.len));
+    }
+    CuAssertIntEquals(tc, 5, i);
+
+    for (i = 0; i < sizeof(ip_endpoints) / sizeof(ip_endpoints[0]); i++) {
+        aos_str_set(&name, ip_endpoints[i]);
+        oss_preprocess_endpoint(&name);
+        CuAssertIntEquals(tc, strlen("192.168.1.1:8080"), name.len);
+        CuAssertIntEquals(tc, 0, strncmp("192.168.1.1:8080", name.data, name.len));
+    }
+    CuAssertIntEquals(tc, 4, i);
+
+    for (i = 0; i < sizeof(ip_endpoints2) / sizeof(ip_endpoints2[0]); i++) {
+        aos_str_set(&name, ip_endpoints2[i]);
+        oss_preprocess_endpoint(&name);
+        CuAssertIntEquals(tc, strlen("192.168.1.1"), name.len);
+        CuAssertIntEquals(tc, 0, strncmp("192.168.1.1", name.data, name.len));
+    }
+    CuAssertIntEquals(tc, 4, i);
+
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1599,6 +1655,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_oss_get_signed_url_negative);
     SUITE_ADD_TEST(suite, test_oss_get_rtmp_signed_url_negative);
     SUITE_ADD_TEST(suite, test_oss_is_valid_bucket_name);
-
+    SUITE_ADD_TEST(suite, test_oss_preprocess_endpoint);
+    
     return suite;
 }
