@@ -384,7 +384,10 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
     curl_easy_setopt_safe(CURLOPT_CONNECTTIMEOUT, t->controller->options->connect_timeout);
     curl_easy_setopt_safe(CURLOPT_LOW_SPEED_LIMIT, t->controller->options->speed_limit);
     curl_easy_setopt_safe(CURLOPT_LOW_SPEED_TIME, t->controller->options->speed_time);
-
+    if (t->controller->options->transfer_timeout_ms > 0) {
+        curl_easy_setopt_safe(CURLOPT_TIMEOUT_MS, t->controller->options->transfer_timeout_ms);
+    }
+    
     aos_init_curl_headers(t);
     curl_easy_setopt_safe(CURLOPT_HTTPHEADER, t->headers);
 
@@ -425,7 +428,7 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
         default: // HTTP_GET
             break;
     }
-    
+
 #undef curl_easy_setopt_safe
     
     t->state = TRANS_STATE_INIT;

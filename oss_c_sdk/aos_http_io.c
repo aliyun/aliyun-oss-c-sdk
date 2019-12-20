@@ -79,6 +79,7 @@ aos_http_request_options_t *aos_http_request_options_create(aos_pool_t *p)
     options->speed_limit = AOS_MIN_SPEED_LIMIT;
     options->speed_time = AOS_MIN_SPEED_TIME;
     options->connect_timeout = AOS_CONNECT_TIMEOUT;
+    options->transfer_timeout_ms = AOS_TRANSFER_TIMEOUT_MS;
     options->dns_cache_timeout = AOS_DNS_CACHE_TIMOUT;
     options->max_memory_size = AOS_MAX_MEMORY_SIZE;
     options->enable_crc = AOS_TRUE;

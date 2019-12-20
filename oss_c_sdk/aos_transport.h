@@ -30,6 +30,7 @@ struct aos_http_request_options_s {
     int speed_time;
     int dns_cache_timeout;
     int connect_timeout;
+    int transfer_timeout_ms;
     int64_t max_memory_size;
     int enable_crc;
     char *proxy_host;
