@@ -137,6 +137,33 @@ static void aos_move_transport_state(aos_curl_http_transport_t *t, aos_transport
     }
 }
 
+static void aos_save_times_from_curl(aos_http_controller_ex_t *ctr, CURL *curl)
+{
+    CURLcode res;
+    double dvalue;
+
+    if (!ctr || !curl)
+        return;
+
+    res = curl_easy_getinfo(curl, CURLINFO_NAMELOOKUP_TIME, &dvalue);
+    ctr->namelookup_time = (res == CURLE_OK) ? (int64_t)(dvalue * 1000) : -1;
+
+    res = curl_easy_getinfo(curl, CURLINFO_CONNECT_TIME, &dvalue);
+    ctr->connect_time = (res == CURLE_OK) ? (int64_t)(dvalue * 1000) : -1;
+
+    res = curl_easy_getinfo(curl, CURLINFO_APPCONNECT_TIME, &dvalue);
+    ctr->appconnect_time = (res == CURLE_OK) ? (int64_t)(dvalue * 1000) : -1;
+
+    res = curl_easy_getinfo(curl, CURLINFO_PRETRANSFER_TIME, &dvalue);
+    ctr->pretransfer_time = (res == CURLE_OK) ? (int64_t)(dvalue * 1000) : -1;
+
+    res = curl_easy_getinfo(curl, CURLINFO_STARTTRANSFER_TIME, &dvalue);
+    ctr->starttransfer_time = (res == CURLE_OK) ? (int64_t)(dvalue * 1000) : -1;
+
+    res = curl_easy_getinfo(curl, CURLINFO_TOTAL_TIME, &dvalue);
+    ctr->total_time = (res == CURLE_OK) ? (int64_t)(dvalue * 1000) : -1;
+}
+
 void aos_curl_response_headers_parse(aos_pool_t *p, aos_table_t *headers, char *buffer, int len)
 {
     char *pos;
@@ -450,6 +477,7 @@ int aos_curl_http_transport_perform(aos_http_transport_t *t_)
     code = curl_easy_perform(t->curl);
     t->controller->finish_time = apr_time_now();
     aos_move_transport_state(t, TRANS_STATE_DONE);
+    aos_save_times_from_curl(t->controller, t->curl);
     
     if ((code != CURLE_OK) && (t->controller->error_code == AOSE_OK)) {
         ecode = aos_curl_code_to_status(code);

@@ -50,7 +50,14 @@ struct aos_http_transport_options_s {
     int64_t first_byte_time;                    \
     int64_t finish_time;                        \
     uint32_t owner:1;                           \
-    void *user_data;
+    void *user_data;                            \
+    int64_t namelookup_time;                   \
+    int64_t connect_time;                       \
+    int64_t appconnect_time;                    \
+    int64_t pretransfer_time;                   \
+    int64_t starttransfer_time;                 \
+    int64_t total_time;                         
+
 
 struct aos_http_controller_s {
     AOS_HTTP_BASE_CONTROLLER_DEFINE
