@@ -1161,10 +1161,7 @@ void test_select_object_invalid_parameter(CuTest *tc)
         aos_string_t bucket;
         aos_status_t *s = NULL;
         aos_table_t *resp_headers = NULL;
-        aos_table_t *headers = NULL;
-        aos_table_t *params = NULL;
         aos_str_set(&bucket, invalid_name_list[i]);
-        headers = aos_table_make(p, 1);
 
         s = oss_select_object_to_buffer(options, &bucket, NULL, NULL, NULL, NULL, &resp_headers);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
@@ -1182,6 +1179,45 @@ void test_select_object_invalid_parameter(CuTest *tc)
 
     printf("test_select_object_invalid_parameter ok\n");
 }
+
+void test_select_object_with_long_sql_expression(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t buffer;
+    aos_status_t *s = NULL;
+    aos_string_t bucket;
+    aos_string_t object;
+    char *object_name = "test_select_object_with_long_sql_expression.csv";
+    char *object_data = "name,job\nabc,def\n";
+    char *sql = NULL;
+    char sql_buff[2500];
+    aos_string_t expression;
+    oss_select_object_params_t *select_params;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    create_test_object(options, TEST_BUCKET_NAME, object_name, object_data, NULL);
+    sprintf(sql_buff, "%s", "select name from ossobject");
+    memset(sql_buff + 26, 0x20, sizeof(sql_buff) - 26);
+    sql_buff[2500 - 1] = '\0';
+    sql  = sql_buff;
+    aos_str_set(&expression, sql);
+    select_params = oss_create_select_object_params(options->pool);
+    aos_str_set(&select_params->input_param.file_header_info, "USE");
+    select_params->output_param.output_header = AOS_TRUE;
+    aos_list_init(&buffer);
+    s = oss_select_object_to_buffer(options, &bucket, &object, &expression, select_params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 400, s->code);
+    CuAssertPtrNotNull(tc, resp_headers);
+    printf("%s ok\n", __FUNCTION__);
+}
+
 
 CuSuite *test_oss_select_object()
 {
@@ -1213,6 +1249,7 @@ CuSuite *test_oss_select_object()
     SUITE_ADD_TEST(suite, test_select_object_invalid);
     SUITE_ADD_TEST(suite, test_select_object_create_meta_invalid);
     SUITE_ADD_TEST(suite, test_select_object_invalid_parameter);
+    SUITE_ADD_TEST(suite, test_select_object_with_long_sql_expression);
     SUITE_ADD_TEST(suite, test_select_object_cleanup);
     
     return suite;
