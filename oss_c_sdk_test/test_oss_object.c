@@ -1667,6 +1667,85 @@ void test_object_invalid_parameter(CuTest *tc)
     printf("test_object_invalid_parameter ok\n");
 }
 
+void test_get_object_to_buffer_with_maxbuffersize(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "video_1.ts";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    options->ctl->options = aos_http_request_options_create(options->pool);
+    options->ctl->options->max_memory_size = 4;
+    options->ctl->options->enable_crc = AOS_FALSE;
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&buffer);
+
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
+                                 params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_OVER_MEMORY, s->code);
+
+
+    options->ctl->options->enable_crc = AOS_TRUE;
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
+                                 params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_CRC_INCONSISTENT_ERROR, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_get_object_to_buffer_with_maxbuffersize ok\n");
+
+}
+
+void test_get_object_to_buffer_use_invalid_sts(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "video_1.ts";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&options->config->sts_token, "invalid-sts");
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&buffer);
+
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers, 
+                                 params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 403, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_get_object_to_buffer_use_invalid_sts ok\n");
+
+}
+
+
+
 CuSuite *test_oss_object()
 {
     CuSuite* suite = CuSuiteNew();   
@@ -1707,6 +1786,8 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_not_exist_object_to_file);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_invalid_endpoint);
     SUITE_ADD_TEST(suite, test_object_invalid_parameter);
+    SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_maxbuffersize);
+    SUITE_ADD_TEST(suite, test_get_object_to_buffer_use_invalid_sts);
     SUITE_ADD_TEST(suite, test_object_cleanup); 
     
     return suite;

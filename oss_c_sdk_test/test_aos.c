@@ -1540,6 +1540,7 @@ static void test_oss_preprocess_endpoint(CuTest *tc) {
         "www.test.com/abc?test=1",
         "www.test.com/abc?test=1#segment",
         "www.test.com?test=1#segment",
+        "www.test.com#abc",
         "www.test.com"
     };
 
@@ -1565,7 +1566,7 @@ static void test_oss_preprocess_endpoint(CuTest *tc) {
         CuAssertIntEquals(tc, strlen("www.test.com"), name.len);
         CuAssertIntEquals(tc, 0, strncmp("www.test.com", name.data, name.len));
     }
-    CuAssertIntEquals(tc, 5, i);
+    CuAssertIntEquals(tc, 6, i);
 
     for (i = 0; i < sizeof(ip_endpoints) / sizeof(ip_endpoints[0]); i++) {
         aos_str_set(&name, ip_endpoints[i]);
@@ -1583,9 +1584,21 @@ static void test_oss_preprocess_endpoint(CuTest *tc) {
     }
     CuAssertIntEquals(tc, 4, i);
 
+    aos_str_set(&name, "");
+    oss_preprocess_endpoint(&name);
+    CuAssertIntEquals(tc, 0, name.len);
+
 
     printf("%s ok\n", __FUNCTION__);
 }
+
+
+void test_oss_fill_read_response_header(CuTest *tc) {
+    aos_table_t *headers;
+    oss_fill_read_response_header(NULL, &headers);
+    printf("%s ok\n", __FUNCTION__);
+}
+
 
 CuSuite *test_aos()
 {
@@ -1656,6 +1669,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_oss_get_rtmp_signed_url_negative);
     SUITE_ADD_TEST(suite, test_oss_is_valid_bucket_name);
     SUITE_ADD_TEST(suite, test_oss_preprocess_endpoint);
+    SUITE_ADD_TEST(suite, test_oss_fill_read_response_header);
     
     return suite;
 }
