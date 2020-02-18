@@ -1480,6 +1480,57 @@ static void test_build_bucket_storage_class_negative(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_publish_url_parse(CuTest *tc)
+{
+    aos_pool_t *p;
+    aos_pool_create(&p, NULL);
+
+    oss_publish_url_parse(p, NULL, NULL);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_play_url_parse(CuTest *tc)
+{
+    aos_pool_t *p;
+    aos_pool_create(&p, NULL);
+
+    oss_play_url_parse(p, NULL, NULL);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_build_select_object_body(CuTest *tc)
+{
+    aos_pool_t *p;
+    aos_list_t body;
+    aos_string_t expression;
+    aos_pool_create(&p, NULL);
+
+    oss_build_select_object_body(p, NULL, NULL, &body);
+
+    oss_build_select_object_body(p, &expression, NULL, &body);
+
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_oss_build_create_select_object_meta_body(CuTest *tc)
+{
+    aos_pool_t *p;
+    aos_list_t body;
+    aos_pool_create(&p, NULL);
+    oss_build_create_select_object_meta_body(p, NULL, &body);
+    aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
+}
+
+
 //
 //build_bucket_storage_capacity_body
 //oss_build_create_select_object_meta_xml
@@ -1534,6 +1585,11 @@ CuSuite *test_oss_xml()
     SUITE_ADD_TEST(suite, test_oss_delete_objects_parse_from_body_negative);
     SUITE_ADD_TEST(suite, test_build_bucket_logging_body_negative);
     SUITE_ADD_TEST(suite, test_build_bucket_storage_class_negative);
+
+    SUITE_ADD_TEST(suite, test_oss_publish_url_parse);
+    SUITE_ADD_TEST(suite, test_oss_play_url_parse);
+    SUITE_ADD_TEST(suite, test_oss_build_select_object_body);
+    SUITE_ADD_TEST(suite, test_oss_build_create_select_object_meta_body);
     
     SUITE_ADD_TEST(suite, test_oss_xml_cleanup);
 

@@ -19,7 +19,6 @@ script:
   - ./build/Coverage/bin/oss_c_sdk_test
 
 after_success:
-  - coveralls --include oss_c_sdk/ --gcov-options '\-lp'
 
 env:
   global:

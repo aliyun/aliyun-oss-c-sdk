@@ -2414,10 +2414,12 @@ void oss_build_select_object_body(aos_pool_t *p,
 {
     char *select_object_xml;
     aos_buf_t *b;
-    select_object_xml = oss_build_select_object_xml(p, expression, params);
     aos_list_init(body);
-    b = aos_buf_pack(p, select_object_xml, strlen(select_object_xml));
-    aos_list_add_tail(&b->node, body);
+    select_object_xml = oss_build_select_object_xml(p, expression, params);
+    if (select_object_xml) {
+        b = aos_buf_pack(p, select_object_xml, strlen(select_object_xml));
+        aos_list_add_tail(&b->node, body);
+    }
 }
 
 
@@ -2507,10 +2509,12 @@ void oss_build_create_select_object_meta_body(aos_pool_t *p,
 {
     char *meta_xml;
     aos_buf_t *b;
-    meta_xml = oss_build_create_select_object_meta_xml(p, params);
     aos_list_init(body);
-    b = aos_buf_pack(p, meta_xml, strlen(meta_xml));
-    aos_list_add_tail(&b->node, body);
+    meta_xml = oss_build_create_select_object_meta_xml(p, params);
+    if (meta_xml) {
+        b = aos_buf_pack(p, meta_xml, strlen(meta_xml));
+        aos_list_add_tail(&b->node, body);
+    }
 }
 
 char *build_object_tagging_xml(aos_pool_t *p, aos_list_t *tag_list)

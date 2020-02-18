@@ -303,6 +303,9 @@ void test_crc_big_endian(CuTest *tc)
    // CuAssertTrue(tc, crc1 == crc2);
 
     crc1 = aos_crc64_test(0, str3, 9, 0);
+    
+    (void)(crc1);
+    (void)(crc2);
 
     printf("test_crc_big_endian ok\n");
 }

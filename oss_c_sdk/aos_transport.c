@@ -372,15 +372,8 @@ static void aos_curl_transport_finish(aos_curl_http_transport_t *t)
 
 int aos_curl_transport_setup(aos_curl_http_transport_t *t)
 {
-    CURLcode code;
 
-#define curl_easy_setopt_safe(opt, val)                                 \
-    if ((code = curl_easy_setopt(t->curl, opt, val)) != CURLE_OK) {    \
-            t->controller->reason = apr_pstrdup(t->pool, curl_easy_strerror(code)); \
-            t->controller->error_code = AOSE_FAILED_INITIALIZE;         \
-            aos_error_log("curl_easy_setopt failed, code:%d %s.", code, t->controller->reason); \
-            return AOSE_FAILED_INITIALIZE;                              \
-    }
+#define curl_easy_setopt_safe(opt, val)  curl_easy_setopt(t->curl, opt, val)
 
     curl_easy_setopt_safe(CURLOPT_PRIVATE, t);
 
