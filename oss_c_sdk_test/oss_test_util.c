@@ -320,7 +320,6 @@ void clean_bucket_by_prefix(const char* prefix)
     aos_status_t *s = NULL;
     oss_list_buckets_params_t *params = NULL;
     oss_list_bucket_content_t *content = NULL;
-    int size = 0;
 
     /* list all buckets */
     aos_pool_create(&p, NULL);

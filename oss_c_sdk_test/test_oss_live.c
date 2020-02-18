@@ -715,10 +715,7 @@ void test_live_invalid_parameter(CuTest *tc)
         aos_string_t bucket;
         aos_status_t *s = NULL;
         aos_table_t *resp_headers = NULL;
-        aos_table_t *headers = NULL;
-        aos_table_t *params = NULL;
         aos_str_set(&bucket, invalid_name_list[i]);
-        headers = aos_table_make(p, 1);
 
         s = oss_create_live_channel(options, &bucket, NULL, NULL, NULL, &resp_headers);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
