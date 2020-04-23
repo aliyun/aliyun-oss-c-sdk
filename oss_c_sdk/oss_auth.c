@@ -386,7 +386,7 @@ int oss_get_signed_url(const oss_request_options_t *options,
 
     uristr[0] = '\0';
     aos_str_null(&querystr);
-    res = aos_url_encode(uristr, req->uri, AOS_MAX_URI_LEN);
+    res = aos_url_encode_ex(uristr, req->uri, AOS_MAX_URI_LEN, req->normalize_url);
     if (res != AOSE_OK) {
         return res;
     }

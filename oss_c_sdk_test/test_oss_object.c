@@ -1225,7 +1225,7 @@ void test_object_by_url(CuTest *tc)
     apr_time_t now;
     int two_minute = 120;
     int is_cname = 0;
-    char *object_name = "oss_test_object_by_url";
+    char *object_name = "oss_test_object_by_url/123";
     aos_string_t bucket;
     aos_string_t object;
     char *str = "test oss c sdk for object url api";
@@ -1263,6 +1263,9 @@ void test_object_by_url(CuTest *tc)
             &buffer, headers, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertPtrNotNull(tc, resp_headers);
+    CuAssertPtrNotNull(tc, strstr(url_str, "oss_test_object_by_url%2F123"));
+    CuAssertPtrEquals(tc, strstr(url_str, "oss_test_object_by_url/123"), NULL);
+    CuAssertIntEquals(tc, req->normalize_url, 0);
 
     /* test effective url for put_object_from_file */
     resp_headers = NULL;
@@ -1273,12 +1276,15 @@ void test_object_by_url(CuTest *tc)
 
     /* test effective url for get_object_to_buffer */
     req->method = HTTP_GET;
+    req->normalize_url = 1;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
                                   object_name, effective_time, req);
     aos_str_set(&url, url_str);
     s = oss_get_object_to_buffer_by_url(options, &url, headers, params,
             &buffer, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
+    CuAssertPtrNotNull(tc, strstr(url_str, "oss_test_object_by_url/123"));
+    CuAssertPtrEquals(tc, strstr(url_str, "oss_test_object_by_url%2F123"), NULL);
 
     /* test effective url for get_object_to_file */
     resp_headers = NULL;

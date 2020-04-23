@@ -101,6 +101,43 @@ int aos_url_encode(char *dest, const char *src, int maxSrcSize)
     return AOSE_OK;
 }
 
+int aos_url_encode_ex(char *dest, const char *src, int maxSrcSize, int slash)
+{
+    static const char *hex = "0123456789ABCDEF";
+
+    int len = 0;
+    unsigned char c;
+
+    while (*src) {
+        if (++len > maxSrcSize) {
+            *dest = 0;
+            return AOSE_INVALID_ARGUMENT;
+        }
+        c = *src;
+        if (isalnum(c) || (c == '-') || (c == '_') || (c == '.') || (c == '~')) {
+            *dest++ = c;
+        }
+        else if (*src == ' ') {
+            *dest++ = '%';
+            *dest++ = '2';
+            *dest++ = '0';
+        }
+        else if (c == '/' && slash) {
+            *dest++ = c;
+        }
+        else {
+            *dest++ = '%';
+            *dest++ = hex[c >> 4];
+            *dest++ = hex[c & 15];
+        }
+        src++;
+    }
+
+    *dest = 0;
+
+    return AOSE_OK;
+}
+
 int aos_query_params_to_string(aos_pool_t *p, aos_table_t *query_params, aos_string_t *querystr)
 {
     int rs;
