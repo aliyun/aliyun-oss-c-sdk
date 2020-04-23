@@ -24,8 +24,10 @@ int aos_get_gmt_str_time(char datestr[AOS_MAX_GMT_TIME_LEN]);
  * 3x the number of characters that [source] has. At most [maxSrcSize] bytes
  * from [src] are encoded; if more are present in [src], 0 is returned from
  * urlEncode, else nonzero is returned.
+ * if slash not 0, don't change / to %2F
  */
 int aos_url_encode(char *dest, const char *src, int maxSrcSize);
+int aos_url_encode_ex(char *dest, const char *src, int maxSrcSize, int slash);
 
 const char* aos_http_method_to_string(http_method_e method);
 
