@@ -675,6 +675,26 @@ void test_aos_url_encode_with_blank_char(CuTest *tc) {
     printf("test_aos_url_encode_with_blank_char ok\n");
 }
 
+void test_aos_url_encode_ex_with_blank_char(CuTest *tc) {
+    int ret;
+    char *source;
+    char *dest;
+    source = "abc.xx.com/a b~//123/";
+    dest = (char*)malloc(100);
+
+    ret = aos_url_encode_ex(dest, source, strlen(source), 0);
+    CuAssertIntEquals(tc, AOSE_OK, ret);
+    CuAssertStrEquals(tc, "abc.xx.com%2Fa%20b~%2F%2F123%2F", dest);
+
+    ret = aos_url_encode_ex(dest, source, strlen(source), 1);
+    CuAssertIntEquals(tc, AOSE_OK, ret);
+    CuAssertStrEquals(tc, "abc.xx.com/a%20b~//123/", dest);
+
+    free(dest);
+
+    printf("test_aos_url_encode_ex_with_blank_char ok\n");
+}
+
 void test_aos_url_decode_with_percent(CuTest *tc) {
     int ret;
     char *in;
@@ -1625,6 +1645,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_aos_string_is_empty);
     SUITE_ADD_TEST(suite, test_aos_url_encode_failed);
     SUITE_ADD_TEST(suite, test_aos_url_encode_with_blank_char);
+    SUITE_ADD_TEST(suite, test_aos_url_encode_ex_with_blank_char);
     SUITE_ADD_TEST(suite, test_aos_url_decode_with_percent);
     SUITE_ADD_TEST(suite, test_aos_url_decode_with_add);
     SUITE_ADD_TEST(suite, test_aos_url_decode_failed);

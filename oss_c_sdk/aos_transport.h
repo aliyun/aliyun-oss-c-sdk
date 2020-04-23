@@ -93,6 +93,8 @@ struct aos_http_request_s {
     oss_progress_callback progress_callback;
     uint64_t crc64;
     int64_t  consumed_bytes;
+
+    int normalize_url;
 };
 
 struct aos_http_response_s {
