@@ -126,7 +126,7 @@ aos_http_request_t *aos_http_request_create(aos_pool_t *p)
     req->body_len = 0;
     req->pool = p;
     req->read_body = aos_read_http_body_memory;
-
+    req->normalize_url = 0;
     return req;
 }
 
