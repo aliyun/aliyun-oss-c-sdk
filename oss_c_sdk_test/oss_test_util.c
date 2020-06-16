@@ -104,6 +104,8 @@ void init_test_request_options(oss_request_options_t *options, int is_cname)
     options->config = oss_config_create(options->pool);
     init_test_config(options->config, is_cname);
     options->ctl = aos_http_controller_create(options->pool, 0);
+    options->ctl->options = aos_http_request_options_create(options->pool);
+    options->ctl->options->verify_ssl = AOS_FALSE;
 }
 
 aos_status_t * create_test_bucket(const oss_request_options_t *options,

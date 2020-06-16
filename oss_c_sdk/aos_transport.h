@@ -34,6 +34,9 @@ struct aos_http_request_options_s {
     int enable_crc;
     char *proxy_host;
     char *proxy_auth;
+    int verify_ssl;
+    char *ca_path;
+    char *ca_file;
 };
 
 struct aos_http_transport_options_s {

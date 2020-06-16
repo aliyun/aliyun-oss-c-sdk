@@ -84,6 +84,9 @@ aos_http_request_options_t *aos_http_request_options_create(aos_pool_t *p)
     options->enable_crc = AOS_TRUE;
     options->proxy_auth = NULL;
     options->proxy_host = NULL;
+    options->verify_ssl = AOS_TRUE;
+    options->ca_file = NULL;
+    options->ca_path = NULL;
 
     return options;
 }

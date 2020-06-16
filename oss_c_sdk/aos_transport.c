@@ -393,8 +393,27 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
     curl_easy_setopt_safe(CURLOPT_NETRC, CURL_NETRC_IGNORED);
 
     // transport options
-    curl_easy_setopt_safe(CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt_safe(CURLOPT_USERAGENT, t->options->user_agent);
+
+    // ssl
+    if (t->controller->options->verify_ssl) {
+        curl_easy_setopt_safe(CURLOPT_SSL_VERIFYPEER, 1);
+        curl_easy_setopt_safe(CURLOPT_SSL_VERIFYHOST, 2);
+    }
+    else {
+        curl_easy_setopt_safe(CURLOPT_SSL_VERIFYPEER, 0);
+        curl_easy_setopt_safe(CURLOPT_SSL_VERIFYHOST, 0);
+    }
+
+    if (t->controller->options->ca_path != NULL)
+    {
+        curl_easy_setopt_safe(CURLOPT_CAPATH, t->controller->options->ca_path);
+    }
+
+    if (t->controller->options->ca_file != NULL)
+    {
+        curl_easy_setopt_safe(CURLOPT_CAINFO, t->controller->options->ca_file);
+    }
 
     // request options
     curl_easy_setopt_safe(CURLOPT_DNS_CACHE_TIMEOUT, t->controller->options->dns_cache_timeout);
