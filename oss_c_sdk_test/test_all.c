@@ -19,6 +19,7 @@ extern CuSuite *test_oss_resumable();
 extern CuSuite *test_oss_select_object();
 extern CuSuite *test_oss_object_tagging();
 extern CuSuite *test_oss_xml();
+extern CuSuite *test_oss_https();
 extern void set_test_bucket_prefix(const char*prefix);
 extern void clean_bucket_by_prefix(const char* prefix);
 
@@ -40,6 +41,7 @@ static const struct testlist {
     {"test_oss_select_object", test_oss_select_object },
     {"test_oss_object_tagging", test_oss_object_tagging },
     {"test_oss_xml", test_oss_xml },
+    {"test_oss_https", test_oss_https },
     {"LastTest", NULL}
 };
 

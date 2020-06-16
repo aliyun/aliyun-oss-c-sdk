@@ -36,6 +36,7 @@
     <ClCompile Include="test_oss_bucket.c" />
     <ClCompile Include="test_oss_callback.c" />
     <ClCompile Include="test_oss_crc.c" />
+    <ClCompile Include="test_oss_https.c" />
     <ClCompile Include="test_oss_image.c" />
     <ClCompile Include="test_oss_live.c" />
     <ClCompile Include="test_oss_multipart.c" />
