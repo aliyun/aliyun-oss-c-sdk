@@ -1166,6 +1166,10 @@ void test_aos_http_controller_create(CuTest *tc) {
     CuAssertTrue(tc, ctr->pool != NULL);
     aos_pool_destroy(ctr->pool);
 
+    CuAssertTrue(tc, ctr->options->verify_ssl == AOS_TRUE);
+    CuAssertTrue(tc, ctr->options->ca_file == NULL);
+    CuAssertTrue(tc, ctr->options->ca_path == NULL);
+
     printf("%s ok\n", __FUNCTION__);
 }
 
