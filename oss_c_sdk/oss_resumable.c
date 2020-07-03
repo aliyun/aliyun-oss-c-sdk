@@ -142,6 +142,7 @@ void oss_build_thread_params(oss_thread_params_t *thd_params, int part_num,
         config = oss_config_create(subpool);
         memcpy(config, options->config, sizeof(oss_config_t));
         ctl = aos_http_controller_create(subpool, 0);
+        memcpy(ctl, options->ctl, sizeof(aos_http_controller_t));
         thd_params[i].options.config = config;
         thd_params[i].options.ctl = ctl;
         thd_params[i].options.pool = subpool;
