@@ -1616,6 +1616,55 @@ static void test_oss_preprocess_endpoint(CuTest *tc) {
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_get_host_from_authority(CuTest *tc) {
+    aos_pool_t *p;
+    oss_request_options_t *option;
+    int i;
+    aos_string_t name;
+    char *value;
+    char *authoritys[] =
+    {
+        "www.test.com:8192",
+        "www.test.com",
+        "test:test@www.test.com:80",
+        "test:test@www.test.com",
+    };
+
+    char *ip_authoritys[] =
+    {
+        "192.168.1.1:8192",
+        "192.168.1.1",
+        "test:test@192.168.1.1:8192",
+        "test:test@192.168.1.1",
+    };
+
+    aos_pool_create(&p, NULL);
+    option = oss_request_options_create(p);
+
+    for (i = 0; i < sizeof(authoritys) / sizeof(authoritys[0]); i++) {
+        aos_str_set(&name, authoritys[i]);
+        value = oss_get_host_from_authority(option, &name);
+        CuAssertStrEquals(tc, value, "www.test.com");
+    }
+    CuAssertIntEquals(tc, 4, i);
+
+    for (i = 0; i < sizeof(ip_authoritys) / sizeof(ip_authoritys[0]); i++) {
+        aos_str_set(&name, ip_authoritys[i]);
+        value = oss_get_host_from_authority(option, &name);
+        CuAssertStrEquals(tc, value, "192.168.1.1");
+    }
+    CuAssertIntEquals(tc, 4, i);
+
+    aos_str_set(&name, "");
+    value = oss_get_host_from_authority(option, &name);
+    CuAssertPtrEquals(tc, value, NULL);
+
+    value = oss_get_host_from_authority(option, NULL);
+    CuAssertPtrEquals(tc, value, NULL);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 
 void test_oss_fill_read_response_header(CuTest *tc) {
     aos_table_t *headers;
@@ -1695,6 +1744,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_oss_is_valid_bucket_name);
     SUITE_ADD_TEST(suite, test_oss_preprocess_endpoint);
     SUITE_ADD_TEST(suite, test_oss_fill_read_response_header);
+    SUITE_ADD_TEST(suite, test_oss_get_host_from_authority);
     
     return suite;
 }
