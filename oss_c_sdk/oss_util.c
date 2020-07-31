@@ -173,6 +173,33 @@ void oss_preprocess_endpoint(aos_string_t *endpoint)
     endpoint->len = i;
 }
 
+char* oss_get_host_from_authority(const oss_request_options_t *options, aos_string_t *authority)
+{
+    char *ptr, *host;
+ 
+    if (aos_string_is_empty(authority)) {
+        return NULL;
+    }
+
+    host = aos_pstrdup(options->pool, authority);
+
+    for (ptr = host; ptr && (*ptr != '\0'); ptr++) {
+        if (*ptr == '@') {
+            host = ptr + 1;
+            break;
+        }
+    }
+
+    for (ptr = host; ptr && (*ptr != '\0'); ptr++) {
+        if (*ptr == ':') {
+            *ptr = '\0';
+            break;
+        }
+    }
+
+    return host;
+}
+
 oss_config_t *oss_config_create(aos_pool_t *p)
 {
     return (oss_config_t *)aos_pcalloc(p, sizeof(oss_config_t));
@@ -231,11 +258,10 @@ void oss_get_object_uri(const oss_request_options_t *options,
                                  bucket->len, bucket->data, 
                                  object->len, object->data);
 
-    raw_endpoint_str = aos_pstrdup(options->pool, 
-            &options->config->endpoint) + proto_len;
     raw_endpoint.len = options->config->endpoint.len - proto_len;
     raw_endpoint.data = options->config->endpoint.data + proto_len;
     oss_preprocess_endpoint(&raw_endpoint);
+    raw_endpoint_str = oss_get_host_from_authority(options, &raw_endpoint);
 
     if (options->config->is_cname) {
         req->host = apr_psprintf(options->pool, "%.*s",
@@ -266,11 +292,10 @@ void oss_get_service_uri(const oss_request_options_t *options,
     generate_proto(options, req);
 
     proto_len = strlen(req->proto);
-    raw_endpoint_str = aos_pstrdup(options->pool, 
-            &options->config->endpoint) + proto_len;
     raw_endpoint.len = options->config->endpoint.len - proto_len;
     raw_endpoint.data = options->config->endpoint.data + proto_len;
     oss_preprocess_endpoint(&raw_endpoint);
+    raw_endpoint_str = oss_get_host_from_authority(options, &raw_endpoint);
 
     if (options->config->is_cname || 
         is_valid_ip(raw_endpoint_str))
@@ -295,11 +320,10 @@ void oss_get_bucket_uri(const oss_request_options_t *options,
     generate_proto(options, req);
 
     proto_len = strlen(req->proto);
-    raw_endpoint_str = aos_pstrdup(options->pool, 
-            &options->config->endpoint) + proto_len;
     raw_endpoint.len = options->config->endpoint.len - proto_len;
     raw_endpoint.data = options->config->endpoint.data + proto_len;
     oss_preprocess_endpoint(&raw_endpoint);
+    raw_endpoint_str = oss_get_host_from_authority(options, &raw_endpoint);
 
     if (is_valid_ip(raw_endpoint_str)) {
         req->resource = apr_psprintf(options->pool, "%.*s", 
@@ -340,11 +364,10 @@ void oss_get_rtmp_uri(const oss_request_options_t *options,
     req->resource = apr_psprintf(options->pool, "%.*s/%.*s", bucket->len, bucket->data,
         live_channel_id->len, live_channel_id->data);
 
-    raw_endpoint_str = aos_pstrdup(options->pool,
-            &options->config->endpoint) + proto_len;
     raw_endpoint.len = options->config->endpoint.len - proto_len;
     raw_endpoint.data = options->config->endpoint.data + proto_len;
     oss_preprocess_endpoint(&raw_endpoint);
+    raw_endpoint_str = oss_get_host_from_authority(options, &raw_endpoint);
 
     if (options->config->is_cname) {
         req->host = apr_psprintf(options->pool, "%.*s",
