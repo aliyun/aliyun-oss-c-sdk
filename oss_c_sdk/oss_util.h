@@ -398,6 +398,11 @@ int oss_is_valid_bucket_name(const aos_string_t *str);
 **/
 void oss_preprocess_endpoint(aos_string_t *endpoint);
 
+/**
+  * @brief  get host form the authority of url
+**/
+char* oss_get_host_from_authority(const oss_request_options_t *options, aos_string_t *authority);
+
 aos_status_t *oss_get_bucket_name_invalid_error();
 
 #define oss_ensure_bucket_name_valid(a) do {       \
