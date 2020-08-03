@@ -470,6 +470,7 @@ void test_restore_obj(CuTest *tc)
     aos_string_t object;
     aos_table_t *params = NULL;
     aos_table_t *resp_headers = NULL;
+    oss_bucket_info_t bucket_info;
     char IA_BUCKET_NAME[128] = {0};
     apr_snprintf(IA_BUCKET_NAME, 127, "%s-ia", TEST_BUCKET_NAME);
 
@@ -483,6 +484,11 @@ void test_restore_obj(CuTest *tc)
                                             oss_acl, OSS_STORAGE_CLASS_ARCHIVE);
     CuAssertIntEquals(tc, 200, s->code);
     CuAssertStrEquals(tc, NULL, s->error_code);
+
+    //get bucket info
+    s = oss_get_bucket_info(options, &bucket, &bucket_info, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, bucket_info.storage_class.data, "Archive");
 
     //create test object
     headers1 = aos_table_make(p, 0);
@@ -539,6 +545,94 @@ void test_restore_obj(CuTest *tc)
     CuAssertStrEquals(tc, NULL, s->error_code);
 
     //cleanup: delete archive bucket 
+    delete_test_object(options, bucket.data, object_name1);
+    s = oss_delete_bucket(options, &bucket, &resp_headers);
+    TEST_CASE_LOG("errcode[%d] %s %s\n", s->code, s->error_msg, s->error_code);
+    CuAssertIntEquals(tc, 204, s->code);
+    aos_pool_destroy(p);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
+void test_restore_object_with_tier(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    int is_cname = 0;
+    aos_status_t *s = NULL;
+    oss_request_options_t *options = NULL;
+    oss_acl_e oss_acl = OSS_ACL_PRIVATE;
+    char *object_name1 = "oss_test_object1";
+    char *str = "test c oss sdk";
+    aos_table_t *headers1 = NULL;
+    aos_list_t buffer;
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    oss_bucket_info_t bucket_info;
+    oss_list_object_params_t *lo_params = NULL;
+    oss_list_object_content_t *content = NULL;
+
+    char IA_BUCKET_NAME[128] = { 0 };
+    apr_snprintf(IA_BUCKET_NAME, 127, "%s-code-archive", TEST_BUCKET_NAME);
+
+    //setup: create archive bucket
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    aos_str_set(&bucket, IA_BUCKET_NAME);
+    aos_str_set(&options->config->endpoint, "http://oss-ap-southeast-2.aliyuncs.com");
+    
+
+    s = create_test_bucket_with_storage_class(options, bucket.data,
+        oss_acl, OSS_STORAGE_CLASS_COLD_ARCHIVE);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    //get bucket info
+    s = oss_get_bucket_info(options, &bucket, &bucket_info, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, bucket_info.storage_class.data, "ColdArchive");
+
+    //create test object
+    headers1 = aos_table_make(p, 0);
+    s = create_test_object(options, bucket.data, object_name1, str, headers1);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    //list object
+    lo_params = oss_create_list_object_params(p);
+    s = oss_list_object(options, &bucket, lo_params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, lo_params->truncated);
+
+    aos_list_for_each_entry(oss_list_object_content_t, content, &lo_params->object_list, node) {
+        CuAssertStrEquals(tc, "ColdArchive", content->storage_class.data);
+        CuAssertStrEquals(tc, "Normal", content->type.data);
+    }
+
+    aos_str_set(&object, object_name1);
+    aos_list_init(&buffer);
+    headers1 = NULL;
+    /* test get object to buffer */
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers1,
+        params, &buffer, &resp_headers);
+    /* expect fail because it's archive bucket */
+    TEST_CASE_LOG("errcode[%d] %s %s\n", s->code, s->error_msg, s->error_code);
+    CuAssertIntEquals(tc, -978, s->code);
+
+    TEST_CASE_LOG("restore object begin.\n");
+    headers1 = aos_table_make(p, 0);
+    s = oss_restore_object_with_tier(options, &bucket, &object, OSS_TIER_STANDARD, 2, headers1, &resp_headers);
+    CuAssertIntEquals(tc, 202, s->code);
+    CuAssertStrEquals(tc, NULL, s->error_code);
+
+    headers1 = aos_table_make(p, 0);
+    s = oss_restore_object_with_tier(options, &bucket, &object, OSS_TIER_STANDARD, 2, headers1, &resp_headers);
+    CuAssertIntEquals(tc, 409, s->code);
+    CuAssertStrEquals(tc, "RestoreAlreadyInProgress", s->error_code);
+
+    //cleanup: delete code-archive bucket 
     delete_test_object(options, bucket.data, object_name1);
     s = oss_delete_bucket(options, &bucket, &resp_headers);
     TEST_CASE_LOG("errcode[%d] %s %s\n", s->code, s->error_msg, s->error_code);
@@ -1766,6 +1860,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_put_symlink_for_obj);
     SUITE_ADD_TEST(suite, test_get_symlink_for_obj);
     SUITE_ADD_TEST(suite, test_restore_obj);
+    SUITE_ADD_TEST(suite, test_restore_object_with_tier);
     SUITE_ADD_TEST(suite, test_put_object_from_buffer_with_default_content_type);
     SUITE_ADD_TEST(suite, test_put_object_with_large_length_header);
     SUITE_ADD_TEST(suite, test_get_object_to_file);

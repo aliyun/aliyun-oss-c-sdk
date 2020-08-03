@@ -40,6 +40,13 @@ const char *get_oss_acl_str(oss_acl_e oss_acl);
 const char *get_oss_storage_class_str(oss_storage_class_type_e storage_class);
 
 /**
+  * @brief  get oss tier type str according oss_tier_type_e
+  * @param[in] tier the oss bucket tier type
+  * @return oss tier type str
+**/
+const char *get_oss_tier_type_str(oss_tier_type_e tier);
+
+/**
   * @brief  create oss config including host, port, access_key_id, access_key_secret, is_oss_domain
 **/
 oss_config_t *oss_config_create(aos_pool_t *p);
