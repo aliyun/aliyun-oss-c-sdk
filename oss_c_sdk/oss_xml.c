@@ -203,6 +203,7 @@ void oss_list_objects_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_li
     char *size;
     char *node_content;
     mxml_node_t *node;
+    char *str_value;
 
     node = mxmlFindElement(xml_node, xml_node, "Key", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
@@ -235,6 +236,22 @@ void oss_list_objects_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_li
     node = mxmlFindElement(xml_node, xml_node, "Owner", NULL, NULL, MXML_DESCEND);
     if (NULL != node) {
         oss_list_objects_owner_parse(p, node, content);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "StorageClass", NULL, NULL, MXML_DESCEND);
+    aos_str_null(&content->storage_class);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        str_value = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->storage_class, str_value);
+    }
+
+    node = mxmlFindElement(xml_node, xml_node, "Type", NULL, NULL, MXML_DESCEND);
+    aos_str_null(&content->type);
+    if (NULL != node) {
+        node_content = node->child->value.opaque;
+        str_value = apr_pstrdup(p, (char *)node_content);
+        aos_str_set(&content->type, str_value);
     }
 }
 
@@ -464,6 +481,12 @@ int oss_get_bucket_info_parse_from_body(aos_pool_t *p, aos_list_t *bc,
         value = get_xmlnode_value(p, root, "Grant");
         if (NULL != value) {
             aos_str_set(&bucket_info->acl, value);
+        }
+
+        value = get_xmlnode_value(p, root, "StorageClass");
+        aos_str_null(&bucket_info->storage_class);
+        if (NULL != value) {
+            aos_str_set(&bucket_info->storage_class, value);
         }
 
         mxmlDelete(root);
@@ -2588,4 +2611,27 @@ int oss_get_tagging_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *t
 
     mxmlDelete(doc);
     return res;
+}
+
+static char *build_restore_object_xml(aos_pool_t *p, oss_tier_type_e tier, int day)
+{
+    const char *fmt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<RestoreRequest>\n"
+        "<Days>%d</Days>\n"
+        "<JobParameters><Tier>%s</Tier></JobParameters>\n"
+        "</RestoreRequest>\n";
+    return apr_psprintf(p, fmt, day, get_oss_tier_type_str(tier));
+}
+
+void oss_build_restore_object_body(aos_pool_t *p, oss_tier_type_e tier, int day, aos_list_t *body)
+{
+    char *restore_object_xml;
+    aos_buf_t *b;
+    restore_object_xml = build_restore_object_xml(p, tier, day);
+    if (restore_object_xml)
+    {
+        aos_list_init(body);
+        b = aos_buf_pack(p, restore_object_xml, strlen(restore_object_xml));
+        aos_list_add_tail(&b->node, body);
+    }
 }

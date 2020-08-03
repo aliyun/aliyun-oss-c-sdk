@@ -346,6 +346,7 @@ void test_get_bucket_info(CuTest *tc)
     CuAssertTrue(tc, bucket_info.intranet_endpoint.len != 0);
     CuAssertTrue(tc, bucket_info.owner_id.len != 0);
     CuAssertTrue(tc, bucket_info.owner_name.len != 0);
+    CuAssertStrEquals(tc, bucket_info.storage_class.data, "Standard");
     CuAssertPtrNotNull(tc, resp_headers);
 
     aos_str_set(&bucket, "impossibleexistbucket");
@@ -622,6 +623,8 @@ void test_list_object(CuTest *tc)
     aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
         ++size;
         key = apr_psprintf(p, "%.*s", content->key.len, content->key.data);
+        CuAssertStrEquals(tc, "Standard", content->storage_class.data);
+        CuAssertStrEquals(tc, "Normal", content->type.data);
     }
     CuAssertIntEquals(tc, 1 ,size);
     CuAssertStrEquals(tc, "oss_test_object1", key);
