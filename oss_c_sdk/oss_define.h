@@ -140,8 +140,15 @@ typedef enum {
     OSS_STORAGE_CLASS_STANDARD         = 0,  /*< standard */
     OSS_STORAGE_CLASS_IA               = 1,  /*< IA */
     OSS_STORAGE_CLASS_ARCHIVE          = 2,  /*< archive */
-    OSS_STORAGE_CLASS_BUTT
+    OSS_STORAGE_CLASS_BUTT             = 3,  
+    OSS_STORAGE_CLASS_COLD_ARCHIVE     = 4,  /*< cold archive */
 } oss_storage_class_type_e;
+
+typedef enum {
+    OSS_TIER_EXPEDITED                = 0,  /*< Expedited */
+    OSS_TIER_STANDARD                 = 1,  /*< Standard */
+    OSS_TIER_BULK                     = 2,  /*< Bulk */
+} oss_tier_type_e;
 
 typedef struct {
     aos_string_t endpoint;
@@ -174,6 +181,8 @@ typedef struct {
     aos_string_t size;
     aos_string_t owner_id;
     aos_string_t owner_display_name;
+    aos_string_t storage_class;
+    aos_string_t type;
 } oss_list_object_content_t;
 
 typedef struct {
@@ -337,6 +346,7 @@ typedef struct {
     aos_string_t owner_id;
     aos_string_t owner_name;
     aos_string_t acl;
+    aos_string_t storage_class;
 } oss_bucket_info_t;
 
 typedef struct {

@@ -467,6 +467,24 @@ aos_status_t *oss_restore_object(const oss_request_options_t *options,
                                           aos_table_t **resp_headers);
 
 /*
+ * @brief  restore oss object from cold archive bucket
+ * @param[in]   options             the oss request options
+ * @param[in]   bucket              the oss bucket name
+ * @param[in]   object              the oss object name
+ * @param[in]   tier                the mode of restoring an object
+ * @param[in]   day                 the day of staying in retrievable state
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_restore_object_with_tier(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    oss_tier_type_e tier,
+    int day,
+    aos_table_t *headers,
+    aos_table_t **resp_headers);
+
+/*
  * @brief  get oss object to buffer
  * @param[in]   options             the oss request options
  * @param[in]   bucket              the oss bucket name
