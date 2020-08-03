@@ -434,6 +434,84 @@ static void test_oss_get_bucket_info_parse_from_body_negative(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_get_bucket_info_parse_from_body_pasitive(CuTest *tc)
+{
+    aos_pool_t *p;
+    aos_list_t buffer;
+    aos_buf_t *content;
+    char *xml =
+        "<?xml version = \"1.0\" encoding = \"UTF-8\"?>\n"
+        "<BucketInfo>\n"
+        "  <Bucket>\n"
+        "    <CreationDate>2013-07-31T10:56:21.000Z</CreationDate>\n"
+        "    <ExtranetEndpoint>oss-cn-hangzhou.aliyuncs.com</ExtranetEndpoint>\n"
+        "    <IntranetEndpoint>oss-cn-hangzhou-internal.aliyuncs.com</IntranetEndpoint>\n"
+        "    <Location>oss-cn-hangzhou</Location>\n"
+        "    <Name>oss-example</Name>\n"
+        "    <Owner>\n"
+        "      <DisplayName>username</DisplayName>\n"
+        "      <ID>27183473914****</ID>\n"
+        "    </Owner>\n"
+        "    <AccessControlList>\n"
+        "      <Grant>private</Grant>\n"
+        "    </AccessControlList>\n"
+        "    <Comment>test</Comment>\n"
+        "  </Bucket>\n"
+        "</BucketInfo>\n"
+        ;
+
+    int ret;
+    oss_bucket_info_t bucket_info;
+
+    aos_pool_create(&p, NULL);
+
+    aos_list_init(&buffer);
+    content = aos_buf_pack(p, xml, strlen(xml));
+    aos_list_add_tail(&content->node, &buffer);
+    ret = oss_get_bucket_info_parse_from_body(p, &buffer, &bucket_info);
+    CuAssertIntEquals(tc, AOSE_OK, ret);
+    CuAssertStrEquals(tc, bucket_info.location.data, "oss-cn-hangzhou");
+    CuAssertStrEquals(tc, bucket_info.created_date.data, "2013-07-31T10:56:21.000Z");
+    CuAssertStrEquals(tc, bucket_info.acl.data, "private");
+    CuAssertStrEquals(tc, bucket_info.storage_class.data, NULL);
+    CuAssertIntEquals(tc, bucket_info.storage_class.len, 0);
+
+    xml =
+        "<?xml version = \"1.0\" encoding = \"UTF-8\"?>\n"
+        "<BucketInfo>\n"
+        "  <Bucket>\n"
+        "    <CreationDate>2013-07-31T10:56:21.000Z</CreationDate>\n"
+        "    <ExtranetEndpoint>oss-cn-hangzhou.aliyuncs.com</ExtranetEndpoint>\n"
+        "    <IntranetEndpoint>oss-cn-hangzhou-internal.aliyuncs.com</IntranetEndpoint>\n"
+        "    <Location>oss-cn-hangzhou</Location>\n"
+        "    <Name>oss-example</Name>\n"
+        "    <Owner>\n"
+        "      <DisplayName>username</DisplayName>\n"
+        "      <ID>27183473914****</ID>\n"
+        "    </Owner>\n"
+        "    <AccessControlList>\n"
+        "      <Grant>public-read</Grant>\n"
+        "    </AccessControlList>\n"
+        "    <Comment>test</Comment>\n"
+        "    <StorageClass>Archive</StorageClass>\n"
+        "  </Bucket>\n"
+        "</BucketInfo>\n"
+        ;
+
+    aos_list_init(&buffer);
+    content = aos_buf_pack(p, xml, strlen(xml));
+    aos_list_add_tail(&content->node, &buffer);
+    ret = oss_get_bucket_info_parse_from_body(p, &buffer, &bucket_info);
+    CuAssertIntEquals(tc, AOSE_OK, ret);
+    CuAssertStrEquals(tc, bucket_info.location.data, "oss-cn-hangzhou");
+    CuAssertStrEquals(tc, bucket_info.created_date.data, "2013-07-31T10:56:21.000Z");
+    CuAssertStrEquals(tc, bucket_info.acl.data, "public-read");
+    CuAssertStrEquals(tc, bucket_info.storage_class.data, "Archive");
+
+    aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
+}
+
 static void test_oss_get_bucket_stat_parse_from_body_negative(CuTest *tc)
 {
     aos_pool_t *p;
@@ -1530,6 +1608,60 @@ static void test_oss_build_create_select_object_meta_body(CuTest *tc)
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_build_restore_object_body(CuTest *tc)
+{
+    aos_pool_t *p;
+    aos_list_t body;
+    int64_t len = 0;
+    int64_t size = 0;
+    int64_t pos = 0;
+    char *buf = NULL;
+    aos_buf_t *content = NULL;
+    aos_pool_create(&p, NULL);
+
+    oss_build_restore_object_body(p, OSS_TIER_BULK, 3, &body);
+    len = aos_buf_list_len(&body);
+    buf = aos_pcalloc(p, len + 1);
+    buf[len] = '\0';
+    aos_list_for_each_entry(aos_buf_t, content, &body, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, size);
+        pos += size;
+    }
+    CuAssertTrue(tc, strstr(buf, "<Days>3</Days>") != NULL);
+    CuAssertTrue(tc, strstr(buf, "<JobParameters><Tier>Bulk</Tier></JobParameters>") != NULL);
+
+    aos_list_init(&body);
+    pos = len = size = 0;
+    oss_build_restore_object_body(p, OSS_TIER_EXPEDITED, 10, &body);
+    len = aos_buf_list_len(&body);
+    buf = aos_pcalloc(p, len + 1);
+    buf[len] = '\0';
+    aos_list_for_each_entry(aos_buf_t, content, &body, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, size);
+        pos += size;
+    }
+    CuAssertTrue(tc, strstr(buf, "<Days>10</Days>") != NULL);
+    CuAssertTrue(tc, strstr(buf, "<JobParameters><Tier>Expedited</Tier></JobParameters>") != NULL);
+
+    aos_list_init(&body);
+    pos = len = size = 0;
+    oss_build_restore_object_body(p, OSS_TIER_STANDARD, 1, &body);
+    len = aos_buf_list_len(&body);
+    buf = aos_pcalloc(p, len + 1);
+    buf[len] = '\0';
+    aos_list_for_each_entry(aos_buf_t, content, &body, node) {
+        size = aos_buf_size(content);
+        memcpy(buf + pos, content->pos, size);
+        pos += size;
+    }
+    CuAssertTrue(tc, strstr(buf, "<Days>1</Days>") != NULL);
+    CuAssertTrue(tc, strstr(buf, "<JobParameters><Tier>Standard</Tier></JobParameters>") != NULL);
+
+    aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
+}
 
 //
 //build_bucket_storage_capacity_body
@@ -1554,6 +1686,7 @@ CuSuite *test_oss_xml()
     SUITE_ADD_TEST(suite, test_oss_list_buckets_parse_from_body_negative);
 
     SUITE_ADD_TEST(suite, test_oss_get_bucket_info_parse_from_body_negative);
+    SUITE_ADD_TEST(suite, test_oss_get_bucket_info_parse_from_body_pasitive);
     SUITE_ADD_TEST(suite, test_oss_get_bucket_stat_parse_from_body_negative);
     SUITE_ADD_TEST(suite, test_oss_get_bucket_website_parse_from_body_negative);
     SUITE_ADD_TEST(suite, test_oss_get_bucket_referer_config_parse_from_body_negative);
@@ -1591,6 +1724,8 @@ CuSuite *test_oss_xml()
     SUITE_ADD_TEST(suite, test_oss_build_select_object_body);
     SUITE_ADD_TEST(suite, test_oss_build_create_select_object_meta_body);
     
+    SUITE_ADD_TEST(suite, test_oss_build_restore_object_body);
+
     SUITE_ADD_TEST(suite, test_oss_xml_cleanup);
 
     return suite;

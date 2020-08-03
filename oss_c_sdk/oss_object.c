@@ -217,6 +217,41 @@ aos_status_t *oss_restore_object(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *oss_restore_object_with_tier(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    const aos_string_t *object,
+    oss_tier_type_e tier,
+    int day,
+    aos_table_t *headers,
+    aos_table_t **resp_headers)
+{
+    aos_table_t *params = NULL;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_list_t body;
+
+    oss_ensure_bucket_name_valid(bucket);
+
+    params = aos_table_create_if_null(options, params, 0);
+    apr_table_add(params, OSS_RESTORE, "");
+
+    headers = aos_table_create_if_null(options, headers, 0);
+
+    set_content_type(NULL, object->data, headers);
+
+    oss_init_object_request(options, bucket, object, HTTP_POST,
+        &req, params, headers, NULL, 0, &resp);
+
+    oss_build_restore_object_body(options->pool, tier, day, &body);
+    oss_write_request_body_from_buffer(&body, req);
+
+    s = oss_process_request(options, req, resp);
+    oss_fill_read_response_header(resp, resp_headers);
+
+    return s;
+}
+
 aos_status_t *oss_get_object_to_file(const oss_request_options_t *options,
                                      const aos_string_t *bucket, 
                                      const aos_string_t *object,

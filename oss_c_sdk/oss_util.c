@@ -847,8 +847,24 @@ const char *get_oss_storage_class_str(oss_storage_class_type_e storage_class)
             return "IA";
         case OSS_STORAGE_CLASS_ARCHIVE:
             return "Archive";
+        case OSS_STORAGE_CLASS_COLD_ARCHIVE:
+            return "ColdArchive";
         default:
             return NULL;
+    }
+}
+
+const char *get_oss_tier_type_str(oss_tier_type_e tier)
+{
+    switch (tier) {
+    case OSS_TIER_EXPEDITED:
+        return  "Expedited";
+    case OSS_TIER_STANDARD:
+        return "Standard";
+    case OSS_TIER_BULK:
+        return "Bulk";
+    default:
+        return NULL;
     }
 }
 

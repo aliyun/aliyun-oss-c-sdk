@@ -299,6 +299,12 @@ int oss_get_tagging_parse_from_body(aos_pool_t *p,
     aos_list_t *bc, 
     aos_list_t *tag_list);
 
+/**
+* @brief build body for restore object
+**/
+void oss_build_restore_object_body(aos_pool_t *p, oss_tier_type_e tier, int day, aos_list_t *body);
+
+
 OSS_CPP_END
 
 #endif
