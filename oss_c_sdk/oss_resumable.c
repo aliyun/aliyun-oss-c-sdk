@@ -144,6 +144,7 @@ void oss_build_thread_params(oss_thread_params_t *thd_params, int part_num,
         ctl = aos_http_controller_create(subpool, 0);
         thd_params[i].options.config = config;
         thd_params[i].options.ctl = ctl;
+        thd_params[i].options.ctl->options = options->ctl->options;
         thd_params[i].options.pool = subpool;
         thd_params[i].bucket = bucket;
         thd_params[i].object = object;

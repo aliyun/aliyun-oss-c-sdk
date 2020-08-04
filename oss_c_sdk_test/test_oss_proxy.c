@@ -11,6 +11,8 @@
 #include "oss_test_util.h"
 #include "aos_crc64.h"
 
+static char test_file[1024];
+
 void test_proxy_setup(CuTest *tc)
 {
     aos_pool_t *p = NULL;
@@ -26,6 +28,8 @@ void test_proxy_setup(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     s = create_test_bucket(options, TEST_BUCKET_NAME, oss_acl);
+
+    sprintf(test_file, "%sBingWallpaper-2017-01-19.jpg", get_test_file_path());
 
     CuAssertIntEquals(tc, 200, s->code);
     aos_pool_destroy(p);
@@ -151,6 +155,54 @@ void test_proxy_list_object(CuTest *tc)
     printf("test_proxy_list_object ok\n");
 }
 
+void test_proxy_resumable_upload(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    char *object_name = "test_proxy_resumable_upload.jpg";
+    aos_string_t bucket;
+    aos_string_t object;
+    aos_string_t filename;
+    aos_status_t *s = NULL;
+    int is_cname = 0;
+    aos_table_t *headers = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_list_t resp_body;
+    oss_request_options_t *options = NULL;
+    oss_resumable_clt_params_t *clt_params;
+    int64_t content_length = 0;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_proxy_request_options(options, is_cname);
+    headers = aos_table_make(p, 0);
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&resp_body);
+    aos_str_set(&filename, test_file);
+
+    // upload object
+    clt_params = oss_create_resumable_clt_params_content(p, 1024 * 100, 3, AOS_FALSE, NULL);
+    s = oss_resumable_upload_file(options, &bucket, &object, &filename, headers, NULL,
+        clt_params, NULL, &resp_headers, &resp_body);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    // head object
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    s = oss_head_object(options, &bucket, &object, NULL, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    content_length = atol((char*)apr_table_get(resp_headers, OSS_CONTENT_LENGTH));
+    CuAssertTrue(tc, content_length == get_file_size(test_file));
+
+    aos_pool_destroy(p);
+
+    printf("test_proxy_resumable_upload ok\n");
+}
+
 CuSuite *test_oss_proxy()
 {
     CuSuite* suite = CuSuiteNew();
@@ -158,6 +210,7 @@ CuSuite *test_oss_proxy()
     SUITE_ADD_TEST(suite, test_proxy_setup);
     SUITE_ADD_TEST(suite, test_proxy_put_object_from_buffer);
     SUITE_ADD_TEST(suite, test_proxy_list_object);
+    SUITE_ADD_TEST(suite, test_proxy_resumable_upload);
     SUITE_ADD_TEST(suite, test_proxy_cleanup);
 
     return suite;
