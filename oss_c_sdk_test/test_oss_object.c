@@ -1844,6 +1844,61 @@ void test_get_object_to_buffer_use_invalid_sts(CuTest *tc)
 
 }
 
+void test_object_with_invalid_endpoint(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    char *object_name = "video_1.ts";
+    aos_string_t object;
+    int is_cname = 0;
+    oss_request_options_t *options = NULL;
+    aos_table_t *headers = NULL;
+    aos_table_t *params = NULL;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    aos_list_t buffer;
+    char endpoint_buf[256];
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_str_set(&object, object_name);
+    aos_list_init(&buffer);
+
+    aos_str_set(&options->config->endpoint, "www.test.com\\www.aliyuncs.com");
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers,
+        params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_CLIENT_ERROR_CODE, s->error_code);
+    CuAssertStrEquals(tc, "The endpoint is invalid.", s->error_msg);
+
+    aos_str_set(&options->config->endpoint, "test:pw@www.test.com*www.aliyuncs.com:80");
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers,
+        params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_CLIENT_ERROR_CODE, s->error_code);
+    CuAssertStrEquals(tc, "The endpoint is invalid.", s->error_msg);
+
+    aos_str_set(&options->config->endpoint, "www.test.com*www.aliyuncs.com");
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers,
+        params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+    CuAssertStrEquals(tc, AOS_CLIENT_ERROR_CODE, s->error_code);
+    CuAssertStrEquals(tc, "The endpoint is invalid.", s->error_msg);
+
+    sprintf(endpoint_buf, "%s:80/test?x=1#segment", TEST_OSS_ENDPOINT);
+    aos_str_set(&options->config->endpoint, endpoint_buf);
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers,
+        params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_object_with_invalid_endpoint ok\n");
+
+}
 
 
 CuSuite *test_oss_object()
@@ -1889,6 +1944,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_object_invalid_parameter);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_maxbuffersize);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_use_invalid_sts);
+    SUITE_ADD_TEST(suite, test_object_with_invalid_endpoint);
     SUITE_ADD_TEST(suite, test_object_cleanup); 
     
     return suite;
