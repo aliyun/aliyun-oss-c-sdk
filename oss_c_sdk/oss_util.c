@@ -1002,6 +1002,11 @@ aos_status_t *oss_process_request(const oss_request_options_t *options,
         return s;
     }
 
+    if (!oss_is_valid_host(req->host)) {
+        aos_status_set(s, AOSE_INVALID_ARGUMENT, AOS_CLIENT_ERROR_CODE, "The endpoint is invalid.");
+        return s;
+    }
+
     return oss_send_request(options->ctl, req, resp);
 }
 
@@ -1529,4 +1534,48 @@ aos_status_t *oss_get_bucket_name_invalid_error()
     return &oss_bucket_name_invalid_error;
 }
 
+int oss_is_valid_host(const char *host)
+{
+    //format like: userinfo@host:port, just check host
+    const char *ptr;
+    const char *prevptr;
+    if (host == NULL) {
+        return 0;
+    }
+
+    prevptr = host;
+    //find @
+    for (ptr = prevptr; *ptr != '\0'; ptr++) {
+        if (*ptr == '@') {
+            prevptr = ptr + 1;
+            break;
+        }
+    }
+
+    //find :
+    for (ptr = prevptr; *ptr != '\0'; ptr++) {
+        if (*ptr == ':') {
+            break;
+        }
+    }
+
+    if (prevptr == ptr) {
+        return 0;
+    }
+
+    while (prevptr != ptr) {
+        char c = *prevptr;
+        if (!((c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') ||
+            (c >= 'A' && c <= 'Z') ||
+            (c == '_') ||
+            (c == '-') ||
+            (c == '.'))) {
+            return 0;
+        }
+        prevptr++;
+    }
+
+    return 1;
+}
 

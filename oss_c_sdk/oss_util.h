@@ -418,6 +418,12 @@ aos_status_t *oss_get_bucket_name_invalid_error();
         } \
     } while(0) 
 
+/**
+  * @brief  check if the host is valid.
+**/
+int oss_is_valid_host(const char *host);
+
+
 OSS_CPP_END
 
 #endif
