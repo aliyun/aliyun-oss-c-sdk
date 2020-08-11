@@ -1673,6 +1673,47 @@ void test_oss_fill_read_response_header(CuTest *tc) {
 }
 
 
+static void test_oss_is_valid_host(CuTest *tc) {
+    int i;
+    const char *valid_host[] =
+    {
+        "www.test.com:8192",
+        "www.test.com",
+        "test:test@www.test.com:80",
+        "test:test@www.test.com",
+        "192.168.1.1:8192",
+        "192.168.1.1",
+        "test:test@192.168.1.1:8192",
+        "test:test@192.168.1.1",
+        "www.test-inc_CN.com",
+        "a"
+    };
+
+    const char *invalid_host[] =
+    {
+        "www.test.com#www.test.cn:8192",
+        "test:test@www.test.com#www.test.cn:8192",
+        "www.test.com#www.test.cn",
+        "www.test.com\\www.test.cn",
+        "",
+        ":",
+        "@:",
+        NULL
+    };
+
+    for (i = 0; i < sizeof(valid_host) / sizeof(valid_host[0]); i++) {
+        CuAssertIntEquals(tc, 1, oss_is_valid_host(valid_host[i]));
+    }
+    CuAssertIntEquals(tc, 10, i);
+
+    for (i = 0; i < sizeof(invalid_host) / sizeof(invalid_host[0]); i++) {
+        CuAssertIntEquals(tc, 0, oss_is_valid_host(invalid_host[i]));
+    }
+    CuAssertIntEquals(tc, 8, i);
+
+    printf("%s ok\n", __FUNCTION__);
+}
+
 CuSuite *test_aos()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1745,6 +1786,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_oss_preprocess_endpoint);
     SUITE_ADD_TEST(suite, test_oss_fill_read_response_header);
     SUITE_ADD_TEST(suite, test_oss_get_host_from_authority);
-    
+    SUITE_ADD_TEST(suite, test_oss_is_valid_host);
+
     return suite;
 }
