@@ -179,7 +179,8 @@ void oss_list_objects_common_prefix_parse(aos_pool_t *p, mxml_node_t *root, cons
             aos_list_t *common_prefix_list);
 int oss_list_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *object_list,
             aos_list_t *common_prefix_list, aos_string_t *marker, int *truncated);
-
+int oss_list_objects_v2_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t *object_list,
+    aos_list_t *common_prefix_list, aos_string_t *continuation_token, int *truncated, int *key_count);
 /**
   * @brief parse parts from xml body for list upload part
 **/

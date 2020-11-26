@@ -456,6 +456,52 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
     return s;
 }
 
+aos_status_t *oss_list_object_v2(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    oss_list_object_v2_params_t *params,
+    aos_table_t **resp_headers)
+{
+    int res;
+    aos_status_t *s = NULL;
+    aos_http_request_t *req = NULL;
+    aos_http_response_t *resp = NULL;
+    aos_table_t *query_params = NULL;
+    aos_table_t *headers = NULL;
+
+    oss_ensure_bucket_name_valid(bucket);
+
+    //init query_params
+    query_params = aos_table_create_if_null(options, query_params, 7);
+    apr_table_add(query_params, OSS_LIST_TYPE, "2");
+    apr_table_add(query_params, OSS_PREFIX, params->prefix.data);
+    apr_table_add(query_params, OSS_DELIMITER, params->delimiter.data);
+    apr_table_add(query_params, OSS_START_AFTER, params->start_after.data);
+    apr_table_add(query_params, OSS_CONTINUATION_TOKEN, params->continuation_token.data);
+    apr_table_add(query_params, OSS_FETCH_OWNER, params->fetch_owner?"true":"false");
+    aos_table_add_int(query_params, OSS_MAX_KEYS, params->max_ret);
+
+    //init headers
+    headers = aos_table_create_if_null(options, headers, 0);
+
+    oss_init_bucket_request(options, bucket, HTTP_GET, &req,
+        query_params, headers, &resp);
+
+    s = oss_process_request(options, req, resp);
+    oss_fill_read_response_header(resp, resp_headers);
+    if (!aos_status_is_ok(s)) {
+        return s;
+    }
+
+    res = oss_list_objects_v2_parse_from_body(options->pool, &resp->body,
+        &params->object_list, &params->common_prefix_list,
+        &params->next_continuation_token, &params->truncated, &params->key_count);
+    if (res != AOSE_OK) {
+        aos_xml_error_status_set(s, res);
+    }
+
+    return s;
+}
+
 aos_status_t *oss_list_bucket(const oss_request_options_t *options,
                               oss_list_buckets_params_t *params, 
                               aos_table_t **resp_headers)

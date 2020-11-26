@@ -82,4 +82,9 @@ const char OSS_OBJECT_META[] = "objectMeta";
 const char OSS_SELECT_OBJECT_OUTPUT_RAW[] = "x-oss-select-output-raw";
 const char OSS_TAGGING[] = "tagging";
 const char OSS_SIGN_ORIGIN_ONLY[] = "x-oss-sign-origin-only";
+const char OSS_LIST_TYPE[] = "list-type";
+const char OSS_START_AFTER[] = "start-after";
+const char OSS_FETCH_OWNER[] = "fetch-owner";
+const char OSS_CONTINUATION_TOKEN[] = "continuation-token";
+
 

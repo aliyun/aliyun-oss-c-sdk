@@ -1647,6 +1647,191 @@ void test_bucket_invalid_parameter(CuTest *tc)
     printf("test_bucket_invalid_parameter ok\n");
 }
 
+void test_list_object_v2(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_object_v2_params_t *params = NULL;
+    oss_list_object_content_t *content = NULL;
+    int size = 0;
+    char *key = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+
+    //with max keys
+    params = oss_create_list_object_v2_params(p);
+    params->max_ret = 1;
+    params->truncated = 0;
+    aos_str_set(&params->prefix, "oss_test_object");
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 1, params->truncated);
+    CuAssertIntEquals(tc, 1, params->key_count);
+    CuAssertPtrNotNull(tc, params->next_continuation_token.data);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+        ++size;
+        key = apr_psprintf(p, "%.*s", content->key.len, content->key.data);
+        CuAssertStrEquals(tc, "Standard", content->storage_class.data);
+        CuAssertStrEquals(tc, "Normal", content->type.data);
+        CuAssertStrEquals(tc, "", content->owner_id.data);
+        CuAssertStrEquals(tc, "", content->owner_display_name.data);
+    }
+    CuAssertIntEquals(tc, 1, size);
+    CuAssertStrEquals(tc, "oss_test_object1", key);
+
+    size = 0;
+    resp_headers = NULL;
+    aos_list_init(&params->object_list);
+    aos_str_set(&params->continuation_token, params->next_continuation_token.data);
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+        ++size;
+        key = apr_psprintf(p, "%.*s", content->key.len, content->key.data);
+    }
+    CuAssertIntEquals(tc, 1, size);
+    CuAssertStrEquals(tc, "oss_test_object2", key);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //with start-after and fetch-owner and fetch-owner
+    params = oss_create_list_object_v2_params(p);
+    params->truncated = 1;
+    params->fetch_owner = 1;
+    aos_str_set(&params->prefix, "oss_test_object");
+    aos_str_set(&params->start_after, "oss_test_object1");
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    size = 0;
+    resp_headers = NULL;
+    aos_list_init(&params->object_list);
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertIntEquals(tc, 1, params->key_count);
+    CuAssertPtrEquals(tc, params->next_continuation_token.data, NULL);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+        ++size;
+        key = apr_psprintf(p, "%.*s", content->key.len, content->key.data);
+        CuAssertTrue(tc, content->owner_id.len > 0);
+        CuAssertTrue(tc, content->owner_display_name.len > 0);
+    }
+    CuAssertIntEquals(tc, 1, size);
+    CuAssertStrEquals(tc, "oss_test_object2", key);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //default
+    params = oss_create_list_object_v2_params(p);
+    params->truncated = 1;
+    aos_str_set(&params->prefix, "oss_test_object");
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    size = 0;
+    resp_headers = NULL;
+    aos_list_init(&params->object_list);
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertIntEquals(tc, 2, params->key_count);
+    CuAssertPtrEquals(tc, params->next_continuation_token.data, NULL);
+    CuAssertPtrNotNull(tc, resp_headers);
+    aos_list_for_each_entry(oss_list_object_content_t, content, &params->object_list, node) {
+        ++size;
+        key = apr_psprintf(p, "%.*s", content->key.len, content->key.data);
+    }
+    CuAssertIntEquals(tc, 2, size);
+    CuAssertStrEquals(tc, "oss_test_object2", key);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    //negative case
+    aos_str_set(&bucket, "c-sdk-no-exist");
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 404, s->code);
+
+    aos_pool_destroy(p);
+
+    printf("test_list_object_v2 ok\n");
+}
+
+void test_list_object_v2_with_delimiter(CuTest *tc)
+{
+    aos_pool_t *p = NULL;
+    aos_string_t bucket;
+    oss_request_options_t *options = NULL;
+    int is_cname = 0;
+    aos_table_t *resp_headers = NULL;
+    aos_status_t *s = NULL;
+    oss_list_object_v2_params_t *params = NULL;
+    oss_list_object_common_prefix_t *common_prefix = NULL;
+    int size = 0;
+    char *prefix = NULL;
+
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, is_cname);
+    params = oss_create_list_object_v2_params(p);
+    params->max_ret = 5;
+    params->truncated = 0;
+    aos_str_set(&params->prefix, "oss_tmp");
+    aos_str_set(&params->delimiter, "/");
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_list_for_each_entry(oss_list_object_common_prefix_t, common_prefix, &params->common_prefix_list, node) {
+        ++size;
+        prefix = apr_psprintf(p, "%.*s", common_prefix->prefix.len,
+            common_prefix->prefix.data);
+        if (size == 1) {
+            CuAssertStrEquals(tc, "oss_tmp1/", prefix);
+        }
+        else if (size == 2) {
+            CuAssertStrEquals(tc, "oss_tmp2/", prefix);
+        }
+    }
+    CuAssertIntEquals(tc, 3, size);
+
+    //with start-after
+    size = 0;
+    resp_headers = NULL;
+    params = oss_create_list_object_v2_params(p);
+    params->max_ret = 5;
+    params->truncated = 0;
+    aos_str_set(&params->prefix, "oss_tmp");
+    aos_str_set(&params->start_after, "oss_tmp2");
+    aos_str_set(&params->delimiter, "/");
+    aos_str_set(&bucket, TEST_BUCKET_NAME);
+    aos_list_init(&params->object_list);
+    s = oss_list_object_v2(options, &bucket, params, &resp_headers);
+    CuAssertIntEquals(tc, 200, s->code);
+    CuAssertIntEquals(tc, 0, params->truncated);
+    CuAssertPtrNotNull(tc, resp_headers);
+
+    aos_list_for_each_entry(oss_list_object_common_prefix_t, common_prefix, &params->common_prefix_list, node) {
+        ++size;
+        prefix = apr_psprintf(p, "%.*s", common_prefix->prefix.len, common_prefix->prefix.data);
+        if (size == 1) {
+            CuAssertStrEquals(tc, "oss_tmp2/", prefix);
+        }
+    }
+    CuAssertIntEquals(tc, 2, size);
+
+
+    aos_pool_destroy(p);
+
+    printf("test_list_object_v2_with_delimiter ok\n");
+}
+
 CuSuite *test_oss_bucket()
 {
     CuSuite* suite = CuSuiteNew();
@@ -1678,6 +1863,8 @@ CuSuite *test_oss_bucket()
     SUITE_ADD_TEST(suite, test_delete_objects_by_prefix);
     SUITE_ADD_TEST(suite, test_list_object);
     SUITE_ADD_TEST(suite, test_list_object_with_delimiter);
+    SUITE_ADD_TEST(suite, test_list_object_v2);
+    SUITE_ADD_TEST(suite, test_list_object_v2_with_delimiter);
     SUITE_ADD_TEST(suite, test_delete_bucket);
     SUITE_ADD_TEST(suite, test_lifecycle);
     SUITE_ADD_TEST(suite, test_delete_objects_quiet);

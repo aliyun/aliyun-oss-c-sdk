@@ -519,8 +519,13 @@ oss_bucket_info_t *oss_create_bucket_info(aos_pool_t *p)
 
 oss_list_object_content_t *oss_create_list_object_content(aos_pool_t *p)
 {
-    return (oss_list_object_content_t *)oss_create_api_result_content(
+    oss_list_object_content_t *content;
+    content = (oss_list_object_content_t *)oss_create_api_result_content(
             p, sizeof(oss_list_object_content_t));
+
+    aos_str_set(&content->owner_id, "");
+    aos_str_set(&content->owner_display_name, "");
+    return content;
 }
 
 oss_list_object_common_prefix_t *oss_create_list_object_common_prefix(aos_pool_t *p)
@@ -565,6 +570,24 @@ oss_list_object_params_t *oss_create_list_object_params(aos_pool_t *p)
     aos_str_set(&params->delimiter, "");
     params->truncated = 1;
     params->max_ret = OSS_PER_RET_NUM;
+    return params;
+}
+
+oss_list_object_v2_params_t *oss_create_list_object_v2_params(aos_pool_t *p)
+{
+    oss_list_object_v2_params_t * params;
+    params = (oss_list_object_v2_params_t *)aos_pcalloc(
+        p, sizeof(oss_list_object_v2_params_t));
+    aos_list_init(&params->object_list);
+    aos_list_init(&params->common_prefix_list);
+    aos_str_set(&params->prefix, "");
+    aos_str_set(&params->start_after, "");
+    aos_str_set(&params->delimiter, "");
+    aos_str_set(&params->continuation_token, "");
+    params->fetch_owner = 0;
+    params->truncated = 1;
+    params->max_ret = OSS_PER_RET_NUM;
+    params->key_count = 0;
     return params;
 }
 

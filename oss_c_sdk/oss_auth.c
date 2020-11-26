@@ -38,6 +38,7 @@ static const char *g_s_oss_sub_resource_list[] = {
     "objectMeta",
     "tagging",
     "x-oss-sign-origin-only",
+    "continuation-token",
     NULL,
 };
 

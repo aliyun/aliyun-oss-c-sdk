@@ -214,6 +214,12 @@ oss_bucket_info_t *oss_create_bucket_info(aos_pool_t *p);
 oss_list_object_params_t *oss_create_list_object_params(aos_pool_t *p);
 
 /**
+  * @brief  create oss api list parameters
+  * @return oss api list parameters
+**/
+oss_list_object_v2_params_t *oss_create_list_object_v2_params(aos_pool_t *p);
+
+/**
   * @brief  create oss api list bucket parameters
   * @return oss api list bucket parameters
 **/

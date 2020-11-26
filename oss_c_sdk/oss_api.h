@@ -330,7 +330,7 @@ aos_status_t *oss_delete_bucket_lifecycle(const oss_request_options_t *options,
  * @param[in]   params        input params for list object request,
                               including prefix, marker, delimiter, max_ret
  * @param[out]  params        output params for list object response,
-                              including truncated, next_marker, obje list
+                              including truncated, next_marker, object list
  * @param[out]  resp_headers  oss server response headers
  * @return  aos_status_t, code is 2xx success, other failure
  */
@@ -338,6 +338,22 @@ aos_status_t *oss_list_object(const oss_request_options_t *options,
                               const aos_string_t *bucket, 
                               oss_list_object_params_t *params, 
                               aos_table_t **resp_headers);
+
+/*
+ * @brief  list oss objects v2
+ * @param[in]   options       the oss request options
+ * @param[in]   bucket        the oss bucket name
+ * @param[in]   params        input params for list object request,
+                              including prefix, start_after, delimiter, max_ret, continuation_token
+ * @param[out]  params        output params for list object response,
+                              including truncated, next_continuation_token, object list, key_count
+ * @param[out]  resp_headers  oss server response headers
+ * @return  aos_status_t, code is 2xx success, other failure
+ */
+aos_status_t *oss_list_object_v2(const oss_request_options_t *options,
+    const aos_string_t *bucket,
+    oss_list_object_v2_params_t *params,
+    aos_table_t **resp_headers);
 
 /*
  * @brief  list oss buckets

@@ -328,6 +328,42 @@ int oss_list_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc,
     return res;
 }
 
+int oss_list_objects_v2_parse_from_body(aos_pool_t *p, aos_list_t *bc,
+    aos_list_t *object_list, aos_list_t *common_prefix_list, 
+    aos_string_t *continuation_token, int *truncated, int *key_count)
+{
+    int res;
+    mxml_node_t *root;
+    const char next_token_xml_path[] = "NextContinuationToken";
+    const char truncated_xml_path[] = "IsTruncated";
+    const char buckets_xml_path[] = "Contents";
+    const char common_prefix_xml_path[] = "CommonPrefixes";
+    const char key_count_xml_path[] = "KeyCount";
+    char* value;
+
+    res = get_xmldoc(bc, &root);
+    if (res == AOSE_OK) {
+        value = get_xmlnode_value(p, root, next_token_xml_path);
+        if (value) {
+            aos_str_set(continuation_token, value);
+        }
+
+        *truncated = get_truncated_from_xml(p, root, truncated_xml_path);
+
+        value = get_xmlnode_value(p, root, key_count_xml_path);
+        if (value) {
+            *key_count = atoi(value);
+        }
+
+        oss_list_objects_contents_parse(p, root, buckets_xml_path, object_list);
+        oss_list_objects_common_prefix_parse(p, root, common_prefix_xml_path, common_prefix_list);
+
+        mxmlDelete(root);
+    }
+
+    return res;
+}
+
 void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list)
 {
     char *value, *xml_value;

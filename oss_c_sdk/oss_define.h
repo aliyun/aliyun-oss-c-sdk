@@ -113,6 +113,10 @@ extern const char OSS_OBJECT_META[];
 extern const char OSS_SELECT_OBJECT_OUTPUT_RAW[];
 extern const char OSS_TAGGING[];
 extern const char OSS_SIGN_ORIGIN_ONLY[];
+extern const char OSS_LIST_TYPE[];
+extern const char OSS_START_AFTER[];
+extern const char OSS_FETCH_OWNER[];
+extern const char OSS_CONTINUATION_TOKEN[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 
@@ -236,6 +240,20 @@ typedef struct {
     aos_list_t object_list;
     aos_list_t common_prefix_list;
 } oss_list_object_params_t;
+
+typedef struct {
+    aos_string_t prefix;
+    aos_string_t start_after;
+    aos_string_t delimiter;
+    aos_string_t continuation_token;
+    int fetch_owner;
+    int max_ret;
+    int truncated;
+    int key_count;
+    aos_string_t next_continuation_token;
+    aos_list_t object_list;
+    aos_list_t common_prefix_list;
+} oss_list_object_v2_params_t;
 
 typedef struct {
     PARAM_IN aos_string_t prefix;
