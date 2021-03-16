@@ -199,7 +199,8 @@ int aos_read_http_body_file(aos_http_request_t *req, char *buffer, int len)
         nbytes = bytes_left;
     }
 
-    if ((s = apr_file_read(req->file_buf->file, buffer, &nbytes)) != APR_SUCCESS) {
+    s = apr_file_read(req->file_buf->file, buffer, &nbytes);
+    if (s != APR_SUCCESS && s != APR_EOF) {
         aos_error_log("apr_file_read filure, file:%s, code:%d %s.", req->file_path, s, apr_strerror(s, buf, sizeof(buf)));
         return AOSE_FILE_READ_ERROR;
     }
