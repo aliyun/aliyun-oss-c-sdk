@@ -35,6 +35,8 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
 
 ##### apr （建议 1.5.2 及以上版本）
 
+*安装 apr 之前确保 expat（`yum install expat-devel`）已经安装*
+
   请从[这里](https://apr.apache.org/download.cgi)下载，典型的安装方式如下：
  ```shell
     ./configure
@@ -58,7 +60,7 @@ OSS C SDK并没有带上这几个外部库，您需要确认这些库已经安�
  - 执行./configure时默认是配置安装目录为/usr/local/，如果需要指定安装目录，请使用 ./configure --prefix=/your/install/path/
  - 需要通过--with-apr指定apr安装目录，如果apr安装到系统目录下需要指定--with-apr=/usr/local/apr/
 
-##### minixml （建议 2.8 及以上版本）
+##### minixml （建议 2.8 及以上的 2.x 版本）
 
   请从[这里](http://michaelrsweet.github.io/mxml/)下载，典型的安装方式如下:
 ```shell
