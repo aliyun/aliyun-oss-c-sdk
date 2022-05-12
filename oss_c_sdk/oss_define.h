@@ -4,6 +4,7 @@
 #include "aos_string.h"
 #include "aos_list.h"
 #include "aos_transport.h"
+#include "oss_config.h"
 
 #ifdef __cplusplus
 # define OSS_CPP_START extern "C" {

@@ -8,6 +8,9 @@
 #include "oss_xml.h"
 #include "oss_api.h"
 
+
+#ifndef OSS_DISABLE_BUCKET
+
 static aos_status_t *oss_create_bucket_with_params(const oss_request_options_t *options, 
                                                    const aos_string_t *bucket, 
                                                    oss_create_bucket_params_t *params, 
@@ -1072,3 +1075,5 @@ aos_status_t *oss_delete_objects_by_prefix(oss_request_options_t *options,
     options->pool = parent_pool;
     return ret;
 }
+
+#endif

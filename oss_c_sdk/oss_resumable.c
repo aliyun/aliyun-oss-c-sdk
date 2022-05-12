@@ -10,6 +10,8 @@
 #include "oss_api.h"
 #include "oss_resumable.h"
 
+#ifndef OSS_DISABLE_RESUAMABLE
+
 int32_t oss_get_thread_num(oss_resumable_clt_params_t *clt_params)
 {
     if ((NULL == clt_params) || (clt_params->thread_num <= 0 || clt_params->thread_num > 1024)) {
@@ -1193,3 +1195,5 @@ aos_status_t *oss_resumable_download_file(oss_request_options_t *options,
     aos_pool_destroy(sub_pool);
     return s;
 }
+
+#endif

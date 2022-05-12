@@ -903,6 +903,7 @@ char *build_bucket_logging_xml(aos_pool_t *p, oss_logging_config_content_t *cont
     return logging_xml;
 }
 
+#ifndef OSS_DISABLE_BUCKET
 void build_bucket_logging_body(aos_pool_t *p, oss_logging_config_content_t *content, aos_list_t *body)
 {
     char *logging_xml;
@@ -1437,7 +1438,9 @@ int oss_delete_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t
 
     return res;
 }
+#endif
 
+#ifndef OSS_DISABLE_LIVECHANNEL
 void oss_publish_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_publish_url_t *content)
 {   
     char *url;
@@ -1970,6 +1973,8 @@ int oss_live_channel_history_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_
 
     return res;
 }
+
+#endif
 
 char *build_objects_xml(aos_pool_t *p, aos_list_t *object_list, const char *quiet)
 {

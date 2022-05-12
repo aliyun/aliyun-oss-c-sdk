@@ -51,61 +51,61 @@ if(CMAKE_HOST_WIN32)
     find_library(CURL_LIBRARY NAMES libcurl PATHS ${EXTRA_LIB_PATH})
 
 else()
-	FIND_PROGRAM(APR_CONFIG_BIN NAMES apr-config apr-1-config PATHS /usr/bin /usr/local/bin /usr/local/apr/bin/)
-	FIND_PROGRAM(APU_CONFIG_BIN NAMES apu-config apu-1-config PATHS /usr/bin /usr/local/bin /usr/local/apr/bin/)
+    FIND_PROGRAM(APR_CONFIG_BIN NAMES apr-config apr-1-config PATHS /usr/bin /usr/local/bin /usr/local/apr/bin/)
+    FIND_PROGRAM(APU_CONFIG_BIN NAMES apu-config apu-1-config PATHS /usr/bin /usr/local/bin /usr/local/apr/bin/)
 
-	IF (APR_CONFIG_BIN)
-		EXECUTE_PROCESS(
-			COMMAND ${APR_CONFIG_BIN} --includedir
-			OUTPUT_VARIABLE APR_INCLUDE_DIR
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-		EXECUTE_PROCESS(
-			COMMAND ${APR_CONFIG_BIN} --cflags
-			OUTPUT_VARIABLE APR_C_FLAGS
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-		EXECUTE_PROCESS(
-			COMMAND ${APR_CONFIG_BIN} --link-ld
-			OUTPUT_VARIABLE APR_LIBRARIES
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-	ELSE()
-		MESSAGE(FATAL_ERROR "Could not find apr-config/apr-1-config")
-	ENDIF()
+    IF (APR_CONFIG_BIN)
+        EXECUTE_PROCESS(
+            COMMAND ${APR_CONFIG_BIN} --includedir
+            OUTPUT_VARIABLE APR_INCLUDE_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        EXECUTE_PROCESS(
+            COMMAND ${APR_CONFIG_BIN} --cflags
+            OUTPUT_VARIABLE APR_C_FLAGS
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        EXECUTE_PROCESS(
+            COMMAND ${APR_CONFIG_BIN} --link-ld
+            OUTPUT_VARIABLE APR_LIBRARIES
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    ELSE()
+        MESSAGE(FATAL_ERROR "Could not find apr-config/apr-1-config")
+    ENDIF()
 
-	IF (APU_CONFIG_BIN)
-		EXECUTE_PROCESS(
-			COMMAND ${APU_CONFIG_BIN} --includedir
-			OUTPUT_VARIABLE APR_UTIL_INCLUDE_DIR
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-		EXECUTE_PROCESS(
-			COMMAND ${APU_CONFIG_BIN} --cflags
-			OUTPUT_VARIABLE APU_C_FLAGS
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-		EXECUTE_PROCESS(
-			COMMAND ${APU_CONFIG_BIN} --link-ld
-			OUTPUT_VARIABLE APU_LIBRARIES
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-		)
-	ELSE()
-		MESSAGE(FATAL_ERROR "Could not find apu-config/apu-1-config")
-	ENDIF()
+    IF (APU_CONFIG_BIN)
+        EXECUTE_PROCESS(
+            COMMAND ${APU_CONFIG_BIN} --includedir
+            OUTPUT_VARIABLE APR_UTIL_INCLUDE_DIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        EXECUTE_PROCESS(
+            COMMAND ${APU_CONFIG_BIN} --cflags
+            OUTPUT_VARIABLE APU_C_FLAGS
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        EXECUTE_PROCESS(
+            COMMAND ${APU_CONFIG_BIN} --link-ld
+            OUTPUT_VARIABLE APU_LIBRARIES
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    ELSE()
+        MESSAGE(FATAL_ERROR "Could not find apu-config/apu-1-config")
+    ENDIF()
 
-	#curl-config
-	FIND_PROGRAM(CURL_CONFIG_BIN NAMES curl-config)
+    #curl-config
+    FIND_PROGRAM(CURL_CONFIG_BIN NAMES curl-config)
   
-	IF (CURL_CONFIG_BIN)
-		EXECUTE_PROCESS(
-			COMMAND ${CURL_CONFIG_BIN} --libs
-			OUTPUT_VARIABLE CURL_LIBRARIES
-			OUTPUT_STRIP_TRAILING_WHITESPACE
-			)
-	ELSE()
-		MESSAGE(FATAL_ERROR "Could not find curl-config")
-	ENDIF()
+    IF (CURL_CONFIG_BIN)
+        EXECUTE_PROCESS(
+            COMMAND ${CURL_CONFIG_BIN} --libs
+            OUTPUT_VARIABLE CURL_LIBRARIES
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+    ELSE()
+        MESSAGE(FATAL_ERROR "Could not find curl-config")
+    ENDIF()
 endif()
   
 # Compile and link lib_oss_c_sdk
@@ -113,6 +113,8 @@ include_directories(${APR_INCLUDE_DIR})
 include_directories(${APR_UTIL_INCLUDE_DIR})
 include_directories(${MINIXML_INCLUDE_DIR})
 include_directories(${CURL_INCLUDE_DIR})
+
+configure_file(oss_c_sdk/oss_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/oss_c_sdk/oss_config.h @ONLY)
 
 aux_source_directory(oss_c_sdk SRC_LIST)
 
@@ -124,7 +126,7 @@ else()
     add_library(${CMAKE_PROJECT_NAME} SHARED ${SRC_LIST})
     add_library(${CMAKE_PROJECT_NAME}_static STATIC ${SRC_LIST})
     
-	set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES VERSION ${CMAKE_VERSION}  SOVERSION ${CMAKE_VERSION})
+    set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES VERSION ${CMAKE_VERSION}  SOVERSION ${CMAKE_VERSION})
 
     INSTALL(TARGETS ${CMAKE_PROJECT_NAME} LIBRARY DESTINATION lib)
     INSTALL(TARGETS ${CMAKE_PROJECT_NAME}_static ARCHIVE DESTINATION lib)
@@ -148,7 +150,8 @@ INSTALL(FILES
   oss_c_sdk/oss_resumable.h
   oss_c_sdk/oss_util.h
   oss_c_sdk/oss_xml.h
+  oss_c_sdk/oss_config.h
   DESTINATION include/oss_c_sdk)
 
-add_subdirectory(oss_c_sdk_sample)
-add_subdirectory(oss_c_sdk_test)
+#add_subdirectory(oss_c_sdk_sample)
+#add_subdirectory(oss_c_sdk_test)

@@ -8,6 +8,7 @@
 #include "oss_xml.h"
 #include "oss_api.h"
 
+#ifndef OSS_DISABLE_LIVECHANNEL
 
 aos_status_t *oss_create_live_channel(const oss_request_options_t *options,
                                       const aos_string_t *bucket,
@@ -351,3 +352,5 @@ char *oss_gen_rtmp_signed_url(const oss_request_options_t *options,
     }
     return signed_url.data;
 }
+
+#endif
