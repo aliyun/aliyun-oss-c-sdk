@@ -113,6 +113,7 @@ extern const char OSS_OBJECT_META[];
 extern const char OSS_SELECT_OBJECT_OUTPUT_RAW[];
 extern const char OSS_TAGGING[];
 extern const char OSS_SIGN_ORIGIN_ONLY[];
+extern const char OSS_CONTENT_SHA256[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 
@@ -160,6 +161,9 @@ typedef struct {
     int proxy_port;
     aos_string_t proxy_user;
     aos_string_t proxy_passwd;
+    int signature_version;
+    aos_string_t region;
+    aos_string_t cloudbox_id;
 } oss_config_t;
 
 typedef struct {
