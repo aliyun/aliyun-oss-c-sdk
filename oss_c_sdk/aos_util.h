@@ -90,10 +90,9 @@ unsigned long long aos_strtoull(const char *nptr, char **endptr, int base);
 uint64_t aos_atoui64(const char *nptr);
 
 
-void aos_HMAC_SHA256(unsigned char hmac[32], const unsigned char* key, int key_len,
-    const unsigned char* message, int message_len);
+void aos_HMAC_SHA256(char hmac[32], const char* key, int key_len, const char* message, int message_len);
 
-void aos_SHA256(unsigned char hash[32], const unsigned char* message, int message_len);
+void aos_SHA256(char hash[32], const char* message, int message_len);
 
 
 AOS_CPP_END

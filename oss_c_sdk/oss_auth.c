@@ -712,8 +712,8 @@ static int oss_build_canonical_request_v4(aos_pool_t* p, aos_http_request_t* req
 
 static int oss_build_string_to_sign_v4(aos_pool_t* p, const aos_string_t* datetime, const aos_string_t* date, const aos_string_t* region, const aos_string_t* product, const aos_string_t* canonical_request, aos_string_t* out)
 {
-    unsigned char hash[AOS_SHA256_HASH_LEN];
-    unsigned char hex[AOS_SHA256_HASH_LEN * 2 + 1];
+    char hash[AOS_SHA256_HASH_LEN];
+    char hex[AOS_SHA256_HASH_LEN * 2 + 1];
     aos_buf_t* signbuf;
 
     signbuf = aos_create_buf(p, 256);
@@ -764,7 +764,7 @@ static int oss_build_signature_v4(aos_pool_t* p, const char signing_key[32], con
 
     signbuf = aos_create_buf(p, AOS_SHA256_HASH_LEN * 2 + 1);
     aos_HMAC_SHA256(signature, signing_key, AOS_SHA256_HASH_LEN, string_to_sign->data, string_to_sign->len);
-    aos_encode_hex(signbuf->pos, signature, AOS_SHA256_HASH_LEN, NULL);
+    aos_encode_hex((char*)signbuf->pos, signature, AOS_SHA256_HASH_LEN, NULL);
 
     out->data = (char*)signbuf->pos;
     out->len = AOS_SHA256_HASH_LEN * 2;

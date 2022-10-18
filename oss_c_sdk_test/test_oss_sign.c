@@ -23,7 +23,6 @@ static void test_sign_v4_object_full(CuTest* tc)
     aos_pool_t* p = NULL;
     aos_string_t bucket;
     aos_string_t object;
-    int is_cname = 0;
     oss_request_options_t* options = NULL;
     aos_table_t* headers = NULL;
     aos_table_t* querys = NULL;
@@ -88,7 +87,6 @@ static void test_sign_v4_object_without_query(CuTest* tc)
     aos_pool_t* p = NULL;
     aos_string_t bucket;
     aos_string_t object;
-    int is_cname = 0;
     oss_request_options_t* options = NULL;
     aos_table_t* headers = NULL;
     aos_table_t* resp_headers = NULL;
@@ -138,7 +136,6 @@ static void test_sign_v4_object_cloudbox_id_full(CuTest* tc)
     aos_pool_t* p = NULL;
     aos_string_t bucket;
     aos_string_t object;
-    int is_cname = 0;
     oss_request_options_t* options = NULL;
     aos_table_t* headers = NULL;
     aos_table_t* querys = NULL;
@@ -202,7 +199,6 @@ static void test_sign_v4_with_gmt_datefomat(CuTest* tc)
     aos_pool_t* p = NULL;
     aos_string_t bucket;
     aos_string_t object;
-    int is_cname = 0;
     oss_request_options_t* options = NULL;
     aos_table_t* headers = NULL;
     aos_table_t* querys = NULL;

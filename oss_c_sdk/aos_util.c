@@ -808,8 +808,7 @@ static int SHA256_Final(unsigned char* out, struct sha256_state* md)
 }
 /* ===== end - public domain SHA256 implementation ===== */
 
-void aos_HMAC_SHA256(unsigned char hmac[32], const unsigned char* key, int key_len,
-    const unsigned char* message, int message_len)
+void aos_HMAC_SHA256(char hmac[32], const char* key, int key_len, const char* message, int message_len)
 {
     unsigned char kopad[64], kipad[64];
     int i;
@@ -832,20 +831,20 @@ void aos_HMAC_SHA256(unsigned char hmac[32], const unsigned char* key, int key_l
 
     SHA256_Init(&context);
     SHA256_Update(&context, kipad, 64);
-    SHA256_Update(&context, message, (unsigned int)message_len);
+    SHA256_Update(&context, (unsigned char*)message, (unsigned int)message_len);
     SHA256_Final(digest, &context);
 
     SHA256_Init(&context);
     SHA256_Update(&context, kopad, 64);
     SHA256_Update(&context, digest, 32);
-    SHA256_Final(hmac, &context);
+    SHA256_Final((unsigned char* )hmac, &context);
 }
 
-void aos_SHA256(unsigned char hash[32], const unsigned char* message, int message_len)
+void aos_SHA256(char hash[32], const char* message, int message_len)
 {
     SHA256_CTX context;
     memset(hash, 0, 32);
     SHA256_Init(&context);
-    SHA256_Update(&context, message, message_len);
-    SHA256_Final(hash, &context);
+    SHA256_Update(&context, (const unsigned char*)message, message_len);
+    SHA256_Final((unsigned char*)hash, &context);
 }
