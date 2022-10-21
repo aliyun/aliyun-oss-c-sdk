@@ -11,7 +11,7 @@ static const char *g_s_mon[] = {
 
 static const char g_s_gmt_format[] = "%s, %.2d %s %.4d %.2d:%.2d:%.2d GMT";
 
-static const char g_s_ios8601_format[] = "%.4d%.2d%.2d'T'%.2d%.2d%.2d'Z'";
+static const char g_s_ios8601_format[] = "%.4d%.2d%.2dT%.2d%.2d%.2dZ";
 
 int aos_parse_xml_body(aos_list_t *bc, mxml_node_t **root)
 {
@@ -74,7 +74,7 @@ int aos_get_gmt_str_time(char datestr[AOS_MAX_GMT_TIME_LEN])
 int aos_convert_to_iso8601_time(char* date, const char* format, apr_time_exp_t* tm)
 {
     int size = apr_snprintf(date, AOS_MAX_GMT_TIME_LEN, format,
-       1900 + tm->tm_year, tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+       1900 + tm->tm_year, 1 + tm->tm_mon, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
     if (size >= 0 && size < AOS_MAX_GMT_TIME_LEN) {
         return AOSE_OK;
     }
