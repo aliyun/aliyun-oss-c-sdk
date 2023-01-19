@@ -63,7 +63,7 @@ aos_status_t *aos_status_parse_from_body(aos_pool_t *p, aos_list_t *bc, int code
     int res;
     mxml_node_t *root, *node;
     mxml_node_t *code_node, *message_node;
-    char *node_content;
+    const char *node_content;
 
     if (s == NULL) {
         s = aos_status_create(p);
@@ -96,14 +96,18 @@ aos_status_t *aos_status_parse_from_body(aos_pool_t *p, aos_list_t *bc, int code
 
     code_node = mxmlFindElement(node, root, "Code",NULL, NULL,MXML_DESCEND);
     if (NULL != code_node) {
-        node_content = code_node->child->value.opaque;
-        s->error_code = apr_pstrdup(p, (char *)node_content);
+        node_content = mxmlGetOpaque(code_node);
+        if (node_content != NULL) {
+            s->error_code = apr_pstrdup(p, (char *)node_content);
+        }
     }
 
     message_node = mxmlFindElement(node, root, "Message",NULL, NULL,MXML_DESCEND);
     if (NULL != message_node) {
-        node_content = message_node->child->value.opaque;
-        s->error_msg = apr_pstrdup(p, (char *)node_content);
+        node_content = mxmlGetOpaque(message_node);
+        if (node_content != NULL) {
+            s->error_msg = apr_pstrdup(p, node_content);
+        }
     }
 
     mxmlDelete(root);

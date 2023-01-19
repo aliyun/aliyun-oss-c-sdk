@@ -66,12 +66,12 @@ char *get_xmlnode_value(aos_pool_t *p, mxml_node_t *xml_node, const char *xml_pa
 {
     char *value = NULL;
     mxml_node_t *node;
-    char *node_content;
+    const char *node_content;
 
     node = mxmlFindElement(xml_node, xml_node, xml_path, NULL, NULL, MXML_DESCEND);
-    if (NULL != node && node->child != NULL) {
-        node_content = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (node_content != NULL) {
+        value = apr_pstrdup(p, node_content);
     }
 
     return value;
@@ -176,20 +176,20 @@ int oss_logging_parse_from_body(aos_pool_t *p, aos_list_t *bc, oss_logging_confi
 void oss_list_objects_owner_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_list_object_content_t *content)
 {
     mxml_node_t *node;
-    char *node_content;
+    const char *node_content;
     char *owner_id;
     char *owner_display_name;
 
     node = mxmlFindElement(xml_node, xml_node, "ID",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         owner_id = apr_pstrdup(p, node_content);
         aos_str_set(&content->owner_id, owner_id);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "DisplayName", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         owner_display_name = apr_pstrdup(p, node_content);
         aos_str_set(&content->owner_display_name, owner_display_name);
     }
@@ -201,35 +201,35 @@ void oss_list_objects_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_li
     char *last_modified;
     char *etag;
     char *size;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
     char *str_value;
 
     node = mxmlFindElement(xml_node, xml_node, "Key", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        key = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        key = apr_pstrdup(p, node_content);
         aos_str_set(&content->key, key);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "LastModified", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        last_modified = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        last_modified = apr_pstrdup(p, node_content);
         aos_str_set(&content->last_modified, last_modified);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "ETag", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        etag = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        etag = apr_pstrdup(p, node_content);
         aos_str_set(&content->etag, etag);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Size", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        size = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        size = apr_pstrdup(p, node_content);
         aos_str_set(&content->size, size);
     }
 
@@ -239,18 +239,18 @@ void oss_list_objects_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_li
     }
 
     node = mxmlFindElement(xml_node, xml_node, "StorageClass", NULL, NULL, MXML_DESCEND);
+    node_content = mxmlGetOpaque(node);
     aos_str_null(&content->storage_class);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        str_value = apr_pstrdup(p, (char *)node_content);
+    if (NULL != node_content) {
+        str_value = apr_pstrdup(p, node_content);
         aos_str_set(&content->storage_class, str_value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Type", NULL, NULL, MXML_DESCEND);
+    node_content = mxmlGetOpaque(node);
     aos_str_null(&content->type);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        str_value = apr_pstrdup(p, (char *)node_content);
+    if (NULL != node_content) {
+        str_value = apr_pstrdup(p, node_content);
         aos_str_set(&content->type, str_value);
     }
 }
@@ -274,12 +274,12 @@ void oss_list_objects_prefix_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_lis
 {
     char *prefix;
     mxml_node_t *node;
-    char *node_content;
+    const char *node_content;
     
     node = mxmlFindElement(xml_node, xml_node, "Prefix", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        prefix = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        prefix = apr_pstrdup(p, node_content);
         aos_str_set(&common_prefix->prefix, prefix);
     }
 }
@@ -330,7 +330,8 @@ int oss_list_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc,
 
 void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list)
 {
-    char *value, *xml_value;
+    char* value;
+    const char *xml_value;
     mxml_node_t *node; 
     oss_list_bucket_content_t *content;
     content = oss_create_list_bucket_content(p);
@@ -340,44 +341,44 @@ void oss_list_buckets_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_li
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Name", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        xml_value = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)xml_value);
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
+        value = apr_pstrdup(p, xml_value);
         aos_str_set(&content->name, value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "CreationDate", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        xml_value = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)xml_value);
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
+        value = apr_pstrdup(p, xml_value);
         aos_str_set(&content->create_date, value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "ExtranetEndpoint", NULL, NULL, MXML_DESCEND);
-    if (NULL != node && NULL != node->child) {
-        xml_value = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)xml_value);
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
+        value = apr_pstrdup(p, xml_value);
         aos_str_set(&content->extranet_endpoint, value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "IntranetEndpoint", NULL, NULL, MXML_DESCEND);
-    if (NULL != node && NULL != node->child) {
-        xml_value = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)xml_value);
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
+        value = apr_pstrdup(p, xml_value);
         aos_str_set(&content->intranet_endpoint, value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Location", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        xml_value = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)xml_value);
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
+        value = apr_pstrdup(p, xml_value);
         aos_str_set(&content->location, value);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "StorageClass", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        xml_value = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)xml_value);
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
+        value = apr_pstrdup(p, xml_value);
         aos_str_set(&content->storage_class, value);
     }
 
@@ -552,10 +553,11 @@ int oss_get_bucket_website_parse_from_body(aos_pool_t *p, aos_list_t *bc,
 
 void parse_referer_str(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *referer_config_ptr)
 {
-    char *value, *node_content;
+    char* value;
+    const char* node_content;
     oss_referer_config_t *referer_config = (oss_referer_config_t *)referer_config_ptr;
-    node_content = xml_node->child->value.opaque;
-    value = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(xml_node);
+    value = apr_pstrdup(p, node_content);
     if (NULL != value) {
         oss_create_and_add_refer(p, referer_config, value);
     }
@@ -589,9 +591,10 @@ int oss_get_bucket_referer_config_parse_from_body(aos_pool_t *p, aos_list_t *bc,
 
 void parse_sub_ctors_rule(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *sub_rule_list)
 {
-    char *value, *node_content;
-    node_content = xml_node->child->value.opaque;
-    value = apr_pstrdup(p, (char *)node_content);
+    char* value;
+    const char* node_content;
+    node_content = mxmlGetOpaque(xml_node);
+    value = apr_pstrdup(p, node_content);
     if (NULL != value) {
         oss_create_sub_cors_rule(p, sub_rule_list, value);
     }
@@ -599,7 +602,7 @@ void parse_sub_ctors_rule(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *sub_
 
 void oss_cors_rule_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_t *node_list)
 {
-    char *xml_value;
+    const char *xml_value;
     mxml_node_t *node; 
     oss_cors_rule_t *content;
     content = oss_create_cors_rule(p);
@@ -609,8 +612,8 @@ void oss_cors_rule_content_parse(aos_pool_t *p, mxml_node_t *xml_node, aos_list_
     }
 
     node = mxmlFindElement(xml_node, xml_node, "MaxAgeSeconds", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        xml_value = node->child->value.opaque;
+    xml_value = mxmlGetOpaque(node);
+    if (NULL != xml_value) {
         content->max_age_seconds = atoi(xml_value);
     }
 
@@ -685,34 +688,34 @@ void oss_list_parts_content_parse(aos_pool_t *p, mxml_node_t *xml_node, oss_list
     char *last_modified;
     char *etag;
     char *size;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "PartNumber", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        part_number = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        part_number = apr_pstrdup(p, node_content);
         aos_str_set(&content->part_number, part_number);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "LastModified", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        last_modified = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        last_modified = apr_pstrdup(p, node_content);
         aos_str_set(&content->last_modified, last_modified);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "ETag", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        etag = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        etag = apr_pstrdup(p, node_content);
         aos_str_set(&content->etag, etag);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Size", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        size = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        size = apr_pstrdup(p, node_content);
         aos_str_set(&content->size, size);
     }
 }
@@ -766,27 +769,27 @@ void oss_list_multipart_uploads_content_parse(aos_pool_t *p, mxml_node_t *xml_no
     char *key;
     char *upload_id;
     char *initiated;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "Key",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        key = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        key = apr_pstrdup(p, node_content);
         aos_str_set(&content->key, key);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "UploadId",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        upload_id = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        upload_id = apr_pstrdup(p, node_content);
         aos_str_set(&content->upload_id, upload_id);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Initiated",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        initiated = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        initiated = apr_pstrdup(p, node_content);
         aos_str_set(&content->initiated, initiated);
     }
 }
@@ -1270,27 +1273,27 @@ void oss_lifecycle_rule_content_parse(aos_pool_t *p, mxml_node_t * xml_node,
     char *id;
     char *prefix;
     char *status;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "ID",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        id = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        id = apr_pstrdup(p, node_content);
         aos_str_set(&content->id, id);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Prefix",NULL, NULL,MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        prefix = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        prefix = apr_pstrdup(p, node_content);
         aos_str_set(&content->prefix, prefix);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Status",NULL, NULL,MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        status = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        status = apr_pstrdup(p, node_content);
         aos_str_set(&content->status, status);
     }
 
@@ -1319,19 +1322,19 @@ void oss_lifecycle_rule_date_parse(aos_pool_t *p, mxml_node_t * xml_node,
     char* days;
     char *created_before_date;
     mxml_node_t *node;
-    char *node_content;
+    const char *node_content;
 
     node = mxmlFindElement(xml_node, xml_node, "Days", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        days = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        days = apr_pstrdup(p, node_content);
         rule_date->days = atoi(days);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "CreatedBeforeDate", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        created_before_date = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        created_before_date = apr_pstrdup(p, node_content);
         aos_str_set(&rule_date->created_before_date, created_before_date);
     } 
 }
@@ -1344,26 +1347,26 @@ void oss_lifecycle_rule_expire_parse(aos_pool_t *p, mxml_node_t * xml_node,
     char *date;
     char *created_before_date;
     mxml_node_t *node;
-    char *node_content;
+    const char *node_content;
 
     node = mxmlFindElement(xml_node, xml_node, "Days", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        days = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        days = apr_pstrdup(p, node_content);
         content->days = atoi(days);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Date", NULL, NULL, MXML_DESCEND);
+    node_content = mxmlGetOpaque(node);
     if (NULL != node) {
-        node_content = node->child->value.opaque;
-        date = apr_pstrdup(p, (char *)node_content);
+        date = apr_pstrdup(p, node_content);
         aos_str_set(&content->date, date);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "CreatedBeforeDate", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        created_before_date = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        created_before_date = apr_pstrdup(p, node_content);
         aos_str_set(&content->created_before_date, created_before_date);
     } 
 }
@@ -1372,21 +1375,21 @@ void oss_lifecycle_rule_tag_parse(aos_pool_t *p, mxml_node_t * xml_node,
     oss_tag_content_t *tag)
 {
     mxml_node_t *node;
-    char *node_content;
+    const char *node_content;
 
     node = mxmlFindElement(xml_node, xml_node, "Key", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         char *key;
-        node_content = node->child->value.opaque;
-        key = apr_pstrdup(p, (char *)node_content);
+        key = apr_pstrdup(p, node_content);
         aos_str_set(&tag->key, key);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Value", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         char *value;
-        node_content = node->child->value.opaque;
-        value = apr_pstrdup(p, (char *)node_content);
+        value = apr_pstrdup(p, node_content);
         aos_str_set(&tag->value, value);
     }
 }
@@ -1410,12 +1413,12 @@ void oss_object_key_parse(aos_pool_t *p, mxml_node_t * xml_node,
 {   
     char *key;
     char *encoded_key;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
     
     node = mxmlFindElement(xml_node, xml_node, "Key",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         encoded_key = (char*)node_content;
         key = (char *) aos_palloc(p, strlen(encoded_key));
         aos_url_decode(encoded_key, key);
@@ -1441,10 +1444,10 @@ int oss_delete_objects_parse_from_body(aos_pool_t *p, aos_list_t *bc, aos_list_t
 void oss_publish_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_publish_url_t *content)
 {   
     char *url;
-    char *node_content;
+    const char *node_content;
     
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         url = apr_pstrdup(p, node_content);
         aos_str_set(&content->publish_url, url);
     }
@@ -1453,10 +1456,10 @@ void oss_publish_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_pu
 void oss_play_url_parse(aos_pool_t *p, mxml_node_t *node, oss_live_channel_play_url_t *content)
 {   
     char *url;
-    char *node_content;
+    const char *node_content;
     
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         url = apr_pstrdup(p, node_content);
         aos_str_set(&content->play_url, url);
     }
@@ -1599,33 +1602,33 @@ void oss_live_channel_info_target_content_parse(aos_pool_t *p, mxml_node_t *xml_
     char *frag_duration;
     char *frag_count;
     char *play_list;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "Type", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         type = apr_pstrdup(p, node_content);
         aos_str_set(&target->type, type);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "FragDuration", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         frag_duration = apr_pstrdup(p, node_content);
         target->frag_duration = atoi(frag_duration);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "FragCount", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         frag_count = apr_pstrdup(p, node_content);
         target->frag_count = atoi(frag_count);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "PlaylistName",NULL, NULL,MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         play_list = apr_pstrdup(p, node_content);
         aos_str_set(&target->play_list_name, play_list);
     }
@@ -1641,19 +1644,19 @@ void oss_live_channel_info_content_parse(aos_pool_t *p, mxml_node_t *root, const
     if (NULL != cofig_node) {
         char *description;
         char *status;
-        char *node_content;
+        const char *node_content;
         mxml_node_t *node;
 
         node = mxmlFindElement(cofig_node, cofig_node, "Description", NULL, NULL, MXML_DESCEND);
-        if (NULL != node) {
-            node_content = node->child->value.opaque;
+        node_content = mxmlGetOpaque(node);
+        if (NULL != node_content) {
             description = apr_pstrdup(p, node_content);
             aos_str_set(&info->description, description);
         }
 
         node = mxmlFindElement(cofig_node, cofig_node, "Status", NULL, NULL, MXML_DESCEND);
-        if (NULL != node) {
-            node_content = node->child->value.opaque;
+        node_content = mxmlGetOpaque(node);
+        if (NULL != node_content) {
             status = apr_pstrdup(p, node_content);
             aos_str_set(&info->status, status);
         }
@@ -1687,40 +1690,40 @@ void oss_live_channel_stat_video_content_parse(aos_pool_t *p, mxml_node_t *xml_n
     char *frame_rate;
     char *band_width;
     char *codec;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "Width", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         width = apr_pstrdup(p, node_content);
         video_stat->width = atoi(width);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Height", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         height = apr_pstrdup(p, node_content);
         video_stat->height = atoi(height);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "FrameRate", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         frame_rate = apr_pstrdup(p, node_content);
         video_stat->frame_rate = atoi(frame_rate);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Bandwidth", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         band_width = apr_pstrdup(p, node_content);
         video_stat->band_width = atoi(band_width);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Codec", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         codec = apr_pstrdup(p, node_content);
         aos_str_set(&video_stat->codec, codec);
     }
@@ -1731,26 +1734,26 @@ void oss_live_channel_stat_audio_content_parse(aos_pool_t *p, mxml_node_t *xml_n
     char *band_width;
     char *sample_rate;
     char *codec;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "Bandwidth", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         band_width = apr_pstrdup(p, node_content);
         audio_stat->band_width = atoi(band_width);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "SampleRate", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         sample_rate = apr_pstrdup(p, node_content);
         audio_stat->sample_rate = atoi(sample_rate);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Codec", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
         codec = apr_pstrdup(p, node_content);
         aos_str_set(&audio_stat->codec, codec);
     }
@@ -1765,27 +1768,27 @@ void oss_live_channel_stat_content_parse(aos_pool_t *p, mxml_node_t *root, const
         char *status;
         char *connected_time;
         char *remote_addr;
-        char *node_content;
+        const char *node_content;
         mxml_node_t *node;
 
         node = mxmlFindElement(stat_node, stat_node, "Status", NULL, NULL, MXML_DESCEND);
-        if (NULL != node) {
-            node_content = node->child->value.opaque;
-            status = apr_pstrdup(p, (char *)node_content);
+        node_content = mxmlGetOpaque(node);
+        if (NULL != node_content) {
+            status = apr_pstrdup(p, node_content);
             aos_str_set(&stat->pushflow_status, status);
         }
 
         node = mxmlFindElement(stat_node, stat_node, "ConnectedTime", NULL, NULL, MXML_DESCEND);
-        if (NULL != node) {
-            node_content = node->child->value.opaque;
-            connected_time = apr_pstrdup(p, (char *)node_content);
+        node_content = mxmlGetOpaque(node);
+        if (NULL != node_content) {
+            connected_time = apr_pstrdup(p, node_content);
             aos_str_set(&stat->connected_time, connected_time);
         }
 
         node = mxmlFindElement(stat_node, stat_node, "RemoteAddr", NULL, NULL, MXML_DESCEND);
-        if (NULL != node) {
-            node_content = node->child->value.opaque;
-            remote_addr = apr_pstrdup(p, (char *)node_content);
+        node_content = mxmlGetOpaque(node);
+        if (NULL != node_content) {
+            remote_addr = apr_pstrdup(p, node_content);
             aos_str_set(&stat->remote_addr, remote_addr);
         }
 
@@ -1822,38 +1825,37 @@ void oss_list_live_channel_content_parse(aos_pool_t *p, mxml_node_t *xml_node, o
     char *description;
     char *status;
     char *last_modified;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "Name", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        name = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        name = apr_pstrdup(p, node_content);
         aos_str_set(&content->name, name);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Description", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        if (NULL != node->child) {
-            node_content = node->child->value.opaque;
-            description = apr_pstrdup(p, (char *)node_content);
-            aos_str_set(&content->description, description);
-        } else {
-            aos_str_set(&content->description, "");
-        }
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        description = apr_pstrdup(p, node_content);
+        aos_str_set(&content->description, description);
+    }
+    else {
+        aos_str_set(&content->description, "");
     }
 
     node = mxmlFindElement(xml_node, xml_node, "Status", NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        status = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        status = apr_pstrdup(p, node_content);
         aos_str_set(&content->status, status);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "LastModified", NULL, NULL, MXML_DESCEND);
+    node_content = mxmlGetOpaque(node);
     if (NULL != node) {
-        node_content = node->child->value.opaque;
-        last_modified = apr_pstrdup(p, (char *)node_content);
+        last_modified = apr_pstrdup(p, node_content);
         aos_str_set(&content->last_modified, last_modified);
     }
 
@@ -1916,27 +1918,27 @@ void oss_live_channel_history_content_parse(aos_pool_t *p, mxml_node_t * xml_nod
     char *start_time;
     char *end_time;
     char *remote_addr;
-    char *node_content;
+    const char *node_content;
     mxml_node_t *node;
 
     node = mxmlFindElement(xml_node, xml_node, "StartTime",NULL, NULL, MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        start_time = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        start_time = apr_pstrdup(p, node_content);
         aos_str_set(&content->start_time, start_time);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "EndTime",NULL, NULL,MXML_DESCEND);
-    if (NULL != node) {
-        node_content = node->child->value.opaque;
-        end_time = apr_pstrdup(p, (char *)node_content);
+    node_content = mxmlGetOpaque(node);
+    if (NULL != node_content) {
+        end_time = apr_pstrdup(p, node_content);
         aos_str_set(&content->end_time, end_time);
     }
 
     node = mxmlFindElement(xml_node, xml_node, "RemoteAddr",NULL, NULL,MXML_DESCEND);
+    node_content = mxmlGetOpaque(node);
     if (NULL != node) {
-        node_content = node->child->value.opaque;
-        remote_addr = apr_pstrdup(p, (char *)node_content);
+        remote_addr = apr_pstrdup(p, node_content);
         aos_str_set(&content->remote_addr, remote_addr);
     }
 }
