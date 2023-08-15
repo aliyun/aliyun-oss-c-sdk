@@ -36,8 +36,11 @@ set(CMAKE_CXX_OUTPUT_EXTENSION_REPLACE 1)
 # find dependency librarys
 if(CMAKE_HOST_WIN32)
     set(EXTRA_INCLUDE_PATH ${CMAKE_SOURCE_DIR}/third_party/include)
-    set(EXTRA_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/Win32/)
-
+    if (CMAKE_CL_64)
+        set(EXTRA_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/x64/)
+    else()
+        set(EXTRA_LIB_PATH ${CMAKE_SOURCE_DIR}/third_party/lib/Win32/)
+    endif()
     find_path(APR_INCLUDE_DIR NAMES apr.h PATH_SUFFIXES apr PATHS ${EXTRA_INCLUDE_PATH})
     find_library(APR_LIBRARY NAMES libapr-1 PATHS ${EXTRA_LIB_PATH})
 
