@@ -145,6 +145,7 @@ struct aos_http_transport_s {
 struct aos_curl_http_transport_s {
     AOS_HTTP_BASE_TRANSPORT_DEFINE
     CURL *curl;
+    CURLcode curl_code;
     char *url;
     struct curl_slist *headers;
     curl_read_callback header_callback;

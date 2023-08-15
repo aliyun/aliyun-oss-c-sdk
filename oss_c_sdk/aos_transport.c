@@ -138,8 +138,8 @@ aos_http_transport_t *aos_curl_http_transport_create(aos_pool_t *p)
     aos_fstack_push(t->cleanup, t, func, 1);
     
     t->curl = aos_request_get();
-    func.func1 = (aos_func1_pt)request_release;
-    aos_fstack_push(t->cleanup, t->curl, func, 1);
+    func.func1 = (aos_func1_pt)request_release2;
+    aos_fstack_push(t->cleanup, t, func, 1);
 
     t->header_callback = aos_curl_default_header_callback;
     t->read_callback = aos_curl_default_read_callback;
@@ -488,7 +488,7 @@ int aos_curl_http_transport_perform(aos_http_transport_t *t_)
     code = curl_easy_perform(t->curl);
     t->controller->finish_time = apr_time_now();
     aos_move_transport_state(t, TRANS_STATE_DONE);
-    
+    t->curl_code = code;
     if ((code != CURLE_OK) && (t->controller->error_code == AOSE_OK)) {
         ecode = aos_curl_code_to_status(code);
         if (ecode != AOSE_OK) {

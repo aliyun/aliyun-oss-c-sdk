@@ -14,9 +14,9 @@ static APR_INLINE const char *aos_http_controller_get_reason(aos_http_controller
     aos_http_controller_ex_t *ctle = (aos_http_controller_ex_t *)ctl;
     return ctle->reason;
 }
-
 CURL *aos_request_get();
 void request_release(CURL *request);
+void request_release2(aos_curl_http_transport_t* t);
 
 int aos_http_io_initialize(const char *user_agent_info, int flag);
 void aos_http_io_deinitialize();
