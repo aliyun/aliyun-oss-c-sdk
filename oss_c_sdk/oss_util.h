@@ -401,6 +401,12 @@ oss_tag_content_t *oss_create_tag_content(aos_pool_t *p);
 int oss_is_valid_bucket_name(const aos_string_t *str);
 
 /**
+  * @brief  check if object name is valid.
+**/
+int oss_is_valid_object_name(const aos_string_t *str);
+int oss_is_valid_object_name_ex(const aos_string_t* str, int strict);
+
+/**
   * @brief  pre-process endpoint, just keep host and port.
 **/
 void oss_preprocess_endpoint(aos_string_t *endpoint);
@@ -418,10 +424,21 @@ aos_status_t *oss_get_bucket_name_invalid_error();
         } \
     } while(0) 
 
+aos_status_t* oss_get_object_name_invalid_error();
+
+#define oss_ensure_object_name_valid(a) do {       \
+        if (!oss_is_valid_object_name(a)) {        \
+            return oss_get_object_name_invalid_error(); \
+        } \
+    } while(0) 
+
+
 /**
   * @brief  check if the host is valid.
 **/
 int oss_is_valid_host(const char *host);
+
+int is_verify_object_strict(const oss_request_options_t * options);
 
 
 OSS_CPP_END

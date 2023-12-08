@@ -966,7 +966,7 @@ void test_get_object_acl_object_empty(CuTest *tc){
     
     s = oss_get_object_acl(options, &bucket, &object, &oss_acl_str, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+    CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
     
     aos_pool_destroy(p);
 
@@ -989,7 +989,7 @@ void test_get_object_acl_object_null(CuTest *tc){
     
     s = oss_get_object_acl(options, &bucket, NULL, &oss_acl_str, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+    CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
 
     aos_pool_destroy(p);
 
@@ -1068,7 +1068,7 @@ void test_put_object_acl_object_empty(CuTest *tc){
 
     s = oss_put_object_acl(options, &bucket, &object, oss_acl, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+    CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
     
     aos_pool_destroy(p);
     
@@ -1091,7 +1091,7 @@ void test_put_object_acl_object_null(CuTest *tc){
 
     s = oss_put_object_acl(options, &bucket, NULL, oss_acl, &resp_headers);
     CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-    CuAssertStrEquals(tc, AOS_EMPTY_STRING_ERROR, s->error_code);
+    CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
     
     aos_pool_destroy(p);
     
@@ -1539,6 +1539,7 @@ void test_append_object_from_file(CuTest *tc)
     s = oss_append_object_from_file(options, &bucket, &object, position,
         &append_file, headers, &resp_headers);
     CuAssertIntEquals(tc, 400, s->code);
+    printf("msg:%s\n", s->error_msg);
 
     aos_str_set(&bucket, TEST_BUCKET_NAME);
     aos_str_set(&append_file, "");
@@ -1665,7 +1666,13 @@ void test_object_invalid_parameter(CuTest *tc)
     char *invalid_name_list[] =
     { "a", "1", "!", "aa", "12", "a1",
         "a!", "1!", "aAa", "1A1", "a!a", "FengChao@123", "-a123", "a_123", "a123-",
-        "1234567890123456789012345678901234567890123456789012345678901234", ""
+        "1234567890123456789012345678901234567890123456789012345678901234", "",
+        NULL,
+    };
+
+    char* invalid_object_name_list[] =
+    {
+        "", NULL,
     };
 
     aos_pool_create(&p, NULL);
@@ -1678,7 +1685,15 @@ void test_object_invalid_parameter(CuTest *tc)
         aos_table_t *resp_headers = NULL;
         aos_table_t *headers = NULL;
         aos_table_t *params = NULL;
-        aos_str_set(&bucket, invalid_name_list[i]);
+        char* url = NULL;
+
+        if (invalid_name_list[i] == NULL) {
+            aos_str_null(&bucket);
+        }
+        else {
+            aos_str_set(&bucket, invalid_name_list[i]);
+        }
+
         headers = aos_table_make(p, 1);
 
         s = oss_put_object_from_buffer(options, &bucket, NULL, NULL, headers, &resp_headers);
@@ -1729,7 +1744,7 @@ void test_object_invalid_parameter(CuTest *tc)
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
-        s = oss_copy_object(options, &bucket, NULL, NULL, NULL, headers, &resp_headers);
+        s = oss_copy_object(options, NULL, NULL, &bucket, NULL, headers, &resp_headers);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
@@ -1737,31 +1752,161 @@ void test_object_invalid_parameter(CuTest *tc)
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
+        s = oss_do_append_object_from_buffer(options, &bucket, NULL, 1024LL, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
         s = oss_append_object_from_file(options, &bucket, NULL, 1024LL, NULL, headers, &resp_headers);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
-#if 0
-        s = oss_put_object_from_buffer_by_url(options, &bucket, NULL, headers, &resp_headers);
+
+        s = oss_do_append_object_from_file(options, &bucket, NULL, 1024LL, 0, NULL, NULL, NULL, NULL, NULL, NULL);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
-        s = oss_put_object_from_file_by_url(options, &bucket, NULL, headers, &resp_headers);
+        s = oss_do_select_object_to_buffer(options, &bucket, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
-        s = oss_get_object_to_buffer_by_url(options, &bucket, headers, params, NULL, &resp_headers);
+        s = oss_do_select_object_to_file(options, &bucket, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
-        s = oss_get_object_to_file_by_url(options, &bucket, headers, params, NULL, &resp_headers);
+        s = oss_create_select_object_meta(options, &bucket, NULL, NULL, NULL);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
 
-        s = oss_head_object_by_url(options, &bucket, headers, &resp_headers);
+        s = oss_put_object_tagging(options, &bucket, NULL, NULL, NULL);
         CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
         CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
-#endif
+
+        s = oss_get_object_tagging(options, &bucket, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_object_tagging(options, &bucket, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_BUCKET_NAME_INVALID_ERROR, s->error_code);
+
+        url = oss_gen_signed_url(options, &bucket, NULL, 3600, NULL);
+        CuAssertPtrEquals(tc, NULL, url);
     }
+
+
+    for (i = 0; i < sizeof(invalid_object_name_list) / sizeof(invalid_object_name_list[0]); i++) {
+        aos_string_t bucket;
+        aos_string_t object;
+        aos_status_t* s = NULL;
+        aos_table_t* resp_headers = NULL;
+        aos_table_t* headers = NULL;
+        aos_table_t* params = NULL;
+        char* url = NULL;
+        aos_str_set(&bucket, "bucket");
+        if (invalid_object_name_list[i] != NULL) {
+            aos_str_set(&object, invalid_object_name_list[i]);
+        }
+        else {
+            aos_str_null(&object);
+        }
+        headers = aos_table_make(p, 1);
+
+        s = oss_put_object_from_buffer(options, &bucket, &object, NULL, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_object_from_file(options, &bucket, &object, NULL, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_object_to_buffer(options, &bucket, &object, headers, params, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_restore_object(options, &bucket, &object, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_object_to_file(options, &bucket, &object, headers, params, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_head_object(options, &bucket, &object, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_object_meta(options, &bucket, &object, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_object_acl(options, &bucket, &object, OSS_ACL_DEFAULT, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_object_acl(options, &bucket, &object, OSS_ACL_DEFAULT, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_symlink(options, &bucket, &object, NULL, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_symlink(options, &bucket, &object, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_object(options, &bucket, &object, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_copy_object(options, NULL, NULL, &bucket, &object, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_append_object_from_buffer(options, &bucket, &object, 1024LL, NULL, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_do_append_object_from_buffer(options, &bucket, &object, 1024LL, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_append_object_from_file(options, &bucket, &object, 1024LL, NULL, headers, &resp_headers);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_do_append_object_from_file(options, &bucket, &object, 1024LL, 0, NULL, NULL, NULL, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_do_select_object_to_buffer(options, &bucket, &object, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_do_select_object_to_file(options, &bucket, &object, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_create_select_object_meta(options, &bucket, &object, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_put_object_tagging(options, &bucket, &object, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_get_object_tagging(options, &bucket, &object, NULL, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        s = oss_delete_object_tagging(options, &bucket, &object, NULL);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
+        CuAssertStrEquals(tc, AOS_OBJECT_NAME_INVALID_ERROR, s->error_code);
+
+        url = oss_gen_signed_url(options, &bucket, &object, 3600, NULL);
+        CuAssertPtrEquals(tc, NULL, url);
+    }
+
+
     aos_pool_destroy(p);
 
     printf("test_object_invalid_parameter ok\n");
@@ -1900,6 +2045,51 @@ void test_object_with_invalid_endpoint(CuTest *tc)
 
 }
 
+void test_object_verify_strict(CuTest* tc)
+{
+    aos_pool_t* p = NULL;
+    oss_request_options_t* options = NULL;
+    aos_pool_create(&p, NULL);
+    options = oss_request_options_create(p);
+    init_test_request_options(options, 0);
+    aos_string_t bucket;
+    aos_string_t object;
+    char* url;
+    aos_http_request_t* request;
+    // create request
+
+    request = aos_http_request_create(p);
+    request->method = HTTP_PUT;
+
+    aos_str_set(&bucket, "bucket");
+    aos_str_set(&object, "?123");
+    url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
+    CuAssertPtrEquals(tc, NULL, url);
+
+    aos_str_set(&object, "?");
+    url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
+    CuAssertPtrEquals(tc, NULL, url);
+
+    aos_str_set(&object, "123?123");
+    url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
+    CuAssertPtrNotNull(tc, url);
+
+    options = oss_request_options_create(p);
+    init_test_request_options(options, 0);
+    options->ctl->options->verify_object_strict = AOS_FALSE;
+    aos_str_set(&object, "?123");
+    url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
+    CuAssertPtrNotNull(tc, url);
+
+    aos_str_set(&object, "?");
+    url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
+    CuAssertPtrNotNull(tc, url);
+
+    aos_pool_destroy(p);
+
+    printf("test_object_verify_strict ok\n");
+}
+
 
 CuSuite *test_oss_object()
 {
@@ -1945,6 +2135,7 @@ CuSuite *test_oss_object()
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_with_maxbuffersize);
     SUITE_ADD_TEST(suite, test_get_object_to_buffer_use_invalid_sts);
     SUITE_ADD_TEST(suite, test_object_with_invalid_endpoint);
+    SUITE_ADD_TEST(suite, test_object_verify_strict);
     SUITE_ADD_TEST(suite, test_object_cleanup); 
     
     return suite;

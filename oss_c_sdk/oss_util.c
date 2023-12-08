@@ -1534,6 +1534,40 @@ aos_status_t *oss_get_bucket_name_invalid_error()
     return &oss_bucket_name_invalid_error;
 }
 
+int oss_is_valid_object_name(const aos_string_t* str)
+{
+    if (aos_string_is_empty(str)) {
+        return 0;
+    }
+    return 1;
+}
+
+int oss_is_valid_object_name_ex(const aos_string_t* str, int strict)
+{
+
+    if (aos_string_is_empty(str)) {
+        return 0;
+    }
+
+    if (strict && str->data[0] == '?') {
+        return 0;
+    }
+
+    return 1;
+}
+
+aos_status_t* oss_get_object_name_invalid_error()
+{
+    static aos_status_t oss_object_name_invalid_error = {
+        AOSE_INVALID_ARGUMENT,
+        (char*)AOS_OBJECT_NAME_INVALID_ERROR,
+        "The object name is invalid, please check.",
+        NULL
+    };
+
+    return &oss_object_name_invalid_error;
+}
+
 int oss_is_valid_host(const char *host)
 {
     //format like: userinfo@host:port, just check host
@@ -1579,3 +1613,7 @@ int oss_is_valid_host(const char *host)
     return 1;
 }
 
+int is_verify_object_strict(const oss_request_options_t* options)
+{
+    return options->ctl->options->verify_object_strict;
+}
