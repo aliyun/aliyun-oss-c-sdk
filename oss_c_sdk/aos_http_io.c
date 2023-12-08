@@ -108,6 +108,7 @@ aos_http_request_options_t *aos_http_request_options_create(aos_pool_t *p)
     options->verify_ssl = AOS_TRUE;
     options->ca_file = NULL;
     options->ca_path = NULL;
+    options->verify_object_strict = AOS_TRUE;
 
     return options;
 }

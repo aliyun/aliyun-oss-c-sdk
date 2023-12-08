@@ -59,6 +59,8 @@ extern const char AOS_SELECT_OBJECT_ERROR[];
 extern const char AOS_SELECT_OBJECT_CRC_ERROR[];
 extern const char AOS_CREATE_SELECT_OBJECT_META_ERROR[];
 extern const char AOS_BUCKET_NAME_INVALID_ERROR[];
+extern const char AOS_OBJECT_NAME_INVALID_ERROR[];
+
 AOS_CPP_END
 
 #endif

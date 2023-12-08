@@ -1555,6 +1555,51 @@ static void test_oss_is_valid_bucket_name(CuTest *tc) {
     printf("%s ok\n", __FUNCTION__);
 }
 
+static void test_oss_is_valid_object_name(CuTest *tc) {
+    aos_string_t name;
+    aos_str_set(&name, "");
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name(&name));
+
+    aos_str_null(&name);
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name(&name));
+
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name(NULL));
+
+    aos_str_set(&name, "?");
+    CuAssertIntEquals(tc, 1, oss_is_valid_object_name(&name));
+ 
+    //ex
+    aos_str_set(&name, "");
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 1));
+
+    aos_str_null(&name);
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 1));
+
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 1));
+
+    aos_str_set(&name, "?");
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 1));
+
+    aos_str_set(&name, "?123");
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 1));
+
+
+    aos_str_set(&name, "");
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 0));
+
+    aos_str_null(&name);
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 0));
+
+    CuAssertIntEquals(tc, 0, oss_is_valid_object_name_ex(&name, 0));
+
+    aos_str_set(&name, "?");
+    CuAssertIntEquals(tc, 1, oss_is_valid_object_name_ex(&name, 0));
+
+    aos_str_set(&name, "?123");
+    CuAssertIntEquals(tc, 1, oss_is_valid_object_name_ex(&name, 0));
+    printf("%s ok\n", __FUNCTION__);
+}
+
 static void test_oss_preprocess_endpoint(CuTest *tc) {
     int i;
     aos_string_t name;
@@ -1787,6 +1832,7 @@ CuSuite *test_aos()
     SUITE_ADD_TEST(suite, test_oss_fill_read_response_header);
     SUITE_ADD_TEST(suite, test_oss_get_host_from_authority);
     SUITE_ADD_TEST(suite, test_oss_is_valid_host);
+    SUITE_ADD_TEST(suite, test_oss_is_valid_object_name);
 
     return suite;
 }

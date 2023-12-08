@@ -20,6 +20,7 @@ const char AOS_SELECT_OBJECT_ERROR[] = "SelectObjectError";
 const char AOS_SELECT_OBJECT_CRC_ERROR[] = "SelectObjectCRCError";
 const char AOS_CREATE_SELECT_OBJECT_META_ERROR[] = "CreateSelectObjectMetaError";
 const char AOS_BUCKET_NAME_INVALID_ERROR[] = "BucketNameInvalidError";
+const char AOS_OBJECT_NAME_INVALID_ERROR[] = "ObjectNameInvalidError";
 
 aos_status_t *aos_status_create(aos_pool_t *p)
 {

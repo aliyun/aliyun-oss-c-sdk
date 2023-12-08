@@ -37,6 +37,7 @@ struct aos_http_request_options_s {
     int verify_ssl;
     char *ca_path;
     char *ca_file;
+    int verify_object_strict;
 };
 
 struct aos_http_transport_options_s {
