@@ -50,6 +50,10 @@ static int oss_get_canonicalized_resource(aos_pool_t *p,
 static int oss_get_canonicalized_params(aos_pool_t *p,
     const aos_table_t *params, aos_buf_t *signbuf);
 static int oss_sign_request_v4(aos_http_request_t *req, const oss_config_t *config);
+static int get_oss_request_signature_v4(const oss_request_options_t *options, 
+                              aos_http_request_t *req,
+                              const aos_string_t *expires, 
+                              aos_string_t *signature);
 
 static int is_oss_sub_resource(const char *str)
 {
@@ -376,18 +380,32 @@ int oss_get_signed_url(const oss_request_options_t *options,
     aos_string_t signature;
     const char *proto;
 
-    if (options->config->sts_token.data != NULL) {
-        apr_table_set(req->query_params, OSS_SECURITY_TOKEN, options->config->sts_token.data);
-    }
+    if (options->config->signature_version == 4) {
+        if (options->config->sts_token.data != NULL) {
+            apr_table_set(req->query_params, OSS_SECURITY_TOKEN_V4, options->config->sts_token.data);
+        }
 
-    res = get_oss_request_signature(options, req, expires, &signature);
-    if (res != AOSE_OK) {
-        return res;
-    }
+        res = get_oss_request_signature_v4(options, req, expires, &signature);
+        if (res != AOSE_OK) {
+            return res;
+        }
 
-    apr_table_set(req->query_params, OSS_ACCESSKEYID, options->config->access_key_id.data);
-    apr_table_set(req->query_params, OSS_EXPIRES, expires->data);
-    apr_table_set(req->query_params, OSS_SIGNATURE, signature.data);
+        apr_table_set(req->query_params, OSS_SIGNATURE_V4, signature.data);
+
+    } else {
+        if (options->config->sts_token.data != NULL) {
+            apr_table_set(req->query_params, OSS_SECURITY_TOKEN, options->config->sts_token.data);
+        }
+
+        res = get_oss_request_signature(options, req, expires, &signature);
+        if (res != AOSE_OK) {
+            return res;
+        }
+
+        apr_table_set(req->query_params, OSS_ACCESSKEYID, options->config->access_key_id.data);
+        apr_table_set(req->query_params, OSS_EXPIRES, expires->data);
+        apr_table_set(req->query_params, OSS_SIGNATURE, signature.data);
+    }
 
     uristr[0] = '\0';
     aos_str_null(&querystr);
@@ -701,7 +719,11 @@ static int oss_build_canonical_request_v4(aos_pool_t* p, aos_http_request_t* req
 
     //Hashed PayLoad
     value = apr_table_get(req->headers, OSS_CONTENT_SHA256);
-    aos_buf_append_string(p, signbuf, value, strlen(value));
+    if (value == NULL) {
+        aos_buf_append_string(p, signbuf, "UNSIGNED-PAYLOAD", 16);
+    } else {
+        aos_buf_append_string(p, signbuf, value, strlen(value));
+    }
 
     // result
     out->data = (char*)signbuf->pos;
@@ -785,6 +807,7 @@ static int oss_sign_request_v4(aos_http_request_t *req, const oss_config_t *conf
     const char* value;
     int res = AOSE_OK;
     aos_string_t gmt_suffix;
+    char shortdate[AOS_MAX_SHORT_TIME_LEN];
 
 
     //default, ex payload, x-oss-date 
@@ -803,8 +826,9 @@ static int oss_sign_request_v4(aos_http_request_t *req, const oss_config_t *conf
 
     aos_str_set(&gmt_suffix, "GMT");
     if (aos_ends_with(&datetime, &gmt_suffix)) {
-        aos_error_log("x-oss-date should be iso8601 format %s.", datetime.data);
-        return AOSE_INVALID_ARGUMENT;
+        aos_get_gmt_time_date(datetime.data, shortdate);
+        date.data = shortdate;
+        date.len = 8;
     }
     else {
         date.data = datetime.data;
@@ -861,6 +885,101 @@ static int oss_sign_request_v4(aos_http_request_t *req, const oss_config_t *conf
     apr_table_addn(req->headers, OSS_AUTHORIZATION, value);
 
     //printf("\nAuthorization:\n%s", value);
+
+    return res;
+}
+
+static int get_oss_request_signature_v4(const oss_request_options_t *options, 
+                              aos_http_request_t *req,
+                              const aos_string_t *expires, 
+                              aos_string_t *signature)
+{
+    aos_string_t datetime;
+    aos_string_t date;
+    aos_string_t region;
+    aos_string_t product;
+    aos_string_t canonical_request;
+    aos_string_t string_to_sign;
+    char signing_key[AOS_SHA256_HASH_LEN];
+    int res = AOSE_OK;
+    oss_config_t *config;
+    apr_time_t now;
+    char datetimestr[AOS_MAX_GMT_TIME_LEN];
+    apr_time_t expires_s;
+    const char* value;
+
+    config = options->config;
+
+    //datetime & date
+    now = apr_time_now();
+    aos_get_iso8601_str_time_ex(datetimestr, now);
+    aos_str_set(&datetime, datetimestr);
+    date.data = datetime.data;
+    date.len = aos_min(8, datetime.len);
+    //region
+    if (!aos_string_is_empty(&config->cloudbox_id)) {
+        region.data = config->cloudbox_id.data;
+        region.len = config->cloudbox_id.len;
+    }
+    else {
+        region.data = config->region.data;
+        region.len = config->region.len;
+    }
+
+    //product, oss or "oss-cloudbox"
+    if (!aos_string_is_empty(&config->cloudbox_id)) {
+        aos_str_set(&product, "oss-cloudbox");
+    } else {
+        aos_str_set(&product, "oss");
+    }
+
+    // expires_s
+    if (aos_string_is_empty(expires)) {
+        return AOSE_INVALID_ARGUMENT;
+    }
+    expires_s = (apr_time_t)aos_atoi64(expires->data);
+
+    //set x-oss-signature-version
+    apr_table_set(req->query_params, OSS_SIGNATURE_VERSION, "OSS4-HMAC-SHA256");
+
+    //set x-oss-credential
+    value = apr_psprintf(req->pool, "%.*s/%.*s/%.*s/%.*s/aliyun_v4_request",
+        config->access_key_id.len, config->access_key_id.data,
+        date.len, date.data,
+        region.len, region.data,
+        product.len, product.data);
+    apr_table_set(req->query_params, OSS_CREDENTIAL, value);
+
+    //set x-oss-date
+    apr_table_set(req->query_params, OSS_CANNONICALIZED_HEADER_DATE, datetime.data);
+
+    //set x-oss-expires
+    expires_s = expires_s - apr_time_sec(now);
+    value = apr_psprintf(options->pool, "%" APR_INT64_T_FMT, expires_s);
+    apr_table_set(req->query_params, OSS_EXPIRES_V4, value);
+
+    //canonical request
+    if ((res = oss_build_canonical_request_v4(req->pool, req, &canonical_request)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\ncanonical_request:\n%s", canonical_request.data);
+
+    //string to sign
+    if ((res = oss_build_string_to_sign_v4(req->pool, &datetime, &date, &region, &product, &canonical_request, &string_to_sign)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\nstring_to_sign:\n%s", string_to_sign.data);
+
+    //signing key
+    if ((res = oss_build_signing_key_v4(req->pool, &config ->access_key_secret, &date, &region, &product, signing_key)) != AOSE_OK) {
+        return res;
+    }
+
+    //signature
+    if ((res = oss_build_signature_v4(req->pool, signing_key, &string_to_sign, signature)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\nsignature:\n%s", signature.data);
 
     return res;
 }

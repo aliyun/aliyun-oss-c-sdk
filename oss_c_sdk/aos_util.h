@@ -21,6 +21,8 @@ int aos_get_gmt_str_time(char datestr[AOS_MAX_GMT_TIME_LEN]);
 
 int aos_convert_to_iso8601_time(char* date, const char* format, apr_time_exp_t* tm);
 int aos_get_iso8601_str_time(char datestr[AOS_MAX_GMT_TIME_LEN]);
+int aos_get_iso8601_str_time_ex(char datestr[AOS_MAX_GMT_TIME_LEN], apr_time_t now);
+int aos_get_gmt_time_date(const char *gmt, char datestr[AOS_MAX_SHORT_TIME_LEN]);
 
 /**
  * URL-encodes a string from [src] into [dest]. [dest] must have at least

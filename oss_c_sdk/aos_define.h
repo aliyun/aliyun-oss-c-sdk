@@ -101,6 +101,7 @@ typedef apr_array_header_t aos_array_header_t;
 #define AOS_MAX_HEADER_LEN 8192
 #define AOS_MAX_QUERY_ARG_LEN 1024
 #define AOS_MAX_GMT_TIME_LEN 128
+#define AOS_MAX_SHORT_TIME_LEN 10
 
 #define AOS_MAX_XML_NODE_VALUE_LEN 1024
 #define AOS_MAX_INT64_STRING_LEN 64

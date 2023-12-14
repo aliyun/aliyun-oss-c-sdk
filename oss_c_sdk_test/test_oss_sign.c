@@ -206,7 +206,7 @@ static void test_sign_v4_with_gmt_datefomat(CuTest* tc)
     aos_status_t* s = NULL;
     aos_list_t buffer;
     aos_buf_t* content = NULL;
-    char* str = "";
+    const char* str = "";
 
     aos_pool_create(&p, NULL);
     options = oss_request_options_create(p);
@@ -248,12 +248,16 @@ static void test_sign_v4_with_gmt_datefomat(CuTest* tc)
     s = oss_do_put_object_from_buffer(options, &bucket, &object,
         &buffer, headers, querys, NULL, &resp_headers, NULL);
 
-    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, s->code);
-
-    printf("%s", s->error_msg);
-    printf("%s", s->error_code);
+    CuAssertIntEquals(tc, 403, s->code);
+    str = apr_table_get(headers, OSS_AUTHORIZATION);
+    CuAssertPtrNotNull(tc, strstr(str, "OSS4-HMAC-SHA256 Credential=ak/20150319/cloudbox-id/oss-cloudbox/aliyun_v4_request"));
 
     aos_pool_destroy(p);
+    printf("%s ok\n", __FUNCTION__);
+}
+
+static void test_sign_v4_presign(CuTest* tc)
+{
     printf("%s ok\n", __FUNCTION__);
 }
 
@@ -266,6 +270,7 @@ CuSuite *test_oss_sign()
     SUITE_ADD_TEST(suite, test_sign_v4_object_without_query);
     SUITE_ADD_TEST(suite, test_sign_v4_object_cloudbox_id_full);
     SUITE_ADD_TEST(suite, test_sign_v4_with_gmt_datefomat);
+    SUITE_ADD_TEST(suite, test_sign_v4_presign);
     SUITE_ADD_TEST(suite, test_sign_cleanup);
 
     return suite;

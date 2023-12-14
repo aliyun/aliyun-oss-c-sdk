@@ -114,6 +114,11 @@ extern const char OSS_SELECT_OBJECT_OUTPUT_RAW[];
 extern const char OSS_TAGGING[];
 extern const char OSS_SIGN_ORIGIN_ONLY[];
 extern const char OSS_CONTENT_SHA256[];
+extern const char OSS_SECURITY_TOKEN_V4[];
+extern const char OSS_SIGNATURE_VERSION[];
+extern const char OSS_CREDENTIAL[];
+extern const char OSS_EXPIRES_V4[];
+extern const char OSS_SIGNATURE_V4[];
 
 typedef struct oss_lib_curl_initializer_s oss_lib_curl_initializer_t;
 

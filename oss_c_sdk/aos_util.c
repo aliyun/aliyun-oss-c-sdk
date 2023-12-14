@@ -104,6 +104,51 @@ int aos_get_iso8601_str_time(char datestr[AOS_MAX_GMT_TIME_LEN])
     return s;
 }
 
+int aos_get_iso8601_str_time_ex(char datestr[AOS_MAX_GMT_TIME_LEN], apr_time_t now)
+{
+    int s;
+    char buf[128];
+    apr_time_exp_t result;
+
+    if ((s = apr_time_exp_gmt(&result, now)) != APR_SUCCESS) {
+        aos_error_log("apr_time_exp_gmt fialure, code:%d %s.", s, apr_strerror(s, buf, sizeof(buf)));
+        return AOSE_INTERNAL_ERROR;
+    }
+
+    if ((s = aos_convert_to_iso8601_time(datestr, g_s_ios8601_format, &result))
+        != AOSE_OK) {
+        aos_error_log("aos_convert_to_iso8601_time failure, code:%d.", s);
+    }
+
+    return s;
+}
+
+int aos_get_gmt_time_date(const char *gmt, char datestr[AOS_MAX_SHORT_TIME_LEN]) {
+    char week[4];
+    char month[4];
+    apr_time_exp_t t;
+    int i;
+    if (!gmt) {
+        return 0;
+    }
+    memset(week,0,4);
+    memset(month,0,4);
+
+    sscanf(gmt,"%3s, %2d %3s %4d %2d:%2d:%2d GMT",
+        week, &t.tm_mday, month, &t.tm_year,
+        &t.tm_hour, &t.tm_min, &t.tm_sec);
+
+    for (i = 0; i < 12; i++) {
+        if (apr_strnatcmp(g_s_mon[i], (char const *)month) == 0) {
+            t.tm_mon = i + 1;
+            break;
+        }
+    }
+    apr_snprintf(datestr, AOS_MAX_SHORT_TIME_LEN, "%.4d%.2d%.2d",
+       t.tm_year, t.tm_mon, t.tm_mday);
+}
+
+
 int aos_url_encode(char *dest, const char *src, int maxSrcSize)
 {
     static const char *hex = "0123456789ABCDEF";
