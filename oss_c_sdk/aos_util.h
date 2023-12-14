@@ -19,6 +19,11 @@ void aos_gnome_sort(const char **headers, int size);
 int aos_convert_to_gmt_time(char* date, const char* format, apr_time_exp_t *tm);
 int aos_get_gmt_str_time(char datestr[AOS_MAX_GMT_TIME_LEN]);
 
+int aos_convert_to_iso8601_time(char* date, const char* format, apr_time_exp_t* tm);
+int aos_get_iso8601_str_time(char datestr[AOS_MAX_GMT_TIME_LEN]);
+int aos_get_iso8601_str_time_ex(char datestr[AOS_MAX_GMT_TIME_LEN], apr_time_t now);
+int aos_get_gmt_time_date(const char *gmt, char datestr[AOS_MAX_SHORT_TIME_LEN]);
+
 /**
  * URL-encodes a string from [src] into [dest]. [dest] must have at least
  * 3x the number of characters that [source] has. At most [maxSrcSize] bytes
@@ -28,6 +33,11 @@ int aos_get_gmt_str_time(char datestr[AOS_MAX_GMT_TIME_LEN]);
  */
 int aos_url_encode(char *dest, const char *src, int maxSrcSize);
 int aos_url_encode_ex(char *dest, const char *src, int maxSrcSize, int slash);
+
+/**
+ * Convert binary data to a hex encoding.
+ */
+int aos_encode_hex(char* dest, const void* src, int srclen, int* len);
 
 const char* aos_http_method_to_string(http_method_e method);
 
@@ -80,6 +90,12 @@ unsigned long long aos_strtoull(const char *nptr, char **endptr, int base);
  * @brief Convert a string to uint64_t.
 **/
 uint64_t aos_atoui64(const char *nptr);
+
+
+void aos_HMAC_SHA256(char hmac[32], const char* key, int key_len, const char* message, int message_len);
+
+void aos_SHA256(char hash[32], const char* message, int message_len);
+
 
 AOS_CPP_END
 
