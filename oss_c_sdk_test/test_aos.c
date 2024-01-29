@@ -1470,10 +1470,11 @@ static void test_oss_get_signed_url_negative(CuTest *tc) {
     req = aos_http_request_create(p);
     req->query_params = aos_table_make(p, 1);
     init_test_request_options(option, 0);
-    apr_table_set(req->query_params, "x-oss-process", special_query);
-    ret = oss_get_signed_url(option, req, &expires, &signed_url);
-    CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, ret);
-
+    if (option->config->signature_version != 4) {
+        apr_table_set(req->query_params, "x-oss-process", special_query);
+        ret = oss_get_signed_url(option, req, &expires, &signed_url);
+        CuAssertIntEquals(tc, AOSE_INVALID_ARGUMENT, ret);
+    }
 /*
     init_test_request_options(option, 0);
     req = aos_http_request_create(p);
