@@ -147,6 +147,8 @@ int aos_get_gmt_time_date(const char *gmt, char datestr[AOS_MAX_SHORT_TIME_LEN])
     }
     apr_snprintf(datestr, AOS_MAX_SHORT_TIME_LEN, "%.4d%.2d%.2d",
        t.tm_year, t.tm_mon, t.tm_mday);
+
+    return 0;
 }
 
 
