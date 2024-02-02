@@ -581,7 +581,7 @@ void test_restore_object_with_tier(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, IA_BUCKET_NAME);
-    aos_str_set(&options->config->endpoint, "http://oss-ap-southeast-2.aliyuncs.com");
+    //aos_str_set(&options->config->endpoint, "http://oss-ap-southeast-2.aliyuncs.com");
     
 
     s = create_test_bucket_with_storage_class(options, bucket.data,

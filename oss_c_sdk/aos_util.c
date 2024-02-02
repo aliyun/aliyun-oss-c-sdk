@@ -123,7 +123,8 @@ int aos_get_iso8601_str_time_ex(char datestr[AOS_MAX_GMT_TIME_LEN], apr_time_t n
     return s;
 }
 
-int aos_get_gmt_time_date(const char *gmt, char datestr[AOS_MAX_SHORT_TIME_LEN]) {
+int aos_get_gmt_time_date(const char *gmt, char datestr[AOS_MAX_SHORT_TIME_LEN])
+{
     char week[4];
     char month[4];
     apr_time_exp_t t;
