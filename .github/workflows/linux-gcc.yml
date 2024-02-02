@@ -1,0 +1,32 @@
+name: Ubuntu (gcc)
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+    
+jobs:
+  ubuntu_gcc:
+    strategy:
+      matrix:
+        mode: [ Debug, Release ]
+    runs-on: ubuntu-20.04
+    
+    steps:
+    - name: check out
+      uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install curl libssl-dev libcurl4-openssl-dev libmxml-dev libapr1-dev libaprutil1-dev
+
+    - name: checkout gcc version
+      run: gcc --version
+
+    - name: configure cmake
+      run: CXX=g++ CC=gcc cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ matrix.mode }}
+      
+    - name: build project
+      run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.mode }}

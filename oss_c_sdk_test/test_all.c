@@ -20,6 +20,7 @@ extern CuSuite *test_oss_select_object();
 extern CuSuite *test_oss_object_tagging();
 extern CuSuite *test_oss_xml();
 extern CuSuite *test_oss_https();
+extern CuSuite* test_oss_sign();
 extern void set_test_bucket_prefix(const char*prefix);
 extern void clean_bucket_by_prefix(const char* prefix);
 
@@ -42,6 +43,7 @@ static const struct testlist {
     {"test_oss_object_tagging", test_oss_object_tagging },
     {"test_oss_xml", test_oss_xml },
     {"test_oss_https", test_oss_https },
+    {"test_oss_sign", test_oss_sign },
     {"LastTest", NULL}
 };
 
@@ -61,6 +63,12 @@ void load_cfg_from_env()
         TEST_OSS_ENDPOINT = str;
     }
 
+    str = NULL;
+    apr_env_get(&str, "OSS_TEST_REGION", aos_global_pool);
+    if (str) {
+        TEST_REGION = str;
+    }
+    
     str = NULL;
     apr_env_get(&str, "OSS_TEST_ACCESS_KEY_ID", aos_global_pool);
     if (str) {
@@ -119,6 +127,12 @@ void load_cfg_from_file()
             aos_trip_space_and_cntrl(&str);
             aos_unquote_str(&str);
             TEST_OSS_ENDPOINT = aos_pstrdup(aos_global_pool, &str);
+        }
+        else if (!strncmp(buffer, "Region", 6)) {
+            aos_str_set(&str, ptr + 1);
+            aos_trip_space_and_cntrl(&str);
+            aos_unquote_str(&str);
+            TEST_REGION = aos_pstrdup(aos_global_pool, &str);
         }
         else if (!strncmp(buffer, "CallbackServer", 14)) {
             aos_str_set(&str, ptr + 1);

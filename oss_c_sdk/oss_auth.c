@@ -49,6 +49,11 @@ static int oss_get_canonicalized_resource(aos_pool_t *p,
         const aos_table_t *params, aos_buf_t *signbuf);
 static int oss_get_canonicalized_params(aos_pool_t *p,
     const aos_table_t *params, aos_buf_t *signbuf);
+static int oss_sign_request_v4(aos_http_request_t *req, const oss_config_t *config);
+static int get_oss_request_signature_v4(const oss_request_options_t *options, 
+                              aos_http_request_t *req,
+                              const aos_string_t *expires, 
+                              aos_string_t *signature);
 
 static int is_oss_sub_resource(const char *str)
 {
@@ -302,6 +307,10 @@ int oss_sign_request(aos_http_request_t *req,
     int res = AOSE_OK;
     int len = 0;
     
+    if (config->signature_version == 4) {
+        return oss_sign_request_v4(req, config);
+    }
+
     canon_res.data = canon_buf;
     if (req->resource != NULL) {
         len = strlen(req->resource);
@@ -371,18 +380,32 @@ int oss_get_signed_url(const oss_request_options_t *options,
     aos_string_t signature;
     const char *proto;
 
-    if (options->config->sts_token.data != NULL) {
-        apr_table_set(req->query_params, OSS_SECURITY_TOKEN, options->config->sts_token.data);
-    }
+    if (options->config->signature_version == 4) {
+        if (options->config->sts_token.data != NULL) {
+            apr_table_set(req->query_params, OSS_SECURITY_TOKEN_V4, options->config->sts_token.data);
+        }
 
-    res = get_oss_request_signature(options, req, expires, &signature);
-    if (res != AOSE_OK) {
-        return res;
-    }
+        res = get_oss_request_signature_v4(options, req, expires, &signature);
+        if (res != AOSE_OK) {
+            return res;
+        }
 
-    apr_table_set(req->query_params, OSS_ACCESSKEYID, options->config->access_key_id.data);
-    apr_table_set(req->query_params, OSS_EXPIRES, expires->data);
-    apr_table_set(req->query_params, OSS_SIGNATURE, signature.data);
+        apr_table_set(req->query_params, OSS_SIGNATURE_V4, signature.data);
+
+    } else {
+        if (options->config->sts_token.data != NULL) {
+            apr_table_set(req->query_params, OSS_SECURITY_TOKEN, options->config->sts_token.data);
+        }
+
+        res = get_oss_request_signature(options, req, expires, &signature);
+        if (res != AOSE_OK) {
+            return res;
+        }
+
+        apr_table_set(req->query_params, OSS_ACCESSKEYID, options->config->access_key_id.data);
+        apr_table_set(req->query_params, OSS_EXPIRES, expires->data);
+        apr_table_set(req->query_params, OSS_SIGNATURE, signature.data);
+    }
 
     uristr[0] = '\0';
     aos_str_null(&querystr);
@@ -583,4 +606,380 @@ static int oss_get_canonicalized_params(aos_pool_t *p,
 
     free(tmpbuf);
     return AOSE_OK;
+}
+
+//v4
+#define AOS_SHA256_HASH_LEN 32
+
+static int cmp_table_key_v4(const void* v1, const void* v2)
+{
+    const apr_table_entry_t* s1 = (const apr_table_entry_t*)v1;
+    const apr_table_entry_t* s2 = (const apr_table_entry_t*)v2;
+    return strcmp(s1->key, s2->key);
+}
+
+static int is_oss_signed_header_v4(const char* str)
+{
+    if (strncasecmp(str, OSS_CANNONICALIZED_HEADER_PREFIX, strlen(OSS_CANNONICALIZED_HEADER_PREFIX)) == 0 ||
+        strncasecmp(str, OSS_CONTENT_MD5, strlen(OSS_CONTENT_MD5)) == 0 ||
+        strncasecmp(str, OSS_CONTENT_TYPE, strlen(OSS_CONTENT_TYPE)) == 0)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+static int oss_build_canonical_request_v4(aos_pool_t* p, aos_http_request_t* req, aos_string_t* out)
+{
+    int pos;
+    const char* value;
+    aos_buf_t* signbuf;
+    const aos_array_header_t* arr;
+    const aos_table_entry_t* elts;
+    aos_table_t *canon_querys;
+    aos_table_t* canon_headers;
+
+    signbuf = aos_create_buf(p, 1024);
+
+    //http method + "\n"
+    value = aos_http_method_to_string(req->method);
+    aos_buf_append_string(p, signbuf, value, strlen(value));
+    aos_buf_append_string(p, signbuf, "\n", 1);
+
+    //Canonical URI + "\n"
+    aos_buf_append_string(p, signbuf, "/", 1);
+    if (req->resource != NULL) {
+        char canon_buf[AOS_MAX_URI_LEN];
+        canon_buf[0] = '\0';
+        aos_url_encode_ex(canon_buf, req->resource, AOS_MAX_URI_LEN, 1);
+        aos_buf_append_string(p, signbuf, canon_buf, strlen(canon_buf));
+    }
+    aos_buf_append_string(p, signbuf, "\n", 1);
+
+    //Canonical Query String + "\n"
+    arr = aos_table_elts(req->query_params);
+    elts = (aos_table_entry_t*)arr->elts;
+    canon_querys = aos_table_make(p, 0);
+    for (pos = 0; pos < arr->nelts; ++pos) {
+        char enc_key[AOS_MAX_QUERY_ARG_LEN];
+        char enc_value[AOS_MAX_URI_LEN];
+        aos_url_encode(enc_key, elts[pos].key, AOS_MAX_QUERY_ARG_LEN);
+        aos_url_encode(enc_value, elts[pos].val, AOS_MAX_QUERY_ARG_LEN);
+        apr_table_set(canon_querys, enc_key, enc_value);
+    }
+    arr = aos_table_elts(canon_querys);
+    qsort(arr->elts, arr->nelts, arr->elt_size, cmp_table_key_v4);
+
+    elts = (aos_table_entry_t*)arr->elts;
+    for (pos = 0; pos < arr->nelts; ++pos) {
+        if (pos != 0) {
+            aos_buf_append_string(p, signbuf, "&", 1);
+        }
+        value = elts[pos].key;
+        aos_buf_append_string(p, signbuf, value, strlen(value));
+
+        value = elts[pos].val;
+        if (value != NULL && *value != '\0') {
+            aos_buf_append_string(p, signbuf, "=", 1);
+            aos_buf_append_string(p, signbuf, value, strlen(value));
+        }
+    }
+    aos_buf_append_string(p, signbuf, "\n", 1);
+
+    //Canonical Headers + "\n"
+    arr = aos_table_elts(req->headers);
+    elts = (aos_table_entry_t*)arr->elts;
+    canon_headers = aos_table_make(p, 0);
+    for (pos = 0; pos < arr->nelts; ++pos) {
+        if (is_oss_signed_header_v4(elts[pos].key)) {
+            aos_string_t key;
+            aos_str_set(&key, apr_pstrdup(p, elts[pos].key));
+            aos_string_tolower(&key);
+            aos_strip_space(&key);
+            apr_table_addn(canon_headers, key.data, elts[pos].val);
+        }
+    }
+    arr = aos_table_elts(canon_headers);
+    qsort(arr->elts, arr->nelts, arr->elt_size, cmp_table_key_v4);
+
+    elts = (aos_table_entry_t*)arr->elts;
+    for (pos = 0; pos < arr->nelts; ++pos) {
+        aos_string_t tmp_str;
+        aos_str_set(&tmp_str, elts[pos].val);
+        aos_strip_space(&tmp_str);
+        aos_buf_append_string(p, signbuf, elts[pos].key, strlen(elts[pos].key));
+        aos_buf_append_string(p, signbuf, ":", 1);
+        aos_buf_append_string(p, signbuf, tmp_str.data, tmp_str.len);
+        aos_buf_append_string(p, signbuf, "\n", 1);
+    }
+    aos_buf_append_string(p, signbuf, "\n", 1);
+
+    //Additional Headers + "\n"
+    aos_buf_append_string(p, signbuf, "\n", 1);
+
+    //Hashed PayLoad
+    value = apr_table_get(req->headers, OSS_CONTENT_SHA256);
+    if (value == NULL) {
+        aos_buf_append_string(p, signbuf, "UNSIGNED-PAYLOAD", 16);
+    } else {
+        aos_buf_append_string(p, signbuf, value, strlen(value));
+    }
+
+    // result
+    out->data = (char*)signbuf->pos;
+    out->len = aos_buf_size(signbuf);
+
+    return AOSE_OK;
+}
+
+static int oss_build_string_to_sign_v4(aos_pool_t* p, const aos_string_t* datetime, const aos_string_t* date, const aos_string_t* region, const aos_string_t* product, const aos_string_t* canonical_request, aos_string_t* out)
+{
+    char hash[AOS_SHA256_HASH_LEN];
+    char hex[AOS_SHA256_HASH_LEN * 2 + 1];
+    aos_buf_t* signbuf;
+
+    signbuf = aos_create_buf(p, 256);
+
+    // OSS4-HMAC-SHA256 + \n +
+    // dateime + \n +
+    // data/region/product/aliyun_v4_request + \n +
+    // toHex(sha256(canonical_request));
+    aos_buf_append_string(p, signbuf, "OSS4-HMAC-SHA256", 16); aos_buf_append_string(p, signbuf, "\n", 1);
+    aos_buf_append_string(p, signbuf, datetime->data, datetime->len); aos_buf_append_string(p, signbuf, "\n", 1);
+
+    //scope
+    aos_buf_append_string(p, signbuf, date->data, date->len); aos_buf_append_string(p, signbuf, "/", 1);
+    aos_buf_append_string(p, signbuf, region->data, region->len); aos_buf_append_string(p, signbuf, "/", 1);
+    aos_buf_append_string(p, signbuf, product->data, product->len); aos_buf_append_string(p, signbuf, "/", 1);
+    aos_buf_append_string(p, signbuf, "aliyun_v4_request", 17); aos_buf_append_string(p, signbuf, "\n", 1);
+
+    aos_SHA256(hash, canonical_request->data, canonical_request->len);
+    aos_encode_hex(hex, hash, AOS_SHA256_HASH_LEN, NULL);
+    aos_buf_append_string(p, signbuf, hex, AOS_SHA256_HASH_LEN * 2);
+
+    // result
+    out->data = (char*)signbuf->pos;
+    out->len = aos_buf_size(signbuf);
+
+    return AOSE_OK;
+}
+
+static int oss_build_signing_key_v4(aos_pool_t* p, const aos_string_t* access_key_secret, const aos_string_t* date, const aos_string_t* region, const aos_string_t* product, char signing_key[32])
+{
+    char* signing_secret;
+    char signing_date[AOS_SHA256_HASH_LEN];
+    char signing_region[AOS_SHA256_HASH_LEN];
+    char signing_product[AOS_SHA256_HASH_LEN];
+    signing_secret = apr_psprintf(p, "aliyun_v4%.*s", access_key_secret->len, access_key_secret->data);
+    aos_HMAC_SHA256(signing_date, signing_secret, strlen(signing_secret), date->data, date->len);
+    aos_HMAC_SHA256(signing_region, signing_date, AOS_SHA256_HASH_LEN, region->data, region->len);
+    aos_HMAC_SHA256(signing_product, signing_region, AOS_SHA256_HASH_LEN, product->data, product->len);
+    aos_HMAC_SHA256(signing_key, signing_product, AOS_SHA256_HASH_LEN, "aliyun_v4_request", 17);
+
+    return AOSE_OK;
+}
+
+static int oss_build_signature_v4(aos_pool_t* p, const char signing_key[32], const aos_string_t* string_to_sign, aos_string_t* out)
+{
+    char signature[AOS_SHA256_HASH_LEN];
+    aos_buf_t* signbuf;
+
+    signbuf = aos_create_buf(p, AOS_SHA256_HASH_LEN * 2 + 1);
+    aos_HMAC_SHA256(signature, signing_key, AOS_SHA256_HASH_LEN, string_to_sign->data, string_to_sign->len);
+    aos_encode_hex((char*)signbuf->pos, signature, AOS_SHA256_HASH_LEN, NULL);
+
+    out->data = (char*)signbuf->pos;
+    out->len = AOS_SHA256_HASH_LEN * 2;
+
+    return AOSE_OK;
+}
+
+static int oss_sign_request_v4(aos_http_request_t *req, const oss_config_t *config)
+{
+    aos_string_t datetime;
+    aos_string_t date;
+    aos_string_t region;
+    aos_string_t product;
+    aos_string_t canonical_request;
+    aos_string_t string_to_sign;
+    aos_string_t signature;
+    char signing_key[AOS_SHA256_HASH_LEN];
+    const char* value;
+    int res = AOSE_OK;
+    aos_string_t gmt_suffix;
+    char shortdate[AOS_MAX_SHORT_TIME_LEN];
+
+
+    //default, ex payload, x-oss-date 
+    apr_table_set(req->headers, OSS_CONTENT_SHA256, "UNSIGNED-PAYLOAD");
+
+    if ((value = apr_table_get(req->headers, OSS_CANNONICALIZED_HEADER_DATE)) == NULL) {
+        char datestr[AOS_MAX_GMT_TIME_LEN];
+        aos_get_iso8601_str_time(datestr);
+        apr_table_set(req->headers, OSS_CANNONICALIZED_HEADER_DATE, datestr);
+    }
+
+    //datetime & date
+    value = apr_table_get(req->headers, OSS_CANNONICALIZED_HEADER_DATE);
+    datetime.data = (char *)value;
+    datetime.len = strlen(value);
+
+    aos_str_set(&gmt_suffix, "GMT");
+    if (aos_ends_with(&datetime, &gmt_suffix)) {
+        aos_get_gmt_time_date(datetime.data, shortdate);
+        date.data = shortdate;
+        date.len = 8;
+    }
+    else {
+        date.data = datetime.data;
+        date.len = aos_min(8, datetime.len);
+    }
+
+    //region
+    if (!aos_string_is_empty(&config->cloudbox_id)) {
+        region.data = config->cloudbox_id.data;
+        region.len = config->cloudbox_id.len;
+    }
+    else {
+        region.data = config->region.data;
+        region.len = config->region.len;
+    }
+
+    //product, oss or "oss-cloudbox"
+    if (!aos_string_is_empty(&config->cloudbox_id)) {
+        aos_str_set(&product, "oss-cloudbox");
+    } else {
+        aos_str_set(&product, "oss");
+    }
+
+    //canonical request
+    if ((res = oss_build_canonical_request_v4(req->pool, req, &canonical_request)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\ncanonical_request:\n%s", canonical_request.data);
+
+    //string to sign
+    if ((res = oss_build_string_to_sign_v4(req->pool, &datetime, &date, &region, &product, &canonical_request, &string_to_sign)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\nstring_to_sign:\n%s", string_to_sign.data);
+
+    //signing key
+    if ((res = oss_build_signing_key_v4(req->pool, &config ->access_key_secret, &date, &region, &product, signing_key)) != AOSE_OK) {
+        return res;
+    }
+
+    //signature
+    if ((res = oss_build_signature_v4(req->pool, signing_key, &string_to_sign, &signature)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\nsignature:\n%s", signature.data);
+
+    //sign header
+    value = apr_psprintf(req->pool, "OSS4-HMAC-SHA256 Credential=%.*s/%.*s/%.*s/%.*s/aliyun_v4_request,Signature=%.*s",
+        config->access_key_id.len, config->access_key_id.data,
+        date.len, date.data,
+        region.len, region.data,
+        product.len, product.data,
+        signature.len, signature.data);
+    apr_table_addn(req->headers, OSS_AUTHORIZATION, value);
+
+    //printf("\nAuthorization:\n%s", value);
+
+    return res;
+}
+
+static int get_oss_request_signature_v4(const oss_request_options_t *options, 
+                              aos_http_request_t *req,
+                              const aos_string_t *expires, 
+                              aos_string_t *signature)
+{
+    aos_string_t datetime;
+    aos_string_t date;
+    aos_string_t region;
+    aos_string_t product;
+    aos_string_t canonical_request;
+    aos_string_t string_to_sign;
+    char signing_key[AOS_SHA256_HASH_LEN];
+    int res = AOSE_OK;
+    oss_config_t *config;
+    apr_time_t now;
+    char datetimestr[AOS_MAX_GMT_TIME_LEN];
+    apr_time_t expires_s;
+    const char* value;
+
+    config = options->config;
+
+    //datetime & date
+    now = apr_time_now();
+    aos_get_iso8601_str_time_ex(datetimestr, now);
+    aos_str_set(&datetime, datetimestr);
+    date.data = datetime.data;
+    date.len = aos_min(8, datetime.len);
+    //region
+    if (!aos_string_is_empty(&config->cloudbox_id)) {
+        region.data = config->cloudbox_id.data;
+        region.len = config->cloudbox_id.len;
+    }
+    else {
+        region.data = config->region.data;
+        region.len = config->region.len;
+    }
+
+    //product, oss or "oss-cloudbox"
+    if (!aos_string_is_empty(&config->cloudbox_id)) {
+        aos_str_set(&product, "oss-cloudbox");
+    } else {
+        aos_str_set(&product, "oss");
+    }
+
+    // expires_s
+    if (aos_string_is_empty(expires)) {
+        return AOSE_INVALID_ARGUMENT;
+    }
+    expires_s = (apr_time_t)aos_atoi64(expires->data);
+
+    //set x-oss-signature-version
+    apr_table_set(req->query_params, OSS_SIGNATURE_VERSION, "OSS4-HMAC-SHA256");
+
+    //set x-oss-credential
+    value = apr_psprintf(req->pool, "%.*s/%.*s/%.*s/%.*s/aliyun_v4_request",
+        config->access_key_id.len, config->access_key_id.data,
+        date.len, date.data,
+        region.len, region.data,
+        product.len, product.data);
+    apr_table_set(req->query_params, OSS_CREDENTIAL, value);
+
+    //set x-oss-date
+    apr_table_set(req->query_params, OSS_CANNONICALIZED_HEADER_DATE, datetime.data);
+
+    //set x-oss-expires
+    expires_s = expires_s - apr_time_sec(now);
+    value = apr_psprintf(options->pool, "%" APR_INT64_T_FMT, expires_s);
+    apr_table_set(req->query_params, OSS_EXPIRES_V4, value);
+
+    //canonical request
+    if ((res = oss_build_canonical_request_v4(req->pool, req, &canonical_request)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\ncanonical_request:\n%s", canonical_request.data);
+
+    //string to sign
+    if ((res = oss_build_string_to_sign_v4(req->pool, &datetime, &date, &region, &product, &canonical_request, &string_to_sign)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\nstring_to_sign:\n%s", string_to_sign.data);
+
+    //signing key
+    if ((res = oss_build_signing_key_v4(req->pool, &config ->access_key_secret, &date, &region, &product, signing_key)) != AOSE_OK) {
+        return res;
+    }
+
+    //signature
+    if ((res = oss_build_signature_v4(req->pool, signing_key, &string_to_sign, signature)) != AOSE_OK) {
+        return res;
+    }
+    //printf("\nsignature:\n%s", signature.data);
+
+    return res;
 }

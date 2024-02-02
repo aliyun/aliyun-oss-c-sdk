@@ -581,7 +581,7 @@ void test_restore_object_with_tier(CuTest *tc)
     options = oss_request_options_create(p);
     init_test_request_options(options, is_cname);
     aos_str_set(&bucket, IA_BUCKET_NAME);
-    aos_str_set(&options->config->endpoint, "http://oss-ap-southeast-2.aliyuncs.com");
+    //aos_str_set(&options->config->endpoint, "http://oss-ap-southeast-2.aliyuncs.com");
     
 
     s = create_test_bucket_with_storage_class(options, bucket.data,
@@ -1346,6 +1346,8 @@ void test_object_by_url(CuTest *tc)
     effective_time = now / 1000000 + two_minute;
 
     /* test effective url for put_object_from_buffer */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     req->method = HTTP_PUT;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
                                   object_name, effective_time, req);
@@ -1369,6 +1371,8 @@ void test_object_by_url(CuTest *tc)
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test effective url for get_object_to_buffer */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     req->method = HTTP_GET;
     req->normalize_url = 1;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
@@ -1390,6 +1394,8 @@ void test_object_by_url(CuTest *tc)
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test effective url for head_object */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     resp_headers = NULL;
     req->method = HTTP_HEAD;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME, 
@@ -1400,6 +1406,8 @@ void test_object_by_url(CuTest *tc)
     CuAssertPtrNotNull(tc, resp_headers);
 
     /* test invalid-bucketname url for put_object_from_file */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     req->method = HTTP_PUT;
     url_str = gen_test_signed_url(options, "InvalidBucketName",
         object_name, effective_time, req);
@@ -1409,6 +1417,8 @@ void test_object_by_url(CuTest *tc)
     CuAssertIntEquals(tc, 403, s->code);
 
     /* test invalid filepath url for put_object_from_file */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     req->method = HTTP_PUT;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
         object_name, effective_time, req);
@@ -1420,6 +1430,8 @@ void test_object_by_url(CuTest *tc)
 
 
     /* test invalid-bucketname url for get_object_from_file */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     req->method = HTTP_GET;
     url_str = gen_test_signed_url(options, "InvalidBucketName",
         object_name, effective_time, req);
@@ -1430,6 +1442,8 @@ void test_object_by_url(CuTest *tc)
     CuAssertIntEquals(tc, 403, s->code);
 
     /* test invalid filepath url for get_object_from_file */
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     req->method = HTTP_GET;
     url_str = gen_test_signed_url(options, TEST_BUCKET_NAME,
         object_name, effective_time, req);
@@ -1440,6 +1454,8 @@ void test_object_by_url(CuTest *tc)
     CuAssertIntEquals(tc, AOSE_OPEN_FILE_ERROR, s->code);
 
     /* test long query url fail*/
+    req = aos_http_request_create(p);
+    headers = aos_table_make(p, 0);
     memset(special_query, 0x30, AOS_MAX_QUERY_ARG_LEN);
     special_query[AOS_MAX_QUERY_ARG_LEN] = '\0';
     req->method = HTTP_GET;

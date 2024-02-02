@@ -82,4 +82,9 @@ const char OSS_OBJECT_META[] = "objectMeta";
 const char OSS_SELECT_OBJECT_OUTPUT_RAW[] = "x-oss-select-output-raw";
 const char OSS_TAGGING[] = "tagging";
 const char OSS_SIGN_ORIGIN_ONLY[] = "x-oss-sign-origin-only";
-
+const char OSS_CONTENT_SHA256[] = "x-oss-content-sha256";
+const char OSS_SECURITY_TOKEN_V4[] = "x-oss-security-token";
+const char OSS_SIGNATURE_VERSION[] = "x-oss-signature-version";
+const char OSS_CREDENTIAL[] = "x-oss-credential";
+const char OSS_EXPIRES_V4[] = "x-oss-expires";
+const char OSS_SIGNATURE_V4[] = "x-oss-signature";
