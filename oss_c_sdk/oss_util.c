@@ -1615,5 +1615,8 @@ int oss_is_valid_host(const char *host)
 
 int is_verify_object_strict(const oss_request_options_t* options)
 {
+    if (options->config->signature_version == 4) {
+        return 0;
+    }
     return options->ctl->options->verify_object_strict;
 }
