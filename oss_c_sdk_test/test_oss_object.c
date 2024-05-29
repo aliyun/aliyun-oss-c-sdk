@@ -2080,11 +2080,23 @@ void test_object_verify_strict(CuTest* tc)
     aos_str_set(&bucket, "bucket");
     aos_str_set(&object, "?123");
     url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
-    CuAssertPtrEquals(tc, NULL, url);
+    if (options->config->signature_version == 4) {
+        CuAssertPtrNotNull(tc, strstr(url, "%3F123"));
+        CuAssertPtrNotNull(tc, strstr(url, "x-oss-signature-version=OSS4-HMAC-SHA256"));
+    } else {
+        CuAssertTrue(tc, options->config->signature_version <= 1);
+        CuAssertPtrEquals(tc, NULL, url);
+    }
 
     aos_str_set(&object, "?");
     url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
-    CuAssertPtrEquals(tc, NULL, url);
+    if (options->config->signature_version == 4) {
+        CuAssertPtrNotNull(tc, strstr(url, "%3F"));
+        CuAssertPtrNotNull(tc, strstr(url, "x-oss-signature-version=OSS4-HMAC-SHA256"));
+    } else {
+        CuAssertTrue(tc, options->config->signature_version <= 1);
+        CuAssertPtrEquals(tc, NULL, url);
+    }
 
     aos_str_set(&object, "123?123");
     url = oss_gen_signed_url(options, &bucket, &object, 3600, request);
