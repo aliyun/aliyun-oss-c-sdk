@@ -1420,7 +1420,7 @@ void oss_object_key_parse(aos_pool_t *p, mxml_node_t * xml_node,
     node_content = mxmlGetOpaque(node);
     if (NULL != node_content) {
         encoded_key = (char*)node_content;
-        key = (char *) aos_palloc(p, strlen(encoded_key + 1));
+        key = (char *) aos_palloc(p, strlen(encoded_key) + 1);
         aos_url_decode(encoded_key, key);
         aos_str_set(&content->key, key);
     }
