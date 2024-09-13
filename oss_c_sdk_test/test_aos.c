@@ -79,6 +79,12 @@ void test_is_valid_ip(CuTest *tc) {
     ret = is_valid_ip("0.0.0.0");
     CuAssertIntEquals(tc, 0, ret);
 
+    ret = is_valid_ip(NULL);
+    CuAssertIntEquals(tc, 0, ret);
+
+    ret = is_valid_ip("");
+    CuAssertIntEquals(tc, 0, ret);
+
     printf("test_is_valid_ip ok\n");
 }
 
