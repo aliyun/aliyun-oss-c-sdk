@@ -148,6 +148,10 @@ static void generate_rtmp_proto(const oss_request_options_t *options,
 
 int is_valid_ip(const char *str)
 {
+    if (!str) {
+        return 0;
+    }
+
     if (INADDR_NONE == inet_addr(str) || INADDR_ANY == inet_addr(str)) {
         return 0;
     }
