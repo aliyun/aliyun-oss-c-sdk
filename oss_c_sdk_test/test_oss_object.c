@@ -2055,6 +2055,13 @@ void test_object_with_invalid_endpoint(CuTest *tc)
         params, &buffer, &resp_headers);
     CuAssertIntEquals(tc, 200, s->code);
 
+    aos_str_set(&options->config->endpoint, "#www.test.com*www.aliyuncs.com");
+    s = oss_get_object_to_buffer(options, &bucket, &object, headers,
+        params, &buffer, &resp_headers);
+    CuAssertIntEquals(tc, AOSE_NAME_LOOKUP_ERROR, s->code);
+    CuAssertStrEquals(tc, AOS_HTTP_IO_ERROR_CODE, s->error_code);
+    CuAssertStrEquals(tc, "Couldn't resolve host name", s->error_msg);
+
     aos_pool_destroy(p);
 
     printf("test_object_with_invalid_endpoint ok\n");
