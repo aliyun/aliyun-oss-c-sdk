@@ -11,7 +11,7 @@
 Alibaba Cloud Object Storage Service (OSS) is a cloud storage service provided by Alibaba Cloud, featuring massive capacity, security, a low cost, and high reliability. You can upload and download data on any application anytime and anywhere by calling APIs, and perform simple management of data through the web console. The OSS can store any type of files and therefore applies to various websites, development enterprises and developers. The OSS C SDK provides a variety of interfaces for convenient use of the OSS. 
 
 ## Version
- - Current version: 3.11.1
+ - Current version: 3.11.2
 
 ## Install OSS C SDK
 ### Environment dependency
