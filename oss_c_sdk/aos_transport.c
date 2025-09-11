@@ -450,10 +450,18 @@ int aos_curl_transport_setup(aos_curl_http_transport_t *t)
             curl_easy_setopt_safe(CURLOPT_NOBODY, 1);
             break;
         case HTTP_PUT:
+        {
+            curl_off_t uploadsize = (curl_off_t)(t->req->body_len);
             curl_easy_setopt_safe(CURLOPT_UPLOAD, 1);
+            curl_easy_setopt_safe(CURLOPT_INFILESIZE_LARGE, uploadsize);
+        }
             break;
         case HTTP_POST:
+        {
+            curl_off_t length_of_data = (curl_off_t)(t->req->body_len);
             curl_easy_setopt_safe(CURLOPT_POST, 1);
+            curl_easy_setopt_safe(CURLOPT_POSTFIELDSIZE_LARGE, length_of_data);
+        }
             break;
         case HTTP_DELETE:
             curl_easy_setopt_safe(CURLOPT_CUSTOMREQUEST, "DELETE");
