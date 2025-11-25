@@ -55,6 +55,8 @@ static void aos_init_curl_headers(aos_curl_http_transport_t *t)
         header = apr_psprintf(t->pool, "%s: %s", telts[pos].key, telts[pos].val);
         t->headers = curl_slist_append(t->headers, header);
     }
+    // Disable Expect: 100-continue
+    t->headers = curl_slist_append(t->headers, "Expect:");
     
     func.func1 = (aos_func1_pt)curl_slist_free_all;
     aos_fstack_push(t->cleanup, t->headers, func, 1);
