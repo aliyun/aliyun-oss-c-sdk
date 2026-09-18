@@ -1,8 +1,6 @@
+cmake_minimum_required(VERSION 3.5)
+
 PROJECT(oss_c_sdk)
-
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)  
-
-set(CMAKE_VERSION 3.0.0)
 
 # default C / CXX flags
 if(CMAKE_HOST_WIN32)
